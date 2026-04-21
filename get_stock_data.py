@@ -6,7 +6,8 @@ from pytickersymbols import PyTickerSymbols
 def get_index_data(
         start:str,
         end:str,
-        index:str = 'FTSE 100'
+        index:str = 'FTSE 100',
+        verbose:bool = False
         ) -> pd.DataFrame:
     """
     get_index_data(index)
@@ -20,6 +21,8 @@ def get_index_data(
     end: str
         End date for the stock data in YYYY-MM-DD format
     index : str, default=FTSE 100
+    verbose: bool, default=False
+        Sets the verbosity for the tickerwise data download
 
     Returns
     -------
@@ -33,7 +36,8 @@ def get_index_data(
     valid_data = {}
 
     for ticker in tickers:
-        print(f"Downloading data for {ticker}")
+        if verbose:
+            print(f"Downloaded data for for {ticker}")
         try:
             df = yf.download(
                 tickers=ticker,
@@ -42,9 +46,12 @@ def get_index_data(
                 interval="1d",       # daily bars
                 auto_adjust=True,    
                 group_by="ticker",
+                progress=verbose      # suppress printing output
             )
             valid_data[ticker] = df
         except:
+            if verbose:
+                print(f"Download failed for {ticker}")
             continue    # TODO: catch exception more gracefully
     return valid_data
 
