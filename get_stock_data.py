@@ -1,5 +1,6 @@
 import pandas as pd
 import yfinance as yf
+from tqdm import tqdm
 from pytickersymbols import PyTickerSymbols
 
 
@@ -35,7 +36,7 @@ def get_index_data(
 
     valid_data = {}
 
-    for ticker in tickers:
+    for ticker in tqdm(tickers, disable=verbose):
         if verbose:
             print(f"Downloaded data for for {ticker}")
         try:
