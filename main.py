@@ -44,12 +44,14 @@ if __name__ == "__main__":
         r for r in risk_results.values() if r["status"] == "ok"
     ])
 
-    loader = ModelLoader(endpoint_id="vbnmoz5c4vgkjm")
+    loader = ModelLoader()
+    loader.load()
 
+    # Smoke test with a simple prompt
     messages = [
         {
             "role": "user",
-            "content": "Reply with the word READY and nothing else."
+            "content": [{"type": "text", "text": "Reply with the word READY and nothing else."}]
         }
     ]
 
