@@ -1,7 +1,10 @@
+import logging
 import pandas as pd
 import yfinance as yf
 from tqdm import tqdm
 from pytickersymbols import PyTickerSymbols
+
+logger = logging.getLogger(__name__)
 
 
 def get_index_data(
@@ -36,10 +39,10 @@ def get_index_data(
 
     valid_data = {}
 
-    print(f"Downloading stock data from {index} index")
+    logger.info(f"Downloading stock data from {index} index")
     for ticker in tqdm(tickers, disable=verbose):
         if verbose:
-            print(f"Downloaded data for for {ticker}")
+            logger.info(f"Downloaded data for for {ticker}")
         try:
             df = yf.download(
                 tickers=ticker,
@@ -53,7 +56,7 @@ def get_index_data(
             valid_data[ticker] = df
         except:
             if verbose:
-                print(f"Download failed for {ticker}")
+                logger.error(f"Download failed for {ticker}")
             continue    # TODO: catch exception more gracefully
     return valid_data
 
@@ -70,4 +73,4 @@ def save_data(stocks_dict: dict, filename:str):
     """
     stocks_csv = pd.concat(stocks_dict, axis=1)
     stocks_csv.to_csv(filename)
-    print(f"Data saved to {filename}")
+    logger.info(f"Data saved to {filename}")
