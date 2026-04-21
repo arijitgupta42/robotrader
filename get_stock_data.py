@@ -36,6 +36,7 @@ def get_index_data(
 
     valid_data = {}
 
+    print(f"Downloading stock data from {index} index")
     for ticker in tqdm(tickers, disable=verbose):
         if verbose:
             print(f"Downloaded data for for {ticker}")
