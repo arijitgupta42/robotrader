@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 from datetime import date
 from model_loader import ModelLoader
@@ -5,6 +6,7 @@ from get_stock_data import get_index_data
 from data_utils import normalise_stock_data
 from agents.risk_scoring_agent import RiskScoringAgent
 from agents.trend_analysis_agent import TrendAnalysisAgent
+from agents.return_projection_agent import ReturnProjectionAgent
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -47,13 +49,10 @@ if __name__ == "__main__":
     loader = ModelLoader()
     loader.load()
 
-    # Smoke test with a simple prompt
-    messages = [
-        {
-            "role": "user",
-            "content": [{"type": "text", "text": "Reply with the word READY and nothing else."}]
-        }
-    ]
+    # Merge trend and risk outputs for one ticker
+    ticker = "III.L"
+    merged = {**trend_results[ticker], **risk_results[ticker]}
 
-    response = loader.generate(messages, max_new_tokens=10)
-    print(f"Model response: {response}")
+    agent = ReturnProjectionAgent(model=loader)
+    result = agent.run(ticker, merged)
+    print(json.dumps(result, indent=2))
