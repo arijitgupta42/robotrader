@@ -12,7 +12,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-    end = date(date.today().year, 1, 1).strftime("%Y-%m-%d")
+    end = date.today().strftime("%Y-%m-%d")
     start = date(date.today().year - 2, 1, 1).strftime("%Y-%m-%d")
     stock_data = get_index_data(start, end)
 
