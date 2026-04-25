@@ -94,8 +94,8 @@ no extra text before or after. Exactly this schema:
         prompt = self._build_prompt(ticker, data)
 
         messages = [
-            {"role": "system", "content": self.SYSTEM_PROMPT},
-            {"role": "user",   "content": prompt},
+            {"role": "system", "content": [{"type": "text", "text": self.SYSTEM_PROMPT}]},
+            {"role": "user",   "content": [{"type": "text", "text": prompt}]},
         ]
 
         raw = self.model.generate(messages, max_new_tokens=self.max_new_tokens)
