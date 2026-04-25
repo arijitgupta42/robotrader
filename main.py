@@ -46,13 +46,26 @@ if __name__ == "__main__":
         r for r in risk_results.values() if r["status"] == "ok"
     ])
 
+    # Load language model
     loader = ModelLoader()
     loader.load()
 
-    # Merge trend and risk outputs for one ticker
-    ticker = "III.L"
-    merged = {**trend_results[ticker], **risk_results[ticker]}
+    # Identifying low risk tickers and running return porjection model
+    low_risk_tickers = [
+        t for t, r in risk_results.items()
+        if r.get("risk_level") == "low"
+    ]
 
-    agent = ReturnProjectionAgent(model=loader)
-    result = agent.run(ticker, merged)
-    print(json.dumps(result, indent=2))
+    return_projection_agent = ReturnProjectionAgent(model=loader)
+
+    projection_results = {}
+    for ticker in low_risk_tickers:
+        merged = {**trend_results[ticker], **risk_results[ticker]}
+        projection_results[ticker] = return_projection_agent.run(ticker, merged)
+
+    # Quick summary
+    for ticker, r in projection_results.items():
+        if r["status"] == "ok":
+            print(f"{ticker:<12} 1yr={r['projected_return_1yr_pct']:>6.1f}%  "
+                f"2yr={r['projected_return_2yr_pct']:>6.1f}%  "
+                f"conf={r['confidence']:<6}  hold={r['hold_months']}m")
