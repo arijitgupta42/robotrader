@@ -4,294 +4,283 @@ from agents.base_agent import BaseAgent
 
 class RiskScoringAgent(BaseAgent):
     """
-    Scores the risk profile of a single stock for a low-risk,
-    long-term investor based on trend analysis metrics.
+    Scores each stock for suitability as a swing trade, applying
+    strict 2%-of-capital risk management per position.
 
-    Operates entirely on the output of TrendAnalysisAgent using
-    deterministic, threshold-based scoring. No SLM involved.
+    Unlike the previous long-term scoring model this agent:
+    - Rejects sideways/downtrend stocks outright (no setup = no trade)
+    - Uses ATR to compute stop-loss distance and position size
+    - Rewards high-conviction swing setups (breakout, pullback, momentum)
+    - Enforces the half-position / break-even rule by sizing stops at
+      1×ATR (tight enough that half-off at 1×ATR leaves the remainder
+      at break-even or better)
+    - Penalises extremely high volatility — a 5%/day mover is hard to
+      manage with a 2% capital risk budget
 
     Attributes
     ----------
     name : str
-        Human-readable name of the agent, used in logging.
+    capital : float
+        Total trading capital in GBP. Used to compute max £ risk per trade.
+    risk_pct : float
+        Maximum fraction of capital to risk per trade (default 0.02 = 2%).
     vol_low : float
-        Volatility threshold below which risk is considered low.
+        ATR% below which volatility is considered low for a swing (default 1.5%).
     vol_high : float
-        Volatility threshold above which risk is considered high.
-    mom_positive : float
-        Momentum % threshold above which momentum is positive.
-    mom_negative : float
-        Momentum % threshold below which momentum is negative.
+        ATR% above which volatility is considered dangerously high (default 4.0%).
     rsi_oversold : float
-        RSI threshold below which a stock is considered oversold.
+        RSI floor for a valid swing entry (default 30).
     rsi_overbought : float
-        RSI threshold above which a stock is considered overbought.
+        RSI ceiling for a valid swing entry (default 70).
     """
 
     name = "RiskScoringAgent"
 
     def __init__(
         self,
-        vol_low: float = 0.20,
-        vol_high: float = 0.30,
-        mom_positive: float = 15.0,
-        mom_negative: float = -10.0,
-        rsi_oversold: float = 35.0,
-        rsi_overbought: float = 65.0,
+        capital: float = 10_000.0,
+        risk_pct: float = 0.02,
+        vol_low: float = 1.5,
+        vol_high: float = 4.0,
+        rsi_oversold: float = 30.0,
+        rsi_overbought: float = 70.0,
     ):
         """
         Parameters
         ----------
-        vol_low : float, optional
-            Volatility threshold below which risk is low. Default 0.20.
-        vol_high : float, optional
-            Volatility threshold above which risk is high. Default 0.30.
-        mom_positive : float, optional
-            Momentum % above which signal is positive. Default 15.0.
-        mom_negative : float, optional
-            Momentum % below which signal is negative. Default -10.0.
-        rsi_oversold : float, optional
-            RSI below which stock is oversold. Default 35.0.
-        rsi_overbought : float, optional
-            RSI above which stock is overbought. Default 65.0.
+        capital : float
+            Total account capital in GBP. Default 10,000.
+        risk_pct : float
+            Max risk per trade as fraction of capital. Default 0.02 (2%).
+        vol_low : float
+            ATR% floor for 'low' swing volatility. Default 1.5.
+        vol_high : float
+            ATR% ceiling before volatility becomes unmanageable. Default 4.0.
+        rsi_oversold : float
+            RSI below which we avoid entries (momentum too weak). Default 30.
+        rsi_overbought : float
+            RSI above which we avoid entries (stretched, reversal risk). Default 70.
         """
-        self.vol_low       = vol_low
-        self.vol_high      = vol_high
-        self.mom_positive  = mom_positive
-        self.mom_negative  = mom_negative
-        self.rsi_oversold  = rsi_oversold
+        self.capital        = capital
+        self.risk_pct       = risk_pct
+        self.vol_low        = vol_low
+        self.vol_high       = vol_high
+        self.rsi_oversold   = rsi_oversold
         self.rsi_overbought = rsi_overbought
+
+    # ------------------------------------------------------------------
+    # Core processing
+    # ------------------------------------------------------------------
 
     def _process(self, ticker: str, trend: dict) -> dict:
         """
-        Computes a risk score for a single ticker.
-
-        Each of the four signals (volatility, momentum, RSI, trend)
-        contributes points to a raw score which is then normalised
-        to a 1–10 scale and mapped to a risk level.
+        Scores a single ticker for swing trade suitability.
 
         Parameters
         ----------
         ticker : str
-            The stock ticker symbol (e.g. 'III.L').
+            Stock ticker symbol.
         trend : dict
-            Output dict from TrendAnalysisAgent.run(). Must contain
-            keys: annualised_volatility, momentum_pct, rsi, trend.
+            Output from TrendAnalysisAgent.run(). Must contain:
+            trend, rsi, atr_pct, macd_histogram, volume_surge,
+            swing_setup, sma_short, sma_long, annualised_volatility.
 
         Returns
         -------
         dict
-            Risk assessment with the following keys:
-
-            ticker : str
-                The stock ticker symbol.
-            risk_score : int
-                Risk score from 1 (safest) to 10 (riskiest).
-            risk_level : str
-                Bucketed label: 'low', 'medium', or 'high'.
-            vol_signal : str
-                Volatility signal: 'low', 'medium', or 'high'.
-            momentum_signal : str
-                Momentum signal: 'positive', 'neutral', or 'negative'.
-            rsi_signal : str
-                RSI signal: 'oversold', 'neutral', or 'overbought'.
-            trend_signal : str
-                Trend signal: 'uptrend', 'sideways', or 'downtrend'.
-            status : str
-                'ok' on success, 'failed' on error.
+            Keys:
+            ticker, risk_score (1–10), risk_level, setup_quality,
+            tradeable, atr_stop_pct, max_position_size_pct,
+            half_position_target_atr, vol_signal, rsi_signal,
+            momentum_signal, trend_signal, swing_setup, status.
         """
-        vol      = trend["annualised_volatility"]
-        momentum = trend["momentum_pct"]
-        rsi      = trend["rsi"]
-        trend_dir = trend["trend"]
+        trend_dir    = trend["trend"]
+        rsi          = trend["rsi"]
+        atr_pct      = trend["atr_pct"]
+        macd_hist    = trend["macd_histogram"]
+        volume_surge = trend["volume_surge"]
+        swing_setup  = trend["swing_setup"]
+        momentum_pct = trend["momentum_pct"]
 
-        vol_signal      = self._score_volatility(vol)
-        momentum_signal = self._score_momentum(momentum)
+        # ---- individual signals ----
+        vol_signal      = self._score_volatility(atr_pct)
         rsi_signal      = self._score_rsi(rsi)
+        momentum_signal = self._score_momentum(momentum_pct)
         trend_signal    = trend_dir
 
-        raw_score = (
+        # ---- raw risk score ----
+        raw = (
             self._vol_points(vol_signal)
-            + self._momentum_points(momentum_signal)
             + self._rsi_points(rsi_signal)
+            + self._momentum_points(momentum_signal)
             + self._trend_points(trend_signal)
+            + self._setup_points(swing_setup)
+            + self._volume_points(volume_surge)
         )
-
-        risk_score = self._normalise_score(raw_score)
+        risk_score = self._normalise_score(raw)
         risk_level = self._classify_risk(risk_score)
 
+        # ---- setup quality ----
+        setup_quality = self._rate_setup(swing_setup, vol_signal, rsi_signal, volume_surge)
+
+        # ---- position sizing (2% rule) ----
+        # Stop is placed 1.5× ATR below entry.  This is tight enough that
+        # taking half off at 1× ATR profit leaves the trailing stop at
+        # (approx) break-even on the remaining half.
+        atr_stop_mult             = 1.5
+        atr_stop_pct              = atr_pct * atr_stop_mult          # % of price
+        max_risk_gbp              = self.capital * self.risk_pct
+        # position_size = max_risk / stop_distance
+        # expressed as % of capital:
+        max_position_size_pct     = (max_risk_gbp / (self.capital * atr_stop_pct / 100)) * 100
+        max_position_size_pct     = min(max_position_size_pct, 20.0)  # hard cap at 20% per position
+
+        # ---- tradeable flag ----
+        # Only flag as tradeable if:
+        # - There is a real setup (not 'none')
+        # - Not a downtrend or sideways market
+        # - RSI is not at an extreme
+        # - Volatility is manageable
+        tradeable = (
+            swing_setup != "none"
+            and trend_dir == "uptrend"
+            and rsi_signal == "neutral"
+            and vol_signal != "dangerous"
+        )
+
         return {
-            "ticker"          : ticker,
-            "risk_score"      : risk_score,
-            "risk_level"      : risk_level,
-            "vol_signal"      : vol_signal,
-            "momentum_signal" : momentum_signal,
-            "rsi_signal"      : rsi_signal,
-            "trend_signal"    : trend_signal,
-            "status"          : "ok",
+            "ticker"                   : ticker,
+            "risk_score"               : risk_score,
+            "risk_level"               : risk_level,
+            "setup_quality"            : setup_quality,
+            "tradeable"                : tradeable,
+            # Position management
+            "atr_stop_pct"             : round(atr_stop_pct, 4),
+            "max_position_size_pct"    : round(max_position_size_pct, 2),
+            "half_position_target_atr" : round(atr_pct * 1.0, 4),  # 1× ATR = half-off target
+            # Signals (for downstream / display)
+            "vol_signal"               : vol_signal,
+            "rsi_signal"               : rsi_signal,
+            "momentum_signal"          : momentum_signal,
+            "trend_signal"             : trend_signal,
+            "swing_setup"              : swing_setup,
+            "status"                   : "ok",
         }
 
-    def _score_volatility(self, vol: float) -> str:
+    # ------------------------------------------------------------------
+    # Signal classifiers
+    # ------------------------------------------------------------------
+
+    def _score_volatility(self, atr_pct: float) -> str:
         """
-        Classifies volatility into a risk signal.
+        Classify ATR% into a swing-volatility signal.
 
-        Parameters
-        ----------
-        vol : float
-            Annualised volatility as a decimal.
-
-        Returns
-        -------
-        str
-            'low', 'medium', or 'high'.
+        For swing trades, we *want* some volatility (price needs to move),
+        but not so much that a 2% capital stop is triggered by intraday noise.
         """
-        if vol < self.vol_low:
-            return "low"
-        elif vol < self.vol_high:
-            return "medium"
-        return "high"
-
-    def _score_momentum(self, momentum: float) -> str:
-        """
-        Classifies momentum into a directional signal.
-
-        Parameters
-        ----------
-        momentum : float
-            Total price change over the full period in percent.
-
-        Returns
-        -------
-        str
-            'positive', 'neutral', or 'negative'.
-        """
-        if momentum > self.mom_positive:
-            return "positive"
-        elif momentum > self.mom_negative:
-            return "neutral"
-        return "negative"
+        if atr_pct < self.vol_low:
+            return "low"        # stock barely moves — hard to hit 10%
+        elif atr_pct <= self.vol_high:
+            return "medium"     # ideal swing range
+        return "dangerous"      # too wide to manage with 2% rule
 
     def _score_rsi(self, rsi: float) -> str:
-        """
-        Classifies RSI into an entry timing signal.
-
-        Parameters
-        ----------
-        rsi : float
-            Most recent RSI value (0–100).
-
-        Returns
-        -------
-        str
-            'oversold', 'neutral', or 'overbought'.
-        """
         if rsi < self.rsi_oversold:
-            return "oversold"
-        elif rsi < self.rsi_overbought:
-            return "neutral"
-        return "overbought"
+            return "oversold"       # could be a falling knife
+        elif rsi > self.rsi_overbought:
+            return "overbought"     # overextended, reversal risk
+        return "neutral"
+
+    def _score_momentum(self, momentum_pct: float) -> str:
+        if momentum_pct > 10.0:
+            return "strong"
+        elif momentum_pct > 0:
+            return "positive"
+        elif momentum_pct > -10.0:
+            return "weak"
+        return "negative"
+
+    # ------------------------------------------------------------------
+    # Point mappings  (lower raw score = lower risk = better)
+    # ------------------------------------------------------------------
 
     def _vol_points(self, signal: str) -> int:
-        """
-        Maps volatility signal to risk points.
-
-        Parameters
-        ----------
-        signal : str
-            Volatility signal: 'low', 'medium', or 'high'.
-
-        Returns
-        -------
-        int
-            Risk points contributed by volatility (1, 2, or 4).
-        """
-        return {"low": 1, "medium": 2, "high": 4}[signal]
-
-    def _momentum_points(self, signal: str) -> int:
-        """
-        Maps momentum signal to risk points.
-
-        Parameters
-        ----------
-        signal : str
-            Momentum signal: 'positive', 'neutral', or 'negative'.
-
-        Returns
-        -------
-        int
-            Risk points contributed by momentum (1, 2, or 3).
-        """
-        return {"positive": 1, "neutral": 2, "negative": 3}[signal]
+        return {"low": 2, "medium": 1, "dangerous": 4}[signal]
 
     def _rsi_points(self, signal: str) -> int:
-        """
-        Maps RSI signal to risk points.
+        return {"oversold": 3, "neutral": 1, "overbought": 3}[signal]
 
-        Parameters
-        ----------
-        signal : str
-            RSI signal: 'oversold', 'neutral', or 'overbought'.
-
-        Returns
-        -------
-        int
-            Risk points contributed by RSI (2, 1, or 2).
-        """
-        return {"oversold": 2, "neutral": 1, "overbought": 2}[signal]
+    def _momentum_points(self, signal: str) -> int:
+        return {"strong": 1, "positive": 2, "weak": 3, "negative": 4}[signal]
 
     def _trend_points(self, signal: str) -> int:
-        """
-        Maps trend direction to risk points.
+        return {"uptrend": 1, "sideways": 3, "downtrend": 5}[signal]
 
-        Parameters
-        ----------
-        signal : str
-            Trend signal: 'uptrend', 'sideways', or 'downtrend'.
+    def _setup_points(self, setup: str) -> int:
+        return {"breakout": 1, "pullback": 1, "momentum": 2, "none": 4}[setup]
 
-        Returns
-        -------
-        int
-            Risk points contributed by trend (1, 2, or 3).
-        """
-        return {"uptrend": 1, "sideways": 2, "downtrend": 3}[signal]
+    def _volume_points(self, surge: bool) -> int:
+        return 1 if surge else 2
+
+    # ------------------------------------------------------------------
+    # Score normalisation & classification
+    # ------------------------------------------------------------------
 
     def _normalise_score(self, raw: int) -> int:
         """
-        Normalises raw points to a 1–10 risk score.
+        Normalise raw point total to a 1–10 risk score.
 
-        Raw score ranges from 4 (all low signals) to 12
-        (all high signals), mapped linearly to 1–10.
-
-        Parameters
-        ----------
-        raw : int
-            Sum of all signal points (range 4–12).
-
-        Returns
-        -------
-        int
-            Normalised risk score from 1 (safest) to 10 (riskiest).
+        Raw range: 6 (perfect setup) to 22 (everything wrong).
+        Mapped linearly to 1–10.
         """
-        raw_min, raw_max = 4, 12
+        raw_min, raw_max = 6, 22
         normalised = (raw - raw_min) / (raw_max - raw_min)
         return round(1 + normalised * 9)
 
     def _classify_risk(self, score: int) -> str:
-        """
-        Buckets a numeric risk score into a risk level label.
-
-        Parameters
-        ----------
-        score : int
-            Normalised risk score from 1–10.
-
-        Returns
-        -------
-        str
-            'low' (1–3), 'medium' (4–6), or 'high' (7–10).
-        """
         if score <= 3:
             return "low"
         elif score <= 6:
             return "medium"
         return "high"
+
+    def _rate_setup(
+        self,
+        swing_setup: str,
+        vol_signal: str,
+        rsi_signal: str,
+        volume_surge: bool,
+    ) -> str:
+        """
+        Rates the overall swing setup quality as 'A', 'B', 'C', or 'none'.
+
+        A — textbook setup: right type, ideal vol, neutral RSI, volume confirms
+        B — good setup with one imperfect factor
+        C — marginal setup
+        none — no valid setup
+        """
+        if swing_setup == "none":
+            return "none"
+
+        score = 0
+        if swing_setup in ("breakout", "pullback"):
+            score += 2
+        else:
+            score += 1  # momentum
+
+        if vol_signal == "medium":
+            score += 2
+        elif vol_signal == "low":
+            score += 1
+
+        if rsi_signal == "neutral":
+            score += 2
+
+        if volume_surge:
+            score += 1
+
+        if score >= 7:
+            return "A"
+        elif score >= 5:
+            return "B"
+        return "C"
