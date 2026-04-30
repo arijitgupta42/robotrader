@@ -75,6 +75,26 @@ def _load_model() -> None:
         BitsAndBytesConfig,
     )
 
+    # --- GPU diagnostic (shown once at startup) ---
+    logger.info("PyTorch version  : %s", torch.__version__)
+    logger.info("CUDA available   : %s", torch.cuda.is_available())
+    if torch.cuda.is_available():
+        logger.info("CUDA version     : %s", torch.version.cuda)
+        for i in range(torch.cuda.device_count()):
+            props = torch.cuda.get_device_properties(i)
+            logger.info(
+                "GPU %d            : %s  (%.1f GB VRAM)",
+                i, props.name, props.total_memory / 1024**3,
+            )
+    elif torch.backends.mps.is_available():
+        logger.info("Apple MPS        : available")
+    else:
+        logger.warning(
+            "No GPU detected by PyTorch. "
+            "If you have a GPU, your PyTorch install is likely CPU-only. "
+            "Fix: pip install torch --index-url https://download.pytorch.org/whl/cu121"
+        )
+
     logger.info("Loading %s …", MODEL_CFG.model_id)
 
     dtype_map = {
@@ -100,7 +120,8 @@ def _load_model() -> None:
         load_kwargs["quantization_config"] = bnb_cfg
         logger.info("4-bit NF4 quantisation enabled.")
     else:
-        load_kwargs["dtype"] = torch_dtype
+        # FIX: was "dtype" (silently ignored), must be "torch_dtype"
+        load_kwargs["torch_dtype"] = torch_dtype
 
     if not torch.cuda.is_available() and not torch.backends.mps.is_available():
         warnings.warn(
@@ -109,7 +130,7 @@ def _load_model() -> None:
             "quantised variant for CPU-only deployments.",
             RuntimeWarning,
         )
-        load_kwargs["dtype"] = torch.float32
+        load_kwargs["torch_dtype"] = torch.float32
 
     _processor = AutoProcessor.from_pretrained(
         MODEL_CFG.model_id,
