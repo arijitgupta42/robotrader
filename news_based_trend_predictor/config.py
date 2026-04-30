@@ -133,18 +133,29 @@ DISRUPTION_CATEGORIES: Dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 RSS_FEEDS: List[Dict[str, str]] = [
-    # UK Financial / Markets
-    {"name": "Reuters Business",         "url": "https://feeds.reuters.com/reuters/businessNews"},
-    {"name": "Reuters UK",               "url": "https://feeds.reuters.com/reuters/UKdomesticNews"},
+    # --- UK Financial / Markets (verified working) ---
     {"name": "BBC Business",             "url": "https://feeds.bbci.co.uk/news/business/rss.xml"},
+    {"name": "BBC UK Politics",          "url": "https://feeds.bbci.co.uk/news/politics/rss.xml"},
     {"name": "Guardian Business",        "url": "https://www.theguardian.com/uk/business/rss"},
+    {"name": "Guardian Economics",       "url": "https://www.theguardian.com/business/economics/rss"},
     {"name": "City A.M.",                "url": "https://www.cityam.com/feed/"},
-    # Sector / Policy / Macro
+    {"name": "Sky News Business",        "url": "https://feeds.skynews.com/feeds/rss/business.xml"},
+    {"name": "Independent Business",     "url": "https://www.independent.co.uk/news/business/rss"},
+    {"name": "Telegraph Business",       "url": "https://www.telegraph.co.uk/business/rss.xml"},
+
+    # --- Market Data / RNS ---
     {"name": "Proactive Investors UK",   "url": "https://www.proactiveinvestors.co.uk/feed"},
     {"name": "Investegate RNS",          "url": "https://www.investegate.co.uk/rss.aspx"},
-    {"name": "Sky News Business",        "url": "https://feeds.skynews.com/feeds/rss/business.xml"},
-    # Global macro (USD/trade flows matter for LSE multinationals)
-    {"name": "Reuters World",            "url": "https://feeds.reuters.com/Reuters/worldNews"},
+
+    # --- Global Macro (trade flows / commodities affect LSE multinationals) ---
+    {"name": "AP Business",             "url": "https://feeds.apnews.com/apnews/business"},
+    {"name": "AP Top News",             "url": "https://feeds.apnews.com/apnews/topnews"},
+    {"name": "Yahoo Finance",           "url": "https://finance.yahoo.com/news/rssindex"},
+
+    # --- Thomson Reuters Investor Relations (corporate press releases) ---
+    # Note: this is TR's own IR feed — good for macro signals from financial
+    # data/analytics industry moves, but not general market news.
+    {"name": "Thomson Reuters IR",      "url": "https://ir.thomsonreuters.com/rss/news-releases.xml"},
 ]
 
 # HTML scrape targets (static pages, no JS rendering needed)
