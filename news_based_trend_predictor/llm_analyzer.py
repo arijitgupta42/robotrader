@@ -171,7 +171,7 @@ def _load_chain() -> None:
     load_kwargs: dict = {
         "device_map":          "auto",
         "attn_implementation": MODEL_CFG.attn_implementation,
-        "torch_dtype":         torch_dtype,
+        "dtype":         torch_dtype,
     }
 
     if MODEL_CFG.use_4bit_quantisation and torch.cuda.is_available():
@@ -185,7 +185,7 @@ def _load_chain() -> None:
         logger.info("4-bit NF4 quantisation enabled.")
 
     if not torch.cuda.is_available() and not torch.backends.mps.is_available():
-        load_kwargs["torch_dtype"] = torch.float32
+        load_kwargs["dtype"] = torch.float32
 
     model = AutoModelForMultimodalLM.from_pretrained(
         MODEL_CFG.model_id,
