@@ -143,7 +143,7 @@ def _load_chain() -> None:
     if _chain is not None:
         return
 
-    from transformers import AutoProcessor, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
+    from transformers import AutoProcessor, AutoModelForMultimodalLM, pipeline, BitsAndBytesConfig
     from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
 
     # --- GPU diagnostic ---
@@ -187,8 +187,12 @@ def _load_chain() -> None:
     if not torch.cuda.is_available() and not torch.backends.mps.is_available():
         load_kwargs["torch_dtype"] = torch.float32
 
-    processor = AutoProcessor.from_pretrained(MODEL_CFG.model_id, padding_side="left")
-    model     = AutoModelForCausalLM.from_pretrained(MODEL_CFG.model_id, **load_kwargs)
+    model = AutoModelForMultimodalLM.from_pretrained(
+        MODEL_CFG.model_id,
+        **load_kwargs
+    ).eval()
+
+    processor = AutoProcessor.from_pretrained(MODEL_CFG.model_id)
 
     logger.info(
         "Model loaded on: %s",
