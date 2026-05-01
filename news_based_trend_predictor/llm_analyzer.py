@@ -195,26 +195,41 @@ def _load_chain() -> None:
         model.hf_device_map if hasattr(model, "hf_device_map") else "cpu",
     )
 
+    # --- Extract the underlying tokenizer from Gemma4Processor ---
+    # AutoProcessor for Gemma 4 returns a Gemma4Processor which wraps a
+    # tokenizer internally. The transformers pipeline() and LangChain both
+    # call .pad_token_id directly on whatever is passed as tokenizer=, so
+    # we must pass the inner tokenizer, not the processor itself.
+    tokenizer = getattr(processor, "tokenizer", processor)
+
+    # Gemma 4's tokenizer may not have pad_token set; use eos_token as pad
+    # (standard practice for decoder-only models that have no explicit pad).
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        logger.info("pad_token_id not set — using eos_token_id (%d) as pad.",
+                    tokenizer.eos_token_id)
+
+    # Also propagate to the model config so generate() doesn't warn
+    if model.config.pad_token_id is None:
+        model.config.pad_token_id = tokenizer.pad_token_id
+
     # --- Wrap in a transformers pipeline ---
-    # tokenizer= is required by HuggingFacePipeline even though Gemma 4
-    # uses AutoProcessor; passing processor works because it exposes the
-    # same tokeniser interface.
     hf_pipeline = pipeline(
         task             = "text-generation",
         model            = model,
-        tokenizer        = processor,
+        tokenizer        = tokenizer,
         max_new_tokens   = MODEL_CFG.max_new_tokens,
         temperature      = MODEL_CFG.temperature,
         do_sample        = True,
-        return_full_text = False,   # return only new tokens, not the prompt
+        return_full_text = False,   # return only newly generated tokens
     )
 
     # --- LangChain wrappers ---
     lc_pipeline = HuggingFacePipeline(pipeline=hf_pipeline)
     chat_model  = ChatHuggingFace(
-        llm            = lc_pipeline,
-        tokenizer      = processor,
-        model_id       = MODEL_CFG.model_id,
+        llm      = lc_pipeline,
+        tokenizer = tokenizer,
+        model_id  = MODEL_CFG.model_id,
     )
 
     # --- Bind structured output schema ---
