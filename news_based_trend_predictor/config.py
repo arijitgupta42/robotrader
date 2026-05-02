@@ -215,7 +215,7 @@ class ModelConfig:
 @dataclass
 class SchedulerConfig:
     # More headlines for richer context (medium-term needs more signal)
-    max_headlines_per_cycle: int = 150
+    max_headlines_per_cycle: int = 100
 
     # Minimum LLM confidence to emit a SectorSignal
     min_confidence: float = 0.60
