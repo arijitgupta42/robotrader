@@ -156,13 +156,16 @@ RSS_FEEDS: List[Dict[str, str]] = [
     # Note: this is TR's own IR feed — good for macro signals from financial
     # data/analytics industry moves, but not general market news.
     {"name": "Thomson Reuters IR",      "url": "https://ir.thomsonreuters.com/rss/news-releases.xml"},
-]
 
-# HTML scrape targets (static pages, no JS rendering needed)
-SCRAPE_TARGETS: List[Dict[str, str]] = [
-    {"name": "London Stock Exchange News",  "url": "https://www.londonstockexchange.com/news"},
-    {"name": "Hargreaves Lansdown News",    "url": "https://www.hl.co.uk/news/market-news"},
-    {"name": "Bank of England News",        "url": "https://www.bankofengland.co.uk/news"},
+    # BoE feeds (from bankofengland.co.uk/rss):
+    {"name": "Bank of England News",        "url": "https://www.bankofengland.co.uk/rss/news"},
+    {"name": "Bank of England Publications","url": "https://www.bankofengland.co.uk/rss/publications"},
+    {"name": "Bank of England Speeches",    "url": "https://www.bankofengland.co.uk/rss/speeches"},
+
+    # Investing.com UK feeds (from uk.investing.com/webmaster-tools/rss):
+    {"name": "Investing.com UK Stock News", "url": "https://uk.investing.com/rss/news_25.rss"},
+    {"name": "Investing.com UK Economy",    "url": "https://uk.investing.com/rss/news_14.rss"},
+    {"name": "Investing.com UK Commodities","url": "https://uk.investing.com/rss/news_11.rss"},
 ]
 
 

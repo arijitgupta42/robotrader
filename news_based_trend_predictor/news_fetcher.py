@@ -16,7 +16,7 @@ import logging
 import socket
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 from typing import Dict, List, Optional
 from urllib.parse import urljoin
 
@@ -24,7 +24,7 @@ import feedparser
 import requests
 from bs4 import BeautifulSoup
 
-from config import RSS_FEEDS, SCRAPE_TARGETS, SCHEDULER_CFG
+from config import RSS_FEEDS, SCHEDULER_CFG
 
 logger = logging.getLogger(__name__)
 
@@ -206,6 +206,90 @@ def fetch_rss(feed_cfg: dict, timeout: int = 10) -> List[Headline]:
 
     return headlines
 
+# ---------------------------------------------------------------------------
+# HL scraping
+# ---------------------------------------------------------------------------
+def fetch_hl_weekly_outlook() -> List[Headline]:
+    """
+    Fetches HL's 'Next week on the stock market' article, published each
+    Friday for the coming week. The URL encodes the date of the Monday
+    of that week, e.g. next-week-on-the-stock-market-04-05-2026.
+
+    We derive the correct Monday by finding the next Monday from today,
+    then try that URL. If it 404s (not yet published), we fall back to
+    the most recently elapsed Monday.
+    """
+    def monday_url(d: date) -> str:
+        return (
+            f"https://www.hl.co.uk/shares/share-research/"
+            f"next-week-on-the-stock-market-{d.strftime('%d-%m-%Y')}"
+        )
+
+    today = date.today()
+    # days_until_monday: 0 if today is Monday, else days forward to next Monday
+    days_ahead = (7 - today.weekday()) % 7 or 7
+    next_monday = today + timedelta(days=days_ahead)
+    last_monday = next_monday - timedelta(weeks=1)
+
+    headlines: List[Headline] = []
+
+    for target_monday in (next_monday, last_monday):
+        url = monday_url(target_monday)
+        if not _host_reachable(url):
+            continue
+        try:
+            resp = requests.get(url, headers=_HEADERS, timeout=12)
+            if resp.status_code == 404:
+                logger.debug("HL weekly outlook not yet live at %s", url)
+                continue
+            resp.raise_for_status()
+
+            soup = BeautifulSoup(resp.text, "html.parser")
+
+            # Extract the article body — all <p> tags inside the main content
+            # Each analyst section becomes one Headline with the section text as summary
+            article_sections = soup.find_all("p")
+            full_text_parts = []
+            for p in article_sections:
+                text = p.get_text(" ", strip=True)
+                if len(text) > 40:   # skip nav fragments and boilerplate
+                    full_text_parts.append(text)
+
+            if not full_text_parts:
+                logger.debug("HL weekly outlook: no content parsed from %s", url)
+                continue
+
+            # Also extract the earnings calendar table rows as individual headlines
+            for row in soup.find_all("tr"):
+                cells = [td.get_text(strip=True) for td in row.find_all("td")]
+                if len(cells) == 2 and cells[0] and cells[1]:
+                    headlines.append(Headline(
+                        source    = "HL Weekly Outlook",
+                        title     = f"{cells[0]}: {cells[1]}",
+                        summary   = "",
+                        url       = url,
+                        published = datetime.now(timezone.utc),
+                    ))
+
+            # Add the analyst commentary paragraphs as a single headline each
+            for part in full_text_parts[:10]:   # cap at 10 paragraphs
+                headlines.append(Headline(
+                    source    = "HL Weekly Outlook",
+                    title     = part[:120],    # first 120 chars as title
+                    summary   = part,
+                    url       = url,
+                    published = datetime.now(timezone.utc),
+                ))
+
+            if headlines:
+                logger.info("  ✓ HL Weekly Outlook          %d items from %s",
+                            len(headlines), url)
+                return headlines   # got a valid page, stop trying
+
+        except requests.exceptions.RequestException as exc:
+            logger.warning("Error fetching HL weekly outlook from %s: %s", url, exc)
+
+    return headlines
 
 # ---------------------------------------------------------------------------
 # HTML scraping fallback
@@ -298,14 +382,6 @@ def collect_headlines(max_total: Optional[int] = None) -> List[Headline]:
                 all_headlines.append(h)
         time.sleep(0.4)   # polite crawl delay
 
-    logger.info("--- Scraping HTML targets ---")
-    for target in SCRAPE_TARGETS:
-        for h in fetch_html_headlines(target):
-            if h.uid not in seen_uids:
-                seen_uids.add(h.uid)
-                all_headlines.append(h)
-        time.sleep(0.4)
-
     all_headlines.sort(key=lambda h: h.published, reverse=True)
 
     total = len(all_headlines)
@@ -322,5 +398,11 @@ def collect_headlines(max_total: Optional[int] = None) -> List[Headline]:
             "Run: python -c \"import socket; socket.getaddrinfo('feeds.bbci.co.uk', None)\" "
             "to verify basic DNS resolution."
         )
+        
+    logger.info("--- Fetching HL weekly outlook ---")
+    for h in fetch_hl_weekly_outlook():
+        if h.uid not in seen_uids:
+            seen_uids.add(h.uid)
+            all_headlines.append(h)
 
     return all_headlines[:max_total]
