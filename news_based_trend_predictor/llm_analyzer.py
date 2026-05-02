@@ -30,6 +30,7 @@ over quantisation, device placement, and dtype.
 
 from __future__ import annotations
 
+import re
 import logging
 import warnings
 from typing import Dict, List, Literal, Optional
@@ -143,7 +144,7 @@ def _load_chain() -> None:
     if _chain is not None:
         return
 
-    from transformers import AutoProcessor, AutoModelForMultimodalLM, pipeline, BitsAndBytesConfig
+    from transformers import AutoProcessor, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
     from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
 
     # --- GPU diagnostic ---
@@ -171,7 +172,7 @@ def _load_chain() -> None:
     load_kwargs: dict = {
         "device_map":          "auto",
         "attn_implementation": MODEL_CFG.attn_implementation,
-        "dtype":         torch_dtype,
+        "torch_dtype":         torch_dtype,        
     }
 
     if MODEL_CFG.use_4bit_quantisation and torch.cuda.is_available():
@@ -187,7 +188,7 @@ def _load_chain() -> None:
     if not torch.cuda.is_available() and not torch.backends.mps.is_available():
         load_kwargs["dtype"] = torch.float32
 
-    model = AutoModelForMultimodalLM.from_pretrained(
+    model = AutoModelForCausalLM.from_pretrained(
         MODEL_CFG.model_id,
         **load_kwargs
     ).eval()
@@ -214,8 +215,11 @@ def _load_chain() -> None:
                     tokenizer.eos_token_id)
 
     # Also propagate to the model config so generate() doesn't warn
-    if model.config.pad_token_id is None:
-        model.config.pad_token_id = tokenizer.pad_token_id
+    if not hasattr(model.config, "pad_token_id") or model.config.pad_token_id is None:
+        try:
+            model.config.pad_token_id = tokenizer.pad_token_id
+        except AttributeError:
+            pass
 
     # --- Wrap in a transformers pipeline ---
     hf_pipeline = pipeline(
@@ -240,7 +244,7 @@ def _load_chain() -> None:
     # LangChain converts AnalysisOutput into a tool definition and injects
     # it into the prompt.  The model responds by calling that tool with
     # structured data; LangChain validates it against the Pydantic schema.
-    _chain = chat_model.with_structured_output(AnalysisOutput)
+    _chain = chat_model.with_structured_output(AnalysisOutput, method="json_mode")
     logger.info("LangChain structured-output chain ready.")
 
 
@@ -281,6 +285,22 @@ For each signal, reason through:
 Then call the provided tool with your structured findings.
 Only include sectors with confidence >= 0.4.
 Return an empty signals list if no genuine multi-week disruption is present.
+You MUST respond with a single raw JSON object — no markdown fences, no preamble.
+The object must match this exact schema:
+{{
+  "signals": [
+    {{
+      "sector":               "<one of the LSE sectors listed above>",
+      "confidence":           <float 0.0–1.0>,
+      "disruption_type":      "<one of the disruption types listed above>",
+      "disruption_strength":  <float 0.0–1.0>,
+      "time_to_impact_weeks": <integer 1–12>,
+      "propagation":          "<one sentence, ≤30 words>",
+      "invalidation_risk":    "<one sentence, ≤20 words>",
+      "rationale":            "<one sentence, ≤30 words>"
+    }}
+  ]
+}}
 """
 
 
@@ -364,8 +384,22 @@ def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
     try:
         result: AnalysisOutput = _chain.invoke(messages)
     except Exception as exc:
-        logger.error("LangChain chain invocation failed: %s — using fallback.", exc)
-        return _keyword_fallback(headlines)
+        # If thinking-mode tags caused a JSON parse failure, strip them and retry
+        exc_str = str(exc)
+        if "json" in exc_str.lower() or "parse" in exc_str.lower():
+            logger.warning("JSON parse failed (likely thinking tags) — retrying with tag stripping.")
+            # Monkey-patch: wrap the chain to strip thinking blocks before parsing
+            from langchain_core.messages import AIMessage
+            raw = chat_model.invoke(messages)  # type: ignore[name-defined]
+            clean = re.sub(r"<\|channel>.*?<channel\|>", "", raw.content, flags=re.DOTALL).strip()
+            try:
+                result = AnalysisOutput.model_validate_json(clean)
+            except Exception as inner_exc:
+                logger.error("Retry after tag stripping also failed: %s — using fallback.", inner_exc)
+                return _keyword_fallback(headlines)
+        else:
+            logger.error("LangChain chain invocation failed: %s — using fallback.", exc)
+            return _keyword_fallback(headlines)
 
     if not isinstance(result, AnalysisOutput):
         logger.error(
