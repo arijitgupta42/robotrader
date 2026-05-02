@@ -382,29 +382,37 @@ def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
     logger.info("Invoking structured-output chain on %d headlines …", len(headlines))
 
     try:
-        result: AnalysisOutput = _chain.invoke(messages)
+        raw_result = _chain.invoke(messages)
     except Exception as exc:
-        # If thinking-mode tags caused a JSON parse failure, strip them and retry
         exc_str = str(exc)
         if "json" in exc_str.lower() or "parse" in exc_str.lower():
             logger.warning("JSON parse failed (likely thinking tags) — retrying with tag stripping.")
-            # Monkey-patch: wrap the chain to strip thinking blocks before parsing
-            from langchain_core.messages import AIMessage
-            raw = chat_model.invoke(messages)  # type: ignore[name-defined]
-            clean = re.sub(r"<\|channel>.*?<channel\|>", "", raw.content, flags=re.DOTALL).strip()
-            try:
-                result = AnalysisOutput.model_validate_json(clean)
-            except Exception as inner_exc:
-                logger.error("Retry after tag stripping also failed: %s — using fallback.", inner_exc)
-                return _keyword_fallback(headlines)
+            raw_msg = _chain.llm.llm.pipeline(  # unwrap to get raw text
+                messages[-1].content, max_new_tokens=MODEL_CFG.max_new_tokens
+            )[0]["generated_text"]
+            raw_result = re.sub(r"<\|channel>.*?<channel\|>", "", raw_msg, flags=re.DOTALL).strip()
         else:
             logger.error("LangChain chain invocation failed: %s — using fallback.", exc)
             return _keyword_fallback(headlines)
 
-    if not isinstance(result, AnalysisOutput):
-        logger.error(
-            "Chain returned unexpected type %s — using fallback.", type(result)
-        )
+    # Normalise to AnalysisOutput regardless of what LangChain returned
+    try:
+        if isinstance(raw_result, AnalysisOutput):
+            result = raw_result
+        elif isinstance(raw_result, dict):
+            # LangChain returned a parsed dict — coerce it ourselves
+            result = AnalysisOutput.model_validate(raw_result)
+        elif isinstance(raw_result, str):
+            # Strip thinking tags then parse JSON string
+            clean = re.sub(r"<\|channel>.*?<channel\|>", "", raw_result, flags=re.DOTALL).strip()
+            # Strip markdown fences if present
+            clean = re.sub(r"^```(?:json)?\s*|\s*```$", "", clean, flags=re.MULTILINE).strip()
+            result = AnalysisOutput.model_validate_json(clean)
+        else:
+            logger.error("Unhandled result type %s — using fallback.", type(raw_result))
+            return _keyword_fallback(headlines)
+    except Exception as exc:
+        logger.error("Pydantic validation failed: %s — using fallback.", exc)
         return _keyword_fallback(headlines)
 
     signals = sorted(result.signals, key=lambda s: s.confidence, reverse=True)

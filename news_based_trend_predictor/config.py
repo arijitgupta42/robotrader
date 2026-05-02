@@ -214,12 +214,8 @@ class ModelConfig:
 
 @dataclass
 class SchedulerConfig:
-    # Medium-term signals need a 4-hour cadence, not 30 minutes.
-    # Structural disruptions develop over days; over-sampling adds noise.
-    interval_minutes: int = 240
-
     # More headlines for richer context (medium-term needs more signal)
-    max_headlines_per_cycle: int = 60
+    max_headlines_per_cycle: int = 150
 
     # Minimum LLM confidence to emit a SectorSignal
     min_confidence: float = 0.60

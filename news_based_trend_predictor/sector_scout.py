@@ -191,37 +191,37 @@ class SectorScout:
     # Scheduler control
     # ------------------------------------------------------------------
 
-    def start(self, run_immediately: bool = True) -> None:
-        if self._scheduler and self._scheduler.running:
-            logger.warning("SectorScout already running.")
-            return
-        if run_immediately:
-            try:
-                self.run_cycle()
-            except Exception as exc:
-                logger.error("Initial cycle error: %s", exc)
+    # def start(self, run_immediately: bool = True) -> None:
+    #     if self._scheduler and self._scheduler.running:
+    #         logger.warning("SectorScout already running.")
+    #         return
+    #     if run_immediately:
+    #         try:
+    #             self.run_cycle()
+    #         except Exception as exc:
+    #             logger.error("Initial cycle error: %s", exc)
 
-        self._scheduler = BackgroundScheduler(timezone="UTC")
-        self._scheduler.add_job(
-            func    = self._safe_cycle,
-            trigger = IntervalTrigger(minutes=self._interval_min),
-            id      = "sector_scout_cycle",
-            name    = f"Sector Scout (every {self._interval_min} min)",
-            replace_existing = True,
-        )
-        self._scheduler.start()
-        logger.info("SectorScout running — next cycle in %d min.", self._interval_min)
+    #     self._scheduler = BackgroundScheduler(timezone="UTC")
+    #     self._scheduler.add_job(
+    #         func    = self._safe_cycle,
+    #         trigger = IntervalTrigger(minutes=self._interval_min),
+    #         id      = "sector_scout_cycle",
+    #         name    = f"Sector Scout (every {self._interval_min} min)",
+    #         replace_existing = True,
+    #     )
+    #     self._scheduler.start()
+    #     logger.info("SectorScout running — next cycle in %d min.", self._interval_min)
 
-    def stop(self) -> None:
-        if self._scheduler and self._scheduler.running:
-            self._scheduler.shutdown(wait=False)
-            logger.info("SectorScout stopped.")
+    # def stop(self) -> None:
+    #     if self._scheduler and self._scheduler.running:
+    #         self._scheduler.shutdown(wait=False)
+    #         logger.info("SectorScout stopped.")
 
-    def _safe_cycle(self) -> None:
-        try:
-            self.run_cycle()
-        except Exception as exc:
-            logger.error("Unhandled exception in cycle %d: %s", self._cycle_id, exc, exc_info=True)
+    # def _safe_cycle(self) -> None:
+    #     try:
+    #         self.run_cycle()
+    #     except Exception as exc:
+    #         logger.error("Unhandled exception in cycle %d: %s", self._cycle_id, exc, exc_info=True)
 
     # ------------------------------------------------------------------
     # Default console renderer
@@ -312,18 +312,19 @@ class SignalBuffer:
 
 if __name__ == "__main__":
     scout = SectorScout()
+    scout.run_cycle()
 
-    def _shutdown(signum, frame):
-        logger.info("Shutdown signal received.")
-        scout.stop()
-        sys.exit(0)
+    # def _shutdown(signum, frame):
+    #     logger.info("Shutdown signal received.")
+    #     scout.stop()
+    #     sys.exit(0)
 
-    signal.signal(signal.SIGINT,  _shutdown)
-    signal.signal(signal.SIGTERM, _shutdown)
+    # signal.signal(signal.SIGINT,  _shutdown)
+    # signal.signal(signal.SIGTERM, _shutdown)
 
-    logger.info("SectorScout starting in foreground. Ctrl-C to stop.")
-    scout.start(run_immediately=True)
+    # logger.info("SectorScout starting in foreground. Ctrl-C to stop.")
+    # scout.start(run_immediately=True)
 
-    import time
-    while True:
-        time.sleep(60)
+    # import time
+    # while True:
+    #     time.sleep(60)
