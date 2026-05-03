@@ -1,11 +1,11 @@
 """
 sector_scout.py — Orchestrates the full pipeline:
 
-    scrape headlines → Gemma 4 E2B analysis → emit SectorSignals
+    scrape headlines -> LLM analysis -> emit SectorSignals
 
 Usage
 -----
-Run directly (once, then exits — schedule externally via cron):
+Run directly (once, then exits):
 
     python sector_scout.py
 
@@ -29,15 +29,20 @@ Embedded in your robotrader:
 
 SectorSignal fields
 -------------------
-    sector               : str    — ICB sector name
-    confidence           : float  — 0–1, LLM conviction in positive movement
-    disruption_type      : str    — taxonomy category (e.g. "Supply Chain Dislocation")
-    disruption_strength  : float  — 0–1, magnitude of the structural break
-    time_to_impact_weeks : int    — estimated weeks before full market pricing
-    propagation          : str    — mechanism sentence
-    invalidation_risk    : str    — what kills the thesis
-    rationale            : str    — overall case summary
-    headlines            : list   — Headline objects that drove the signal
+    sector               : str    - ICB sector name
+    confidence           : float  - 0-1, LLM conviction in positive movement
+    disruption_type      : str    - taxonomy category
+    disruption_strength  : float  - 0-1, magnitude of the structural break
+    time_to_impact_weeks : int    - estimated weeks before full market pricing
+    propagation          : str    - mechanism sentence
+    invalidation_risk    : str    - what kills the thesis (with probability)
+    rationale            : str    - overall case summary
+    bear_case_probability: float  - probability of negative/flat outcome
+    key_catalysts        : list   - specific upcoming confirming events
+    correlated_sectors   : list   - secondary sector plays
+    conviction_drivers   : list   - specific headlines supporting the signal
+    macro_regime_summary : str    - macro backdrop at time of analysis
+    headlines            : list   - Headline objects that drove the signal
     timestamp            : datetime
     cycle_id             : int
 """
@@ -57,7 +62,7 @@ from news_fetcher import Headline, collect_headlines
 
 logging.basicConfig(
     level   = logging.INFO,
-    format  = "%(asctime)s  %(levelname)-8s  %(name)s — %(message)s",
+    format  = "%(asctime)s  %(levelname)-8s  %(name)s - %(message)s",
     datefmt = "%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger("sector_scout")
@@ -77,6 +82,11 @@ class SectorSignal:
     propagation:          str
     invalidation_risk:    str
     rationale:            str
+    bear_case_probability: float
+    key_catalysts:        List[str]
+    correlated_sectors:   List[str]
+    conviction_drivers:   List[str]
+    macro_regime_summary: str
     headlines:            List[Headline]
     timestamp:            datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     cycle_id:             int      = 0
@@ -85,6 +95,7 @@ class SectorSignal:
         return (
             f"SectorSignal(sector={self.sector!r}, "
             f"conf={self.confidence:.0%}, "
+            f"bear={self.bear_case_probability:.0%}, "
             f"disruption={self.disruption_type!r}, "
             f"impact={self.time_to_impact_weeks}w)"
         )
@@ -99,6 +110,11 @@ class SectorSignal:
             "propagation":          self.propagation,
             "invalidation_risk":    self.invalidation_risk,
             "rationale":            self.rationale,
+            "bear_case_probability": self.bear_case_probability,
+            "key_catalysts":        self.key_catalysts,
+            "correlated_sectors":   self.correlated_sectors,
+            "conviction_drivers":   self.conviction_drivers,
+            "macro_regime_summary": self.macro_regime_summary,
             "timestamp":            self.timestamp.isoformat(),
             "cycle_id":             self.cycle_id,
             "headline_count":       len(self.headlines),
@@ -111,12 +127,9 @@ class SectorSignal:
 
 class SectorScout:
     """
-    Scrapes financial news and uses Gemma 4 E2B-it to identify medium-term
-    (2–6 week) swing opportunities in LSE sectors driven by structural
-    disruptions.
-
-    Intended to be invoked once per run (via cron or manually) rather than
-    kept alive as a long-running process.
+    Scrapes financial news and uses an LLM via OpenRouter to identify
+    medium-term (2-6 week) swing opportunities in LSE sectors driven by
+    structural disruptions.
     """
 
     def __init__(
@@ -141,7 +154,7 @@ class SectorScout:
 
         headlines = collect_headlines(max_total=SCHEDULER_CFG.max_headlines_per_cycle)
         if not headlines:
-            logger.warning("Cycle %d: no headlines — skipping LLM.", cycle)
+            logger.warning("Cycle %d: no headlines - skipping LLM.", cycle)
             return []
 
         raw_signals = analyse_headlines(headlines)
@@ -153,7 +166,6 @@ class SectorScout:
             if raw["disruption_strength"] < self._min_disruption:
                 continue
 
-            # Attach the headlines most relevant to this sector
             kws = [kw.lower() for kw in LSE_SECTORS.get(raw["sector"], [])]
             relevant = [
                 h for h in headlines
@@ -170,13 +182,18 @@ class SectorScout:
                     propagation          = raw["propagation"],
                     invalidation_risk    = raw["invalidation_risk"],
                     rationale            = raw["rationale"],
+                    bear_case_probability = raw.get("bear_case_probability", 1.0 - raw["confidence"]),
+                    key_catalysts        = raw.get("key_catalysts", []),
+                    correlated_sectors   = raw.get("correlated_sectors", []),
+                    conviction_drivers   = raw.get("conviction_drivers", []),
+                    macro_regime_summary = raw.get("macro_regime_summary", ""),
                     headlines            = relevant,
                     cycle_id             = cycle,
                 )
             )
 
         logger.info(
-            "Cycle %d — %d swing signals above thresholds (conf≥%.0f%%, disr≥%.0f%%).",
+            "Cycle %d - %d swing signals above thresholds (conf>=%.0f%%, disr>=%.0f%%).",
             cycle, len(signals),
             self._min_confidence * 100,
             self._min_disruption * 100,
@@ -194,27 +211,48 @@ class SectorScout:
     @staticmethod
     def _default_logger(signals: List[SectorSignal]) -> None:
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        print("\n" + "═" * 72)
-        print(f"  LSE SWING SIGNALS  ·  {ts}")
-        print("═" * 72)
+
+        # Print macro regime summary once at the top (from first signal)
+        macro = signals[0].macro_regime_summary if signals else ""
+
+        print("\n" + "=" * 72)
+        print(f"  LSE SWING SIGNALS  .  {ts}")
+        print("=" * 72)
+
+        if macro:
+            print(f"\n  MACRO REGIME")
+            print(f"  {macro}")
+
         for sig in signals:
-            bar = "█" * int(sig.confidence * 20) + "░" * (20 - int(sig.confidence * 20))
-            print(f"\n  {sig.sector:<26} {sig.confidence:.0%}  {bar}")
-            print(f"  Disruption : {sig.disruption_type}  (strength {sig.disruption_strength:.0%})")
-            print(f"  Impact     : ~{sig.time_to_impact_weeks} week(s)")
-            print(f"  Mechanism  : {sig.propagation}")
-            print(f"  Risk       : {sig.invalidation_risk}")
-            print(f"  Rationale  : {sig.rationale}")
-        print("\n" + "═" * 72 + "\n")
+            bull_bar = "#" * int(sig.confidence * 20)
+            bear_bar = "#" * int(sig.bear_case_probability * 20)
+            print(f"\n  {'=' * 68}")
+            print(f"  {sig.sector:<26}  BULL {sig.confidence:.0%}  [{bull_bar:<20}]")
+            print(f"  {'':26}  BEAR {sig.bear_case_probability:.0%}  [{bear_bar:<20}]")
+            print(f"  Disruption  : {sig.disruption_type}  (strength {sig.disruption_strength:.0%})")
+            print(f"  Impact      : ~{sig.time_to_impact_weeks} week(s)")
+            print(f"  Mechanism   : {sig.propagation}")
+            print(f"  Rationale   : {sig.rationale}")
+            print(f"  Kill switch : {sig.invalidation_risk}")
+            if sig.key_catalysts:
+                print(f"  Catalysts   : {' | '.join(sig.key_catalysts)}")
+            if sig.correlated_sectors:
+                print(f"  Also watch  : {', '.join(sig.correlated_sectors)}")
+            if sig.conviction_drivers:
+                print(f"  Evidence    :")
+                for d in sig.conviction_drivers:
+                    print(f"    - {d}")
+
+        print("\n" + "=" * 72 + "\n")
 
 
 # ---------------------------------------------------------------------------
-# CLI — run once and exit
+# CLI - run once and exit
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
-    os.environ["OPENROUTER_API_KEY"] = '' #Enter your API key here 
+    os.environ["OPENROUTER_API_KEY"] = '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'
     scout   = SectorScout()
     signals = scout.run_cycle()
     sys.exit(0 if signals is not None else 1)

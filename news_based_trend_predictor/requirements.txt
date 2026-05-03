@@ -7,13 +7,7 @@ pydantic>=2.0
 # News scraping
 feedparser>=6.0.11
 beautifulsoup4>=4.12.3
-lxml>=5.2.2                   # Fast BS4 parser backend
-
-# Scheduling
-APScheduler>=3.10.4
-
-# AWS SDK (only needed for the S3 output write in sector_scout.py)
-boto3>=1.34.0
+lxml>=5.2.2          # Faster BS4 parser backend; falls back to html.parser if absent
 
 # ----------------------------------------------------------------------------
 # Setup note:
@@ -22,6 +16,5 @@ boto3>=1.34.0
 #   export OPENROUTER_API_KEY=sk-or-...          # Linux / macOS / Lambda env var
 #   set OPENROUTER_API_KEY=sk-or-...             # Windows cmd
 #
-# Get a free key at: https://openrouter.ai/settings/keys
-# No credit card required. Free tier: 200 requests/day, 20 req/min.
+# Get a key at: https://openrouter.ai/settings/keys
 # ----------------------------------------------------------------------------

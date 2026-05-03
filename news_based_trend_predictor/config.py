@@ -9,7 +9,7 @@ has begun pricing but not yet fully digested, similar to how the market
 treated semiconductors during export-control escalations.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List
 
 
@@ -162,28 +162,66 @@ RSS_FEEDS: List[Dict[str, str]] = [
 
 
 # ---------------------------------------------------------------------------
-# OpenRouter Model Priority List
+# OpenRouter Model Configs
 #
-# Models are tried in order. All are free tier (:free suffix).
-# Selection criteria: 262K+ context, native structured output (json_schema),
-# configurable reasoning/thinking mode.
+# Each entry declares the model string plus the two capability flags that
+# affect how the payload is built. Set these once here — llm_analyzer.py
+# reads them and never probes or retries to discover them at runtime, so
+# no free-tier requests are wasted on capability detection.
 #
-# Primary:   Gemma 4 31B  — dense 31B, best reasoning quality, 262K ctx
-# Secondary: Gemma 4 26B  — MoE (3.8B active), near-identical quality, 262K ctx
-# Tertiary:  Nemotron 3 Super — 120B MoE (12B active), 1M ctx theoretical
-# Fallback:  Nemotron Nano Omni — different provider lineage, 256K ctx
+# use_json_schema : True  → response_format=json_schema (enforced structure)
+#                  False → response_format=json_object  (plain JSON mode)
+#
+# use_reasoning   : True  → reasoning.effort="high" is added to the payload
+#                  False → param is omitted entirely
+#
+# How to know which flags to set for a new model
+# -----------------------------------------------
+# Check the model's page on openrouter.ai/models — look for:
+#   "Structured outputs"  → use_json_schema: True
+#   "Reasoning / Thinking"→ use_reasoning:   True
+# If unsure, default both to False — the model will still produce valid
+# JSON via prompt instruction alone; it just won't be schema-enforced.
 # ---------------------------------------------------------------------------
 
-OPENROUTER_MODELS: List[str] = [
-    "google/gemma-4-31b-it:free",
-    "google/gemma-4-26b-a4b-it:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+@dataclass
+class ModelConfig:
+    model:            str
+    use_json_schema:  bool = True   # send response_format=json_schema
+    use_reasoning:    bool = True   # send reasoning.effort="high"
+
+
+OPENROUTER_MODELS: List[ModelConfig] = [
+    # Primary: Gemma 4 31B — supports both json_schema and reasoning
+    ModelConfig(
+        model           = "google/gemma-4-31b-it:free",
+        use_json_schema = True,
+        use_reasoning   = True,
+    ),
+    # Secondary: Gemma 4 26B MoE — same capability profile as 31B
+    ModelConfig(
+        model           = "google/gemma-4-26b-a4b-it:free",
+        use_json_schema = True,
+        use_reasoning   = True,
+    ),
+    # Tertiary: Nemotron Super 120B — does NOT support reasoning param;
+    # json_schema also unreliable so use plain json_object mode
+    ModelConfig(
+        model           = "nvidia/nemotron-3-super-120b-a12b:free",
+        use_json_schema = False,
+        use_reasoning   = False,
+    ),
+    # Fallback: Nemotron Nano Omni — same limitations as Super
+    ModelConfig(
+        model           = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        use_json_schema = False,
+        use_reasoning   = False,
+    ),
 ]
 
 # Retry delays in seconds between attempts on the same model (429 / timeout).
 # After these are exhausted the next model in the list is tried.
-OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
+OPENROUTER_RETRY_DELAYS: List[int] = [15, 15, 30, 30, 60, 60]
 
 
 # ---------------------------------------------------------------------------
@@ -193,7 +231,7 @@ OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
 @dataclass
 class SchedulerConfig:
     # Headlines passed to the LLM per cycle
-    max_headlines_per_cycle: int = 100
+    max_headlines_per_cycle: int = 500
 
     # Minimum LLM confidence to emit a SectorSignal
     min_confidence: float = 0.60

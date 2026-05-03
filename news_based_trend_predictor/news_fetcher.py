@@ -341,9 +341,9 @@ def fetch_html_headlines(target: dict, timeout: int = 12) -> List[Headline]:
 
         if headlines:
             _health.record_success(url)
-            logger.info("  ✓ %-30s  %d headlines (scraped)", name, len(headlines))
+            logger.info("%-30s  %d headlines (scraped)", name, len(headlines))
         else:
-            logger.debug("  ✗ %-30s  0 headlines (scrape found nothing)", name)
+            logger.debug("%-30s  0 headlines (scrape found nothing)", name)
 
     except requests.exceptions.ConnectionError as exc:
         level = _health.log_level(url)
