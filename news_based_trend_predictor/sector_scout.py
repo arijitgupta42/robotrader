@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import logging
 import sys
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Callable, List, Optional
@@ -212,6 +213,8 @@ class SectorScout:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+
+    os.environ["OPENROUTER_API_KEY"] = '' #Enter your API key here 
     scout   = SectorScout()
     signals = scout.run_cycle()
     sys.exit(0 if signals is not None else 1)

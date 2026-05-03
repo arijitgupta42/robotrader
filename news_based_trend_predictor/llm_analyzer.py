@@ -1,58 +1,62 @@
 """
-llm_analyzer.py — LangChain + Gemma 4 E2B-it with structured output.
+llm_analyzer.py — OpenRouter API client with structured output + reasoning.
 
-Why LangChain structured output?
----------------------------------
-Instead of prompting the model to "return JSON only" and then running
-six extraction strategies to parse whatever it emits, we use LangChain's
-`.with_structured_output()` backed by Gemma 4's native function-calling.
+Architecture change from original
+-----------------------------------
+The original used LangChain + a locally-loaded Gemma 4 E2B-it (GPU required).
+This version calls OpenRouter's /v1/chat/completions endpoint, which:
 
-The flow is:
-  1. A Pydantic schema (AnalysisOutput) defines the exact structure we want.
-  2. LangChain converts the schema into a tool definition and injects it
-     into the prompt automatically.
-  3. Gemma 4 E2B-it responds by calling that tool with the structured data.
-  4. LangChain deserialises the response directly into a validated Pydantic
-     object — no regex, no bracket-walking, no six-strategy fallback.
+  1. Hosts the model remotely — no GPU, no torch, no transformers.
+  2. Supports response_format=json_schema for enforced structured output.
+  3. Supports reasoning.effort for chain-of-thought thinking before output.
+  4. Is OpenAI-API-compatible — standard requests.post(), no special SDK needed.
 
-If validation fails (the model hallucinated a wrong type, missing field,
-etc.) Pydantic raises a ValidationError, which we catch and fall back to
-the keyword heuristic.
+The Pydantic schemas (SignalItem, AnalysisOutput), field validators,
+prompt construction, keyword fallback, and public analyse_headlines()
+signature are all unchanged from the original.
 
-LangChain setup
----------------
-    pip install langchain langchain-huggingface
+Environment variable required
+------------------------------
+    OPENROUTER_API_KEY   — your OpenRouter API key (free account is sufficient)
 
-Model loading: we still load via transformers/HuggingFace directly and
-wrap with HuggingFacePipeline → ChatHuggingFace so we keep full control
-over quantisation, device placement, and dtype.
+Model priority / fallback
+--------------------------
+Models are tried in the order defined in config.OPENROUTER_MODELS.
+Within each model, up to len(OPENROUTER_RETRY_DELAYS) retries are attempted
+on transient errors (429 rate-limit, 502/503/504 provider errors, timeouts).
+Validation errors and permanent HTTP errors (400, 401, 422) skip immediately
+to the next model.
+If all models are exhausted the keyword heuristic fallback is used.
 """
 
 from __future__ import annotations
 
-import re
 import logging
-import warnings
-from typing import Dict, List, Literal, Optional
+import os
+import re
+import time
+from typing import Dict, List
 
-import torch
-from pydantic import BaseModel, Field, field_validator
+import requests
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from config import DISRUPTION_CATEGORIES, LSE_SECTORS, MODEL_CFG, SCHEDULER_CFG
+from config import (
+    DISRUPTION_CATEGORIES,
+    LSE_SECTORS,
+    OPENROUTER_MODELS,
+    OPENROUTER_RETRY_DELAYS,
+    SCHEDULER_CFG,
+)
 from news_fetcher import Headline
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Pydantic output schema
+# Pydantic output schema  (unchanged from original)
 # ---------------------------------------------------------------------------
 
 _SECTOR_NAMES     = list(LSE_SECTORS.keys())
 _DISRUPTION_NAMES = list(DISRUPTION_CATEGORIES.keys())
-
-# Build Literal types dynamically from config so they stay in sync
-SectorLiteral     = Literal[tuple(_SECTOR_NAMES)]       # type: ignore[valid-type]
-DisruptionLiteral = Literal[tuple(_DISRUPTION_NAMES)]   # type: ignore[valid-type]
 
 
 class SignalItem(BaseModel):
@@ -109,7 +113,6 @@ class SignalItem(BaseModel):
     @classmethod
     def validate_disruption(cls, v: str) -> str:
         if v not in _DISRUPTION_NAMES:
-            # Soft fix: try a case-insensitive match before rejecting
             for name in _DISRUPTION_NAMES:
                 if name.lower() == v.lower():
                     return name
@@ -133,123 +136,7 @@ class AnalysisOutput(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Lazy singleton — model + LangChain chain loaded once
-# ---------------------------------------------------------------------------
-
-_chain = None   # LangChain runnable: ChatHuggingFace | with_structured_output
-
-
-def _load_chain() -> None:
-    global _chain
-    if _chain is not None:
-        return
-
-    from transformers import AutoProcessor, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
-    from langchain_huggingface import HuggingFacePipeline, ChatHuggingFace
-
-    # --- GPU diagnostic ---
-    logger.info("PyTorch version  : %s", torch.__version__)
-    logger.info("CUDA available   : %s", torch.cuda.is_available())
-    if torch.cuda.is_available():
-        logger.info("CUDA version     : %s", torch.version.cuda)
-        for i in range(torch.cuda.device_count()):
-            props = torch.cuda.get_device_properties(i)
-            logger.info("GPU %d            : %s  (%.1f GB VRAM)", i, props.name, props.total_memory / 1024**3)
-    elif torch.backends.mps.is_available():
-        logger.info("Apple MPS        : available")
-    else:
-        warnings.warn(
-            "No GPU detected — Gemma 4 E2B on CPU will be very slow. "
-            "Fix: pip install torch --index-url https://download.pytorch.org/whl/cu121",
-            RuntimeWarning,
-        )
-
-    logger.info("Loading %s …", MODEL_CFG.model_id)
-
-    dtype_map = {"bfloat16": torch.bfloat16, "float16": torch.float16, "float32": torch.float32}
-    torch_dtype = dtype_map.get(MODEL_CFG.torch_dtype, torch.bfloat16)
-
-    load_kwargs: dict = {
-        "device_map":          "auto",
-        "attn_implementation": MODEL_CFG.attn_implementation,
-        "torch_dtype":         torch_dtype,        
-    }
-
-    if MODEL_CFG.use_4bit_quantisation and torch.cuda.is_available():
-        load_kwargs["quantization_config"] = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_quant_type="nf4",
-        )
-        load_kwargs.pop("torch_dtype", None)
-        logger.info("4-bit NF4 quantisation enabled.")
-
-    if not torch.cuda.is_available() and not torch.backends.mps.is_available():
-        load_kwargs["dtype"] = torch.float32
-
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_CFG.model_id,
-        **load_kwargs
-    ).eval()
-
-    processor = AutoProcessor.from_pretrained(MODEL_CFG.model_id)
-
-    logger.info(
-        "Model loaded on: %s",
-        model.hf_device_map if hasattr(model, "hf_device_map") else "cpu",
-    )
-
-    # --- Extract the underlying tokenizer from Gemma4Processor ---
-    # AutoProcessor for Gemma 4 returns a Gemma4Processor which wraps a
-    # tokenizer internally. The transformers pipeline() and LangChain both
-    # call .pad_token_id directly on whatever is passed as tokenizer=, so
-    # we must pass the inner tokenizer, not the processor itself.
-    tokenizer = getattr(processor, "tokenizer", processor)
-
-    # Gemma 4's tokenizer may not have pad_token set; use eos_token as pad
-    # (standard practice for decoder-only models that have no explicit pad).
-    if tokenizer.pad_token_id is None:
-        tokenizer.pad_token_id = tokenizer.eos_token_id
-        logger.info("pad_token_id not set — using eos_token_id (%d) as pad.",
-                    tokenizer.eos_token_id)
-
-    # Also propagate to the model config so generate() doesn't warn
-    if not hasattr(model.config, "pad_token_id") or model.config.pad_token_id is None:
-        try:
-            model.config.pad_token_id = tokenizer.pad_token_id
-        except AttributeError:
-            pass
-
-    # --- Wrap in a transformers pipeline ---
-    hf_pipeline = pipeline(
-        task             = "text-generation",
-        model            = model,
-        tokenizer        = tokenizer,
-        max_new_tokens   = MODEL_CFG.max_new_tokens,
-        temperature      = MODEL_CFG.temperature,
-        do_sample        = True,
-        return_full_text = False,   # return only newly generated tokens
-    )
-
-    # --- LangChain wrappers ---
-    lc_pipeline = HuggingFacePipeline(pipeline=hf_pipeline)
-    chat_model  = ChatHuggingFace(
-        llm      = lc_pipeline,
-        tokenizer = tokenizer,
-        model_id  = MODEL_CFG.model_id,
-    )
-
-    # --- Bind structured output schema ---
-    # LangChain converts AnalysisOutput into a tool definition and injects
-    # it into the prompt.  The model responds by calling that tool with
-    # structured data; LangChain validates it against the Pydantic schema.
-    _chain = chat_model.with_structured_output(AnalysisOutput, method="json_mode")
-    logger.info("LangChain structured-output chain ready.")
-
-
-# ---------------------------------------------------------------------------
-# Prompt construction
+# Prompt construction  (unchanged from original)
 # ---------------------------------------------------------------------------
 
 _SECTOR_LIST      = "\n".join(f"  - {s}" for s in _SECTOR_NAMES)
@@ -282,7 +169,6 @@ For each signal, reason through:
 3. WHEN will the full repricing occur? (weeks estimate)
 4. WHAT single event would invalidate the thesis?
 
-Then call the provided tool with your structured findings.
 Only include sectors with confidence >= 0.4.
 Return an empty signals list if no genuine multi-week disruption is present.
 You MUST respond with a single raw JSON object — no markdown fences, no preamble.
@@ -305,17 +191,151 @@ The object must match this exact schema:
 
 
 def _build_messages(headlines: List[Headline]) -> list:
-    from langchain_core.messages import SystemMessage, HumanMessage
-    lines = [f"{i+1}. {h.to_text()}" for i, h in enumerate(headlines)]
+    lines     = [f"{i+1}. {h.to_text()}" for i, h in enumerate(headlines)]
     user_text = "Recent headlines:\n\n" + "\n".join(lines)
     return [
-        SystemMessage(content=_SYSTEM_PROMPT),
-        HumanMessage(content=user_text),
+        {"role": "system", "content": _SYSTEM_PROMPT},
+        {"role": "user",   "content": user_text},
     ]
 
 
 # ---------------------------------------------------------------------------
-# Keyword-scoring fallback
+# OpenRouter HTTP client
+# ---------------------------------------------------------------------------
+
+_OR_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+
+def _get_headers() -> dict:
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        raise EnvironmentError(
+            "OPENROUTER_API_KEY environment variable is not set. "
+            "Create a free account at https://openrouter.ai, generate an API key, "
+            "and set it before running: export OPENROUTER_API_KEY=sk-or-..."
+        )
+    return {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type":  "application/json",
+        "HTTP-Referer":  "https://github.com/your-org/sector-scout",
+        "X-Title":       "LSE Sector Scout",
+    }
+
+
+def _call_openrouter(messages: list, model: str) -> str:
+    """
+    Single synchronous call to OpenRouter.
+    Returns the raw content string from the first choice.
+    Raises requests.HTTPError on 4xx / 5xx.
+    Raises requests.Timeout on timeout.
+    """
+    payload = {
+        "model":       model,
+        "messages":    messages,
+        "temperature": 0.4,
+        "max_tokens":  1024,
+
+        # ── Structured output ─────────────────────────────────────────────
+        # Passes the Pydantic schema directly so the model is constrained
+        # to return JSON matching our exact field definitions.
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name":   "sector_analysis",
+                "strict": True,
+                "schema": AnalysisOutput.model_json_schema(),
+            },
+        },
+
+        # ── Reasoning / thinking ──────────────────────────────────────────
+        # "medium" effort (~50% of max_tokens allocated to internal CoT).
+        # exclude=True means the model thinks before answering but does NOT
+        # return the thinking tokens in the response — saves output tokens
+        # and avoids any need to strip <think> blocks before JSON parsing.
+        "reasoning": {
+            "effort":  "medium",
+            "exclude": True,
+        },
+    }
+
+    resp = requests.post(
+        _OR_URL,
+        headers=_get_headers(),
+        json=payload,
+        timeout=120,   # free-tier requests can queue; 2 min is safe
+    )
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"]
+
+
+# ---------------------------------------------------------------------------
+# Retry + model fallback logic
+# ---------------------------------------------------------------------------
+
+def _invoke_with_fallback(messages: list) -> AnalysisOutput:
+    """
+    Try each model in OPENROUTER_MODELS in priority order.
+    Within each model, retry on transient errors using OPENROUTER_RETRY_DELAYS.
+    Returns a validated AnalysisOutput or raises RuntimeError if all fail.
+    """
+    for model in OPENROUTER_MODELS:
+        for attempt, delay in enumerate(OPENROUTER_RETRY_DELAYS, start=1):
+            try:
+                logger.info("OpenRouter: trying %s (attempt %d/%d) …",
+                            model, attempt, len(OPENROUTER_RETRY_DELAYS))
+                raw = _call_openrouter(messages, model)
+
+                # Strip markdown fences in case the model ignores json_schema
+                clean = re.sub(
+                    r"^```(?:json)?\s*|\s*```$", "", raw, flags=re.MULTILINE
+                ).strip()
+
+                result = AnalysisOutput.model_validate_json(clean)
+                logger.info("✓ %s — %d signals validated.", model, len(result.signals))
+                return result
+
+            except requests.HTTPError as exc:
+                status = exc.response.status_code if exc.response is not None else 0
+
+                if status == 429:
+                    logger.warning("%s: rate limited (429) — sleeping %ds.", model, delay)
+                    time.sleep(delay)
+
+                elif status in (502, 503, 504):
+                    logger.warning("%s: provider error (%d) — sleeping 10s.", model, status)
+                    time.sleep(10)
+
+                else:
+                    # 400 / 401 / 422 — permanent error for this model; skip it
+                    logger.error("%s: HTTP %d — skipping to next model.", model, status)
+                    break
+
+            except (ValidationError, ValueError) as exc:
+                # Model returned valid HTTP 200 but malformed / non-conforming JSON.
+                # No point retrying the same model — move on.
+                logger.warning("%s: Pydantic validation failed (%s) — skipping.", model, exc)
+                break
+
+            except requests.Timeout:
+                logger.warning("%s: timeout (attempt %d/%d) — sleeping %ds.",
+                               model, attempt, len(OPENROUTER_RETRY_DELAYS), delay)
+                time.sleep(delay)
+
+            except Exception as exc:
+                logger.error("%s: unexpected error: %s — skipping.", model, exc)
+                break
+
+        else:
+            # Exhausted all retries for this model without a break — try next
+            logger.warning("%s: all retries exhausted — moving to next model.", model)
+
+    raise RuntimeError(
+        "All OpenRouter models exhausted without a valid response."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Keyword-scoring fallback  (unchanged from original)
 # ---------------------------------------------------------------------------
 
 _DISRUPTION_WORDS = {
@@ -358,65 +378,35 @@ def _keyword_fallback(headlines: List[Headline]) -> List[Dict]:
 
 
 # ---------------------------------------------------------------------------
-# Public API
+# Public API  (signature unchanged from original)
 # ---------------------------------------------------------------------------
 
 def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
     """
-    Run Gemma 4 E2B-it via LangChain structured output over the supplied
-    headlines and return a validated list of swing signal dicts.
+    Call OpenRouter with the supplied headlines and return a validated list
+    of swing signal dicts.
 
     Each dict contains:
         sector, confidence, disruption_type, disruption_strength,
         time_to_impact_weeks, propagation, invalidation_risk, rationale
 
-    Falls back to keyword heuristic on any error.
+    Falls back to keyword heuristic if all OpenRouter models fail.
     """
     if not headlines:
         logger.warning("analyse_headlines called with empty list.")
         return []
 
-    _load_chain()
-
     messages = _build_messages(headlines)
-    logger.info("Invoking structured-output chain on %d headlines …", len(headlines))
+    logger.info("Invoking OpenRouter on %d headlines …", len(headlines))
 
     try:
-        raw_result = _chain.invoke(messages)
-    except Exception as exc:
-        exc_str = str(exc)
-        if "json" in exc_str.lower() or "parse" in exc_str.lower():
-            logger.warning("JSON parse failed (likely thinking tags) — retrying with tag stripping.")
-            raw_msg = _chain.llm.llm.pipeline(  # unwrap to get raw text
-                messages[-1].content, max_new_tokens=MODEL_CFG.max_new_tokens
-            )[0]["generated_text"]
-            raw_result = re.sub(r"<\|channel>.*?<channel\|>", "", raw_msg, flags=re.DOTALL).strip()
-        else:
-            logger.error("LangChain chain invocation failed: %s — using fallback.", exc)
-            return _keyword_fallback(headlines)
-
-    # Normalise to AnalysisOutput regardless of what LangChain returned
-    try:
-        if isinstance(raw_result, AnalysisOutput):
-            result = raw_result
-        elif isinstance(raw_result, dict):
-            # LangChain returned a parsed dict — coerce it ourselves
-            result = AnalysisOutput.model_validate(raw_result)
-        elif isinstance(raw_result, str):
-            # Strip thinking tags then parse JSON string
-            clean = re.sub(r"<\|channel>.*?<channel\|>", "", raw_result, flags=re.DOTALL).strip()
-            # Strip markdown fences if present
-            clean = re.sub(r"^```(?:json)?\s*|\s*```$", "", clean, flags=re.MULTILINE).strip()
-            result = AnalysisOutput.model_validate_json(clean)
-        else:
-            logger.error("Unhandled result type %s — using fallback.", type(raw_result))
-            return _keyword_fallback(headlines)
-    except Exception as exc:
-        logger.error("Pydantic validation failed: %s — using fallback.", exc)
+        result = _invoke_with_fallback(messages)
+    except RuntimeError as exc:
+        logger.error("%s — using keyword fallback.", exc)
         return _keyword_fallback(headlines)
 
     signals = sorted(result.signals, key=lambda s: s.confidence, reverse=True)
-    logger.info("Structured output returned %d validated signals.", len(signals))
+    logger.info("Returning %d validated signals.", len(signals))
 
     return [
         {

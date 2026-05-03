@@ -80,10 +80,6 @@ LSE_SECTORS: Dict[str, List[str]] = {
 
 # ---------------------------------------------------------------------------
 # Disruption Category Taxonomy
-#
-# These are the LENSES through which the LLM should read the news.
-# Each maps to a hypothesis about why a sector might reprice over
-# a 2–6 week window, not just in today's session.
 # ---------------------------------------------------------------------------
 
 DISRUPTION_CATEGORIES: Dict[str, str] = {
@@ -129,11 +125,11 @@ DISRUPTION_CATEGORIES: Dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
-# News Sources — weighted toward macro, policy, and structural disruption
+# News Sources
 # ---------------------------------------------------------------------------
 
 RSS_FEEDS: List[Dict[str, str]] = [
-    # --- UK Financial / Markets (verified working) ---
+    # --- UK Financial / Markets ---
     {"name": "BBC Business",             "url": "https://feeds.bbci.co.uk/news/business/rss.xml"},
     {"name": "BBC UK Politics",          "url": "https://feeds.bbci.co.uk/news/politics/rss.xml"},
     {"name": "Guardian Business",        "url": "https://www.theguardian.com/uk/business/rss"},
@@ -147,22 +143,18 @@ RSS_FEEDS: List[Dict[str, str]] = [
     {"name": "Proactive Investors UK",   "url": "https://www.proactiveinvestors.co.uk/feed"},
     {"name": "Investegate RNS",          "url": "https://www.investegate.co.uk/rss.aspx"},
 
-    # --- Global Macro (trade flows / commodities affect LSE multinationals) ---
+    # --- Global Macro ---
     {"name": "AP Business",             "url": "https://feeds.apnews.com/apnews/business"},
     {"name": "AP Top News",             "url": "https://feeds.apnews.com/apnews/topnews"},
     {"name": "Yahoo Finance",           "url": "https://finance.yahoo.com/news/rssindex"},
-
-    # --- Thomson Reuters Investor Relations (corporate press releases) ---
-    # Note: this is TR's own IR feed — good for macro signals from financial
-    # data/analytics industry moves, but not general market news.
     {"name": "Thomson Reuters IR",      "url": "https://ir.thomsonreuters.com/rss/news-releases.xml"},
 
-    # BoE feeds (from bankofengland.co.uk/rss):
+    # --- BoE ---
     {"name": "Bank of England News",        "url": "https://www.bankofengland.co.uk/rss/news"},
     {"name": "Bank of England Publications","url": "https://www.bankofengland.co.uk/rss/publications"},
     {"name": "Bank of England Speeches",    "url": "https://www.bankofengland.co.uk/rss/speeches"},
 
-    # Investing.com UK feeds (from uk.investing.com/webmaster-tools/rss):
+    # --- Investing.com UK ---
     {"name": "Investing.com UK Stock News", "url": "https://uk.investing.com/rss/news_25.rss"},
     {"name": "Investing.com UK Economy",    "url": "https://uk.investing.com/rss/news_14.rss"},
     {"name": "Investing.com UK Commodities","url": "https://uk.investing.com/rss/news_11.rss"},
@@ -170,45 +162,28 @@ RSS_FEEDS: List[Dict[str, str]] = [
 
 
 # ---------------------------------------------------------------------------
-# Model Settings
+# OpenRouter Model Priority List
 #
-# Correct Gemma 4 E2B API usage confirmed from:
-#   https://huggingface.co/google/gemma-4-E2B-it
+# Models are tried in order. All are free tier (:free suffix).
+# Selection criteria: 262K+ context, native structured output (json_schema),
+# configurable reasoning/thinking mode.
 #
-# Key differences from Gemma 3 / other models:
-#   - Uses AutoProcessor (not AutoTokenizer) + AutoModelForCausalLM
-#   - Chat template applied via processor.apply_chat_template()
-#   - enable_thinking flag controls chain-of-thought reasoning mode
-#   - Thinking output is wrapped in <|channel>thought\n...<channel|>
-#     and must be stripped before parsing the JSON answer
-#   - Native system role support (new in Gemma 4)
+# Primary:   Gemma 4 31B  — dense 31B, best reasoning quality, 262K ctx
+# Secondary: Gemma 4 26B  — MoE (3.8B active), near-identical quality, 262K ctx
+# Tertiary:  Nemotron 3 Super — 120B MoE (12B active), 1M ctx theoretical
+# Fallback:  Nemotron Nano Omni — different provider lineage, 256K ctx
 # ---------------------------------------------------------------------------
 
-@dataclass
-class ModelConfig:
-    # Confirmed model ID: capital E2B
-    model_id: str = "google/gemma-4-E2B-it"
+OPENROUTER_MODELS: List[str] = [
+    "google/gemma-4-31b-it:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+]
 
-    # bfloat16 is the recommended dtype for Gemma 4 (per HF model card)
-    torch_dtype: str = "bfloat16"
-
-    # Set True only if VRAM < 8 GB (requires bitsandbytes)
-    use_4bit_quantisation: bool = False
-
-    # Enable Gemma 4's native chain-of-thought before the JSON answer.
-    # We WANT this: it allows the model to reason through the disruption
-    # thesis before committing to a sector signal. The thought block is
-    # stripped from the output before JSON parsing.
-    enable_thinking: bool = True
-
-    # Extra headroom for thinking tokens + JSON output
-    max_new_tokens: int = 1024
-
-    # Slightly higher temperature so the model explores non-obvious sectors
-    temperature: float = 0.4
-
-    # Recommended attention implementation for Gemma 4 (per HF docs)
-    attn_implementation: str = "sdpa"
+# Retry delays in seconds between attempts on the same model (429 / timeout).
+# After these are exhausted the next model in the list is tried.
+OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
 
 
 # ---------------------------------------------------------------------------
@@ -217,7 +192,7 @@ class ModelConfig:
 
 @dataclass
 class SchedulerConfig:
-    # More headlines for richer context (medium-term needs more signal)
+    # Headlines passed to the LLM per cycle
     max_headlines_per_cycle: int = 100
 
     # Minimum LLM confidence to emit a SectorSignal
@@ -228,8 +203,7 @@ class SchedulerConfig:
 
 
 # ---------------------------------------------------------------------------
-# Shared singleton instances
+# Shared singleton instance
 # ---------------------------------------------------------------------------
 
-MODEL_CFG     = ModelConfig()
 SCHEDULER_CFG = SchedulerConfig()

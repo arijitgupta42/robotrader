@@ -1,28 +1,27 @@
-# Core ML / inference
-# langchain>=0.3.0
-# langchain-huggingface>=0.1.0
-# langchain-core>=0.3.0
+# OpenRouter API client
+requests>=2.32.3
 
-# Gemma 4 E2B requires transformers >= 4.51
-# torch>=2.3.0
-# transformers>=4.51.0          # Gemma 4 support added in 4.51 (April 2026)
-# accelerate>=0.33.0
-# bitsandbytes>=0.43.0          # Only needed if use_4bit_quantisation=True
+# Output schema validation
+pydantic>=2.0
 
 # News scraping
-pydantic>=2.0
 feedparser>=6.0.11
-requests>=2.32.3
 beautifulsoup4>=4.12.3
 lxml>=5.2.2                   # Fast BS4 parser backend
 
 # Scheduling
 APScheduler>=3.10.4
 
-# Install note:
-# You must accept Google's Gemma licence on Hugging Face and be logged in:
-#   huggingface-cli login
-# The model will be auto-downloaded on first inference call.
+# AWS SDK (only needed for the S3 output write in sector_scout.py)
+boto3>=1.34.0
+
+# ----------------------------------------------------------------------------
+# Setup note:
 #
-# For GPU inference (recommended):
-#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+# Set your OpenRouter API key before running:
+#   export OPENROUTER_API_KEY=sk-or-...          # Linux / macOS / Lambda env var
+#   set OPENROUTER_API_KEY=sk-or-...             # Windows cmd
+#
+# Get a free key at: https://openrouter.ai/settings/keys
+# No credit card required. Free tier: 200 requests/day, 20 req/min.
+# ----------------------------------------------------------------------------
