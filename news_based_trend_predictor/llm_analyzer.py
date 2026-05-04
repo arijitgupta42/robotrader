@@ -1,54 +1,41 @@
 """
-llm_analyzer.py — OpenRouter API client with structured output + reasoning.
+llm_analyzer.py — OpenRouter API client.
 
 Architecture
 ------------
-Calls OpenRouter's /v1/chat/completions endpoint with:
-  1. response_format=json_schema or json_object, per model config.
-  2. reasoning.effort="high" if the model config enables it.
-  3. Model priority fallback across OPENROUTER_MODELS with retry logic.
+Calls OpenRouter's /v1/chat/completions endpoint.
+Model priority fallback across OPENROUTER_MODELS with retry logic.
 
-Model capabilities (json_schema, reasoning) are declared statically in
-config.py alongside each model entry. This means zero wasted API calls on
-capability probing — critical when running on the free tier.
+All output structure is defined in the system prompt as a plain JSON
+schema description.  The response is decoded with json.loads(); if that
+fails the raw model output is printed and an empty result is returned.
 
 To add or swap a model: edit OPENROUTER_MODELS in config.py only.
-Set use_json_schema and use_reasoning based on the model's OpenRouter page.
-No changes needed here.
-
-Prompt philosophy (upgraded for large-model capability)
--------------------------------------------------------
-The original prompt was written for a 2B-4B edge model and constrained the
-model to a flat, single-pass output format.  Large reasoning models (31B–120B)
-benefit from:
-  - Explicit multi-stage reasoning scaffolding (macro regime first, then sectors)
-  - Historical calibration anchors so confidence scores are grounded
-  - Cross-signal coherence — macro themes propagate to correlated sectors
-  - Richer output fields that force the model to commit to falsifiable claims
-  - Explicit anti-patterns to suppress known failure modes (recency bias, etc.)
-
-Output fields
--------------
-  sector, confidence, disruption_type, disruption_strength,
-  time_to_impact_weeks, propagation, invalidation_risk, rationale,
-  bear_case_probability, key_catalysts, correlated_sectors,
-  conviction_drivers, macro_regime_summary
 
 Environment variable required
 ------------------------------
     OPENROUTER_API_KEY   — your OpenRouter API key
+
+Raw model responses
+-------------------
+Every raw response string from the model is written to:
+    ./raw_model_responses/raw_<timestamp>_<model_slug>.txt
+This allows post-hoc inspection when JSON decoding fails or signals are
+unexpectedly empty.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
 import time
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
-from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from config import (
     DISRUPTION_CATEGORIES,
@@ -63,286 +50,107 @@ from news_fetcher import Headline
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Pydantic output schema
+# Raw response persistence
 # ---------------------------------------------------------------------------
 
-_SECTOR_NAMES     = list(LSE_SECTORS.keys())
-_DISRUPTION_NAMES = list(DISRUPTION_CATEGORIES.keys())
+_RAW_RESPONSE_DIR = Path("raw_model_responses")
 
 
-class SignalItem(BaseModel):
-    """A single medium-term swing signal for one LSE sector."""
+def _save_raw_response(raw: str, model: str, suffix: str = "") -> Path:
+    """
+    Write the raw model response string to a timestamped file under
+    ./raw_model_responses/.  Returns the path written.
 
-    sector: str = Field(
-        description="The LSE ICB sector name, e.g. 'Energy' or 'Industrials'."
-    )
-    confidence: float = Field(
-        ge=0.0, le=1.0,
-        description=(
-            "Calibrated conviction that this sector will show POSITIVE price "
-            "movement over 2-6 weeks. Anchor: 0.85+ = semiconductor export-control "
-            "level certainty; 0.70 = clear structural signal, some uncertainty; "
-            "0.55 = directional lean with meaningful alternative scenarios. "
-            "Do not use 0.40-0.54 unless the signal is genuinely borderline."
-        ),
-    )
-    disruption_type: str = Field(
-        description=(
-            "Category of the structural disruption driving the signal. "
-            f"Must be one of: {', '.join(_DISRUPTION_NAMES)}."
-        )
-    )
-    disruption_strength: float = Field(
-        ge=0.0, le=1.0,
-        description=(
-            "Magnitude of the structural break. "
-            "0.9+ = paradigm shift (e.g. 2022 energy shock); "
-            "0.7 = clear multi-week dislocation; "
-            "0.5 = moderate, consensus is still forming."
-        ),
-    )
-    time_to_impact_weeks: int = Field(
-        ge=1, le=12,
-        description=(
-            "Estimated weeks before the market FULLY prices in this disruption. "
-            "Be specific: e.g. 3 if an earnings season is 3 weeks away and "
-            "the thesis requires EPS confirmation."
-        ),
-    )
-    propagation: str = Field(
-        max_length=350,
-        description=(
-            "One to two sentences (<=40 words) explaining the precise MECHANISM "
-            "by which the disruption flows to LSE equities in this sector. "
-            "Name the specific revenue lines, cost structures, or re-rating "
-            "catalysts affected. Avoid generic descriptions."
-        ),
-    )
-    invalidation_risk: str = Field(
-        max_length=250,
-        description=(
-            "One sentence (<=25 words) naming the single most likely event that "
-            "would FALSIFY this thesis, with an estimated probability in brackets, "
-            "e.g. '...BoE pause (30% probability)'."
-        ),
-    )
-    rationale: str = Field(
-        max_length=350,
-        description=(
-            "Two sentences (<=40 words total) summarising the overall case: "
-            "what the headline cluster signals AND why now is the right entry "
-            "window relative to consensus positioning."
-        ),
-    )
-    bear_case_probability: float = Field(
-        ge=0.0, le=1.0,
-        description=(
-            "Estimated probability that the sector moves NEGATIVELY or flat "
-            "over the stated time horizon. Should roughly equal 1 - confidence "
-            "within 0.10 tolerance."
-        ),
-    )
-    key_catalysts: List[str] = Field(
-        default_factory=list,
-        description=(
-            "List of 1-3 specific, dated or near-term upcoming events that would "
-            "CONFIRM the thesis (e.g. 'BoE MPC meeting 8 May', "
-            "'AstraZeneca Q2 results', 'OPEC+ output decision mid-June'). "
-            "Do not use vague phrases like 'further positive data'."
-        ),
-    )
-    correlated_sectors: List[str] = Field(
-        default_factory=list,
-        description=(
-            "0-2 other LSE sectors secondarily exposed to the SAME disruption "
-            "likely to move in the same direction. Must be valid sector names "
-            "from the taxonomy. Leave empty if none."
-        ),
-    )
-    conviction_drivers: List[str] = Field(
-        default_factory=list,
-        description=(
-            "List of 2-3 specific headlines or data points from the provided "
-            "news batch (paraphrased, not quoted verbatim) that most strongly "
-            "support this signal. Cite the source name in brackets."
-        ),
-    )
-
-    @field_validator("sector")
-    @classmethod
-    def validate_sector(cls, v: str) -> str:
-        if v not in _SECTOR_NAMES:
-            raise ValueError(
-                f"'{v}' is not a valid LSE sector. "
-                f"Choose from: {', '.join(_SECTOR_NAMES)}"
-            )
-        return v
-
-    @field_validator("disruption_type")
-    @classmethod
-    def validate_disruption(cls, v: str) -> str:
-        if v not in _DISRUPTION_NAMES:
-            for name in _DISRUPTION_NAMES:
-                if name.lower() == v.lower():
-                    return name
-            raise ValueError(
-                f"'{v}' is not a valid disruption type. "
-                f"Choose from: {', '.join(_DISRUPTION_NAMES)}"
-            )
-        return v
-
-    @field_validator("correlated_sectors", mode="before")
-    @classmethod
-    def validate_correlated(cls, v) -> List[str]:
-        if v is None:
-            return []
-        valid = [s for s in v if s in _SECTOR_NAMES]
-        if len(valid) != len(v):
-            dropped = [s for s in v if s not in _SECTOR_NAMES]
-            logger.debug("Dropping invalid correlated sector(s): %s", dropped)
-        return valid[:2]
-
-    @field_validator("key_catalysts", "conviction_drivers", mode="before")
-    @classmethod
-    def coerce_list_fields(cls, v) -> List[str]:
-        """Accept null/None from models that omit optional list fields."""
-        if v is None:
-            return []
-        return v
-
-
-class AnalysisOutput(BaseModel):
-    """Complete analysis output."""
-
-    macro_regime_summary: str = Field(
-        max_length=500,
-        description=(
-            "2-3 sentence synthesis of the dominant macro regime visible in "
-            "today's headlines: characterise the BoE/rates backdrop, "
-            "UK growth trajectory, and the single most important global macro "
-            "factor currently affecting LSE equities."
-        ),
-    )
-    signals: List[SignalItem] = Field(
-        default_factory=list,
-        description=(
-            "List of sector swing signals sorted by confidence descending. "
-            "Include only sectors with confidence >= 0.40. "
-            "Return an empty list if no genuine medium-term disruption is identified. "
-            "3-6 high-conviction signals is better than 10 marginal ones."
-        )
-    )
+    suffix  — optional tag appended to the filename, e.g. "decode_failed"
+    """
+    _RAW_RESPONSE_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    slug = re.sub(r"[^a-zA-Z0-9_-]", "_", model)[:60]
+    tag = f"_{suffix}" if suffix else ""
+    path = _RAW_RESPONSE_DIR / f"raw_{ts}_{slug}{tag}.txt"
+    path.write_text(raw, encoding="utf-8")
+    logger.info("Raw model response saved → %s", path)
+    return path
 
 
 # ---------------------------------------------------------------------------
 # Prompt construction
 # ---------------------------------------------------------------------------
 
-_SECTOR_LIST      = "\n".join(f"  - {s}" for s in _SECTOR_NAMES)
-_DISRUPTION_BLOCK = "\n".join(
-    f"  [{name}]: {desc}" for name, desc in DISRUPTION_CATEGORIES.items()
-)
+_SECTOR_NAMES     = list(LSE_SECTORS.keys())
+_DISRUPTION_NAMES = list(DISRUPTION_CATEGORIES.keys())
+
+# Compact representations used in the prompt
+_SECTOR_LIST      = " | ".join(_SECTOR_NAMES)
+_DISRUPTION_LIST  = " | ".join(_DISRUPTION_NAMES)
+
+# ---------------------------------------------------------------------------
+# Output schema — terse field comments keep the response compact.
+# conviction_drivers is capped at 2 items (source tag mandatory) to bound
+# the single largest per-signal token cost.
+# ---------------------------------------------------------------------------
+_OUTPUT_SCHEMA = """\
+{"macro":
+  {"regime": "<1 sentence: BoE stance + dominant global factor>"},
+ "signals": [
+  {"sector": "<exact from SECTORS>",
+   "confidence": 0.0,
+   "disruption_type": "<exact from DISRUPTIONS>",
+   "disruption_strength": 0.0,
+   "time_to_impact_weeks": 0,
+   "bear_case_probability": 0.0,
+   "propagation": "<≤25w: mechanism>",
+   "invalidation_risk": "<≤20w: kill-switch + (prob%)>",
+   "rationale": "<≤25w: why now>",
+   "key_catalysts": ["<near-term confirming event>"],
+   "correlated_sectors": ["<0-2 exact sector names>"],
+   "conviction_drivers": ["<headline paraphrase [Source]>", "<headline paraphrase [Source]>"]
+  }
+ ]
+}"""
 
 _SYSTEM_PROMPT = f"""\
-You are a senior portfolio manager and quantitative strategist at a 5bn GBP UK \
-long/short equity hedge fund, specialising in medium-term (2-6 week) swing \
-trades on the London Stock Exchange (LSE).
+You are a senior LSE equity portfolio manager. Identify LSE sub-sectors likely \
+to show POSITIVE price movement over 2-6 WEEKS from structural disruptions — \
+not daily noise.
 
-Your mandate: identify which LSE SECTORS are most likely to show POSITIVE \
-price movement over the next 2-6 WEEKS driven by structural market disruptions \
-- NOT intraday or daily noise.
+MACRO FIRST: Summarise BoE stance (cutting/pausing/hiking), UK growth surprise \
+direction, and the single dominant global factor (rates/China/commodities/geopolitics).
 
-======================================================================
-STEP 1 - MACRO REGIME ASSESSMENT (do this first, internally)
-======================================================================
-Before evaluating individual sectors, synthesise the headlines into a macro \
-regime characterisation covering:
-  (a) UK monetary policy: Is the BoE in a cutting, pausing, or hiking cycle? \
-What are gilts/sterling signalling?
-  (b) UK growth: Is the data surprising to the upside or downside vs. consensus?
-  (c) Global macro overlay: Which single global factor (US rates, China demand, \
-commodity prices, geopolitics) is most dominant in the current headline set?
+SCORE SIGNALS — target 3-6. Confidence anchors:
+  0.85+ structural certainty (multi-month)  |  0.70 clear, proof 2-4w away
+  0.55 directional lean, ~35% bear case     |  0.35-0.50 marginal but surfaceable
 
-This regime context must inform your sector scoring. A rate-cutting regime \
-structurally favours REITs, Utilities, and rate-sensitives. A risk-off \
-geopolitical shock favours Industrials/Defence and Energy but pressures \
-Consumer Discretionary.
+SCORE if: policy/regulatory with multi-week implementation lag | commodity/FX \
+move not yet in equities | cluster of earnings beats/misses | geopolitical \
+shift changing defence budgets or trade routes | tech adoption inflection.
 
-======================================================================
-STEP 2 - DISRUPTION IDENTIFICATION
-======================================================================
-Scan for STRUCTURAL disruptions - not single-day events - of these types:
+DO NOT score: single isolated earnings event | already-priced price moves | \
+analyst note without new fundamentals.
 
-{_DISRUPTION_BLOCK}
+Even in stagflation/rate-pause regimes you MUST return ≥2 signals. Examples: \
+Aerospace & Defence (rearmament) | Integrated Oil & Gas (energy volatility) | \
+Housebuilders (rate expectations). Score at 0.40-0.55 and let the downstream \
+filter decide. An empty signals array is only valid if headlines contain zero \
+financial content.
 
-DO NOT score these as signals:
-  - A single earnings beat or miss not corroborated by sector-wide data
-  - A price move already fully reported in headlines (market has priced it)
-  - Intraday volatility without a structural catalyst
-  - Analyst upgrades/downgrades without new fundamental information
-  - Recency bias: a large story today that is likely to reverse tomorrow
-
-DO score these as signals:
-  - Policy or regulatory announcements with multi-week implementation timelines
-  - Commodity or FX moves that have NOT yet fed through to equity valuations
-  - A cluster of earnings misses/beats implying systematic consensus error
-  - Geopolitical escalation changing trade routes or defence budgets
-  - Technology inflection with sector-wide adoption consequences
-
-======================================================================
-STEP 3 - SECTOR SIGNAL SCORING
-======================================================================
-For each sector signal, reason through:
-
-  A. MECHANISM: Which specific revenue lines, cost structures, or valuation \
-multiples are affected for LSE-listed companies in this sector?
-
-  B. TIMING: Why will the market take 2-6 weeks to fully price this in? \
-Is it awaiting earnings confirmation? A central bank meeting? Supply data?
-
-  C. CALIBRATION - score confidence against these anchors:
-       0.85+ : semiconductor export-control certainty - structural, multi-month
-       0.70  : clear signal, consensus is wrong but proof is 2-4 weeks away
-       0.55  : directional lean; alternative scenario has 30-40% probability
-       0.40  : marginal; barely above noise threshold
-
-  D. SECOND-ORDER: Does this disruption propagate to 1-2 OTHER sectors via \
-supply chains, input costs, or risk-sentiment contagion?
-
-======================================================================
-STEP 4 - CROSS-SIGNAL COHERENCE CHECK
-======================================================================
-Before finalising, review your signal list:
-  - Do the signals tell a coherent macro story, or are they contradictory?
-  - If you have flagged both defensive (Utilities) and cyclical (Industrials) \
-sectors as strong buys, is the macro regime consistent with that?
-  - Remove signals where the only evidence is 1-2 headlines without corroboration.
-
-======================================================================
-LSE SECTOR TAXONOMY
-======================================================================
+SECTORS (use exact spelling):
 {_SECTOR_LIST}
 
-======================================================================
-OUTPUT REQUIREMENTS
-======================================================================
-Respond with a SINGLE raw JSON object - no markdown fences, no preamble, \
-no commentary outside the JSON. The object must exactly match the schema. \
-All string fields must respect their stated word/character limits.
+DISRUPTIONS (use exact spelling):
+{_DISRUPTION_LIST}
 
-Quality bar: 3-6 high-conviction signals with specific, falsifiable claims is \
-far more valuable than 10 vague signals. If the headline batch contains no \
-genuine multi-week structural disruption, return an empty signals list - this \
-is the correct and calibrated answer.
+OUTPUT: respond with ONLY a valid JSON object — no fences, no preamble.
+Shape:
+{_OUTPUT_SCHEMA}
 """
 
 
 def _build_messages(headlines: List[Headline]) -> list:
     lines = [f"{i+1}. {h.to_text()}" for i, h in enumerate(headlines)]
     user_text = (
-        f"You are analysing {len(headlines)} headlines from the latest collection cycle.\n\n"
-        "Work through Steps 1-4 in your system prompt, then emit the JSON.\n\n"
-        "Headlines:\n\n" + "\n".join(lines)
+        f"Analyse these {len(headlines)} headlines and emit the JSON object.\n\n"
+        + "\n".join(lines)
     )
     return [
         {"role": "system", "content": _SYSTEM_PROMPT},
@@ -374,43 +182,18 @@ def _get_headers() -> dict:
 
 
 def _build_payload(messages: list, cfg: ModelConfig) -> dict:
-    """
-    Build the request payload using the capability flags declared in config.
-    One payload per model, built correctly the first time — no probing.
-    """
-    payload: dict = {
+    return {
         "model":       cfg.model,
         "messages":    messages,
         "temperature": 0.35,
-        "max_tokens":  2048,
+        "max_tokens":  4096,
+        "reasoning":   {"effort": "high", "exclude": True},
+        "response_format": {"type": "json_object"},
     }
 
-    if cfg.use_json_schema:
-        payload["response_format"] = {
-            "type": "json_schema",
-            "json_schema": {
-                "name":   "lse_sector_analysis",
-                "strict": False,
-                "schema": AnalysisOutput.model_json_schema(),
-            },
-        }
-    else:
-        # Plain JSON mode — all models support this; output shaped by prompt alone
-        payload["response_format"] = {"type": "json_object"}
 
-    if cfg.use_reasoning:
-        payload["reasoning"] = {"effort": "high", "exclude": True}
-
-    return payload
-
-
-def _call_openrouter(messages: list, cfg: ModelConfig) -> str:
-    """
-    Single synchronous call to OpenRouter.
-    Returns the raw content string from the first choice.
-    Raises requests.HTTPError on 4xx / 5xx.
-    Raises requests.Timeout on timeout.
-    """
+def _call_openrouter(messages: list, cfg: ModelConfig) -> tuple:
+    """Returns (content, finish_reason). finish_reason is 'stop' on clean completion."""
     payload = _build_payload(messages, cfg)
     resp = requests.post(
         _OR_URL,
@@ -419,100 +202,183 @@ def _call_openrouter(messages: list, cfg: ModelConfig) -> str:
         timeout=180,
     )
     resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"]
+    choice = resp.json()["choices"][0]
+    return choice["message"]["content"], choice.get("finish_reason", "unknown")
 
 
 # ---------------------------------------------------------------------------
-# JSON extraction
+# JSON extraction + naive decode
 # ---------------------------------------------------------------------------
 
-def _extract_json(raw: str) -> str:
+def _extract_and_decode(raw: str, finish_reason: str = "stop") -> Optional[dict]:
     """
-    Best-effort extraction of a JSON object from a raw model response.
-    Handles markdown fences, <think> blocks, and JSON embedded in prose.
+    Attempt to decode a JSON object from the raw model response.
+
+    Strategy:
+      1. Warn immediately if finish_reason indicates truncation.
+      2. Strip markdown fences and <think> blocks.
+      3. Try json.loads on the cleaned string.
+      4. If that fails, scan for the outermost {...} and try again.
+      5. If that also fails, print the raw response and return None.
     """
-    # Strip markdown fences
+    if finish_reason == "length":
+        logger.warning(
+            "Model hit max_tokens limit — response truncated (finish_reason=length). "
+            "The JSON will be incomplete. Consider raising max_tokens further."
+        )
+
+    # Strip markdown code fences (applied once, on raw → clean)
     clean = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw, flags=re.MULTILINE).strip()
 
-    # Strip <think>...</think> blocks leaked by some reasoning models
+    # Strip <think>...</think> blocks leaked by reasoning models
     clean = re.sub(r"<think>[\s\S]*?</think>", "", clean, flags=re.IGNORECASE).strip()
 
-    if clean.startswith("{"):
-        return clean
+    # Attempt 1: direct parse
+    try:
+        return json.loads(clean)
+    except json.JSONDecodeError:
+        pass
 
-    # Extract outermost {...} from prose-wrapped output
+    # Attempt 2: extract outermost { ... }
     match = re.search(r"\{[\s\S]+\}", clean)
     if match:
-        logger.debug("JSON extracted from prose-wrapped response.")
-        return match.group(0)
+        try:
+            return json.loads(match.group(0))
+        except json.JSONDecodeError:
+            pass
 
-    return clean
+    # All attempts failed — print the raw response so the caller can inspect it
+    print("\n" + "=" * 72)
+    print("  JSON DECODE FAILED — raw model response:")
+    print("=" * 72)
+    print(raw)
+    print("=" * 72 + "\n")
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Light validation of decoded dict (no Pydantic)
+# ---------------------------------------------------------------------------
+
+def _validate_signal(raw: dict) -> Optional[dict]:
+    """
+    Check the mandatory fields exist and have sensible types.
+    Drops individual invalid signals rather than crashing the whole run.
+    Coerces minor issues (unknown sector/disruption) with a warning.
+    """
+    sector = raw.get("sector", "")
+    if sector not in _SECTOR_NAMES:
+        # Case-insensitive rescue
+        match = next((s for s in _SECTOR_NAMES if s.lower() == sector.lower()), None)
+        if match:
+            raw["sector"] = match
+        else:
+            logger.warning(
+                "Dropping signal: unknown sector %r. Full signal: %s",
+                sector, json.dumps(raw, default=str)[:400],
+            )
+            return None
+
+    disruption = raw.get("disruption_type", "")
+    if disruption not in _DISRUPTION_NAMES:
+        match = next((d for d in _DISRUPTION_NAMES if d.lower() == disruption.lower()), None)
+        if match:
+            raw["disruption_type"] = match
+        else:
+            logger.warning(
+                "Signal for %r has unknown disruption_type %r — keeping with warning.",
+                sector, disruption,
+            )
+
+    # Numeric range clamps — verbose on failure so dropped signals are visible
+    for key in ("confidence", "disruption_strength", "bear_case_probability"):
+        val = raw.get(key)
+        if not isinstance(val, (int, float)):
+            logger.warning(
+                "Signal for %r dropping — field %r has non-numeric value %r. "
+                "Full signal: %s",
+                sector, key, val, json.dumps(raw, default=str)[:400],
+            )
+            return None
+        raw[key] = max(0.0, min(1.0, float(val)))
+
+    time_w = raw.get("time_to_impact_weeks")
+    if not isinstance(time_w, int):
+        try:
+            raw["time_to_impact_weeks"] = max(1, min(12, int(time_w)))
+        except (TypeError, ValueError):
+            raw["time_to_impact_weeks"] = 3
+
+    # Ensure list fields are lists
+    for key in ("key_catalysts", "correlated_sectors", "conviction_drivers"):
+        if not isinstance(raw.get(key), list):
+            raw[key] = []
+
+    # Trim correlated_sectors to valid names only
+    raw["correlated_sectors"] = [
+        s for s in raw.get("correlated_sectors", []) if s in _SECTOR_NAMES
+    ][:2]
+
+    return raw
 
 
 # ---------------------------------------------------------------------------
 # Retry + model fallback logic
 # ---------------------------------------------------------------------------
 
-def _invoke_with_fallback(messages: list) -> AnalysisOutput:
+def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]]:
     """
     Try each ModelConfig in OPENROUTER_MODELS in priority order.
-    Within each model, retry on transient errors (429, 502-504, timeout).
-    Permanent errors (400, 401, ValidationError) skip immediately to the next model.
-    Returns a validated AnalysisOutput or raises RuntimeError if all fail.
+    Returns (decoded_dict, model_name) on success, or (None, None) if all
+    models fail.  The raw response is always persisted to disk when received.
     """
     for cfg in OPENROUTER_MODELS:
-        raw: Optional[str] = None
-
         for attempt, delay in enumerate(OPENROUTER_RETRY_DELAYS, start=1):
             try:
                 logger.info(
-                    "OpenRouter: trying %s (attempt %d/%d, json_schema=%s, reasoning=%s) ...",
+                    "OpenRouter: trying %s (attempt %d/%d) ...",
                     cfg.model, attempt, len(OPENROUTER_RETRY_DELAYS),
-                    cfg.use_json_schema, cfg.use_reasoning,
                 )
-                raw = _call_openrouter(messages, cfg)
-                clean = _extract_json(raw)
-                result = AnalysisOutput.model_validate_json(clean)
-                logger.info("+ %s — %d signals validated.", cfg.model, len(result.signals))
-                return result
+                raw, finish_reason = _call_openrouter(messages, cfg)
+
+                # Always persist the raw response to disk for post-hoc inspection
+                _save_raw_response(raw, cfg.model)
+
+                decoded = _extract_and_decode(raw, finish_reason)
+                if decoded is not None:
+                    logger.info("+ %s — decoded successfully.", cfg.model)
+                    return decoded, cfg.model
+
+                # Decode failed — raw already saved above with no suffix;
+                # re-save with a "decode_failed" tag for easy grepping
+                _save_raw_response(raw, cfg.model, suffix="decode_failed")
+                logger.error(
+                    "%s: could not decode JSON — skipping to next model.", cfg.model
+                )
+                break
 
             except requests.HTTPError as exc:
                 status = exc.response.status_code if exc.response is not None else 0
 
                 if status == 429:
-                    logger.warning("%s: rate limited (429) — sleeping %ds.", cfg.model, delay)
+                    logger.warning(
+                        "%s: rate limited (429) — sleeping %ds.", cfg.model, delay
+                    )
                     time.sleep(delay)
 
                 elif status in (502, 503, 504):
-                    logger.warning("%s: provider error (%d) — sleeping 10s.", cfg.model, status)
+                    logger.warning(
+                        "%s: provider error (%d) — sleeping 10s.", cfg.model, status
+                    )
                     time.sleep(10)
 
                 else:
-                    # 400, 401, 422 etc. — permanent; move on immediately
                     logger.error(
                         "%s: HTTP %d — skipping to next model.\n%s",
                         cfg.model, status,
                         (exc.response.text or "")[:400],
                     )
                     break
-
-            except (ValidationError, ValueError) as exc:
-                logger.warning("%s: validation failed (%s).", cfg.model, exc)
-                # One salvage attempt: pull outermost JSON object in case the
-                # model wrapped its response in prose despite json_object mode
-                if raw:
-                    salvage = re.search(r"\{[\s\S]+\}", raw)
-                    if salvage:
-                        try:
-                            result = AnalysisOutput.model_validate_json(salvage.group(0))
-                            logger.info(
-                                "+ %s — salvage succeeded, %d signals.", cfg.model, len(result.signals)
-                            )
-                            return result
-                        except Exception as salvage_exc:
-                            logger.warning("%s: salvage also failed (%s).", cfg.model, salvage_exc)
-                logger.error("%s: skipping to next model.", cfg.model)
-                break
 
             except requests.Timeout:
                 logger.warning(
@@ -522,13 +388,17 @@ def _invoke_with_fallback(messages: list) -> AnalysisOutput:
                 time.sleep(delay)
 
             except Exception as exc:
-                logger.error("%s: unexpected error: %s — skipping.", cfg.model, exc)
+                logger.error(
+                    "%s: unexpected error: %s — skipping.", cfg.model, exc
+                )
                 break
 
         else:
-            logger.warning("%s: all retries exhausted — moving to next model.", cfg.model)
+            logger.warning(
+                "%s: all retries exhausted — moving to next model.", cfg.model
+            )
 
-    raise RuntimeError("All OpenRouter models exhausted without a valid response.")
+    return None, None
 
 
 # ---------------------------------------------------------------------------
@@ -559,21 +429,24 @@ def _keyword_fallback(headlines: List[Headline]) -> List[Dict]:
             continue
         dis_hits = sum(1 for dw in _DISRUPTION_WORDS if dw in all_text)
         pos_hits = sum(1 for pw in _POSITIVE_WORDS if pw in all_text)
-        confidence = min(0.40 + (kw_hits/12)*0.35 + (dis_hits/15)*0.15 + (pos_hits/20)*0.10, 0.85)
+        confidence = min(
+            0.40 + (kw_hits / 12) * 0.35 + (dis_hits / 15) * 0.15 + (pos_hits / 20) * 0.10,
+            0.85,
+        )
         results.append({
-            "sector":               sector,
-            "confidence":           round(confidence, 3),
-            "disruption_type":      "Regulatory / Policy Shift",
-            "disruption_strength":  round(min(dis_hits / 10, 1.0), 3),
-            "time_to_impact_weeks": 3,
-            "propagation":          f"Keyword signal: {kw_hits} sector matches (heuristic fallback).",
-            "invalidation_risk":    "Heuristic - validate manually.",
-            "rationale":            f"Keyword-based: {kw_hits} sector hits in headlines.",
+            "sector":                sector,
+            "confidence":            round(confidence, 3),
+            "disruption_type":       "Regulatory / Policy Shift",
+            "disruption_strength":   round(min(dis_hits / 10, 1.0), 3),
+            "time_to_impact_weeks":  3,
+            "propagation":           f"Keyword signal: {kw_hits} sector matches (heuristic fallback).",
+            "invalidation_risk":     "Heuristic — validate manually.",
+            "rationale":             f"Keyword-based: {kw_hits} sector hits in headlines.",
             "bear_case_probability": round(1.0 - confidence, 3),
-            "key_catalysts":        ["Manual validation required"],
-            "correlated_sectors":   [],
-            "conviction_drivers":   ["Heuristic fallback - no LLM analysis available"],
-            "macro_regime_summary": "Heuristic fallback - no LLM macro analysis available.",
+            "key_catalysts":         ["Manual validation required"],
+            "correlated_sectors":    [],
+            "conviction_drivers":    ["Heuristic fallback — no LLM analysis available"],
+            "macro_regime_summary":  "Heuristic fallback — no LLM macro analysis available.",
         })
     results.sort(key=lambda x: x["confidence"], reverse=True)
     return results[:5]
@@ -585,8 +458,8 @@ def _keyword_fallback(headlines: List[Headline]) -> List[Dict]:
 
 def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
     """
-    Call OpenRouter with the supplied headlines and return a validated list
-    of swing signal dicts.
+    Call OpenRouter with the supplied headlines and return a list of
+    swing signal dicts.
 
     Falls back to keyword heuristic if all OpenRouter models fail.
     """
@@ -597,33 +470,67 @@ def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
     messages = _build_messages(headlines)
     logger.info("Invoking OpenRouter on %d headlines ...", len(headlines))
 
-    try:
-        result = _invoke_with_fallback(messages)
-    except RuntimeError as exc:
-        logger.error("%s - using keyword fallback.", exc)
+    decoded, model_used = _invoke_with_fallback(messages)
+
+    if decoded is None:
+        logger.error("All OpenRouter models failed — using keyword fallback.")
         return _keyword_fallback(headlines)
 
-    if result.macro_regime_summary:
-        logger.info("Macro regime: %s", result.macro_regime_summary)
+    macro_obj = decoded.get("macro", {})
+    macro = (
+        macro_obj.get("regime", "")
+        if isinstance(macro_obj, dict)
+        else decoded.get("macro_regime_summary", "")  # graceful fallback for old schema
+    )
+    if macro:
+        logger.info("Macro regime: %s", macro)
 
-    signals = sorted(result.signals, key=lambda s: s.confidence, reverse=True)
+    raw_signals = decoded.get("signals", [])
+    if not isinstance(raw_signals, list):
+        logger.warning("'signals' field is not a list — using keyword fallback.")
+        return _keyword_fallback(headlines)
+
+    logger.info(
+        "Raw signals from model (%s): %d total before validation.",
+        model_used, len(raw_signals),
+    )
+    for i, raw in enumerate(raw_signals):
+        logger.info(
+            "  Signal %d: sector=%r  conf=%s  disruption=%r",
+            i + 1,
+            raw.get("sector"),
+            raw.get("confidence"),
+            raw.get("disruption_type"),
+        )
+
+    if len(raw_signals) == 0:
+        logger.warning(
+            "Model returned 0 signals. Raw response saved to %s/. "
+            "This is likely prompt self-censorship — review the saved file.",
+            _RAW_RESPONSE_DIR,
+        )
+
+    signals = []
+    for raw in raw_signals:
+        validated = _validate_signal(raw)
+        if validated is None:
+            continue
+        signals.append({
+            "sector":                validated["sector"],
+            "confidence":            round(validated["confidence"], 4),
+            "disruption_type":       validated["disruption_type"],
+            "disruption_strength":   round(validated["disruption_strength"], 4),
+            "time_to_impact_weeks":  validated["time_to_impact_weeks"],
+            "propagation":           validated.get("propagation", ""),
+            "invalidation_risk":     validated.get("invalidation_risk", ""),
+            "rationale":             validated.get("rationale", ""),
+            "bear_case_probability": round(validated["bear_case_probability"], 4),
+            "key_catalysts":         validated.get("key_catalysts", []),
+            "correlated_sectors":    validated.get("correlated_sectors", []),
+            "conviction_drivers":    validated.get("conviction_drivers", []),
+            "macro_regime_summary":  macro,
+        })
+
+    signals.sort(key=lambda s: s["confidence"], reverse=True)
     logger.info("Returning %d validated signals.", len(signals))
-
-    return [
-        {
-            "sector":               sig.sector,
-            "confidence":           round(sig.confidence, 4),
-            "disruption_type":      sig.disruption_type,
-            "disruption_strength":  round(sig.disruption_strength, 4),
-            "time_to_impact_weeks": sig.time_to_impact_weeks,
-            "propagation":          sig.propagation,
-            "invalidation_risk":    sig.invalidation_risk,
-            "rationale":            sig.rationale,
-            "bear_case_probability": round(sig.bear_case_probability, 4),
-            "key_catalysts":        sig.key_catalysts,
-            "correlated_sectors":   sig.correlated_sectors,
-            "conviction_drivers":   sig.conviction_drivers,
-            "macro_regime_summary": result.macro_regime_summary,
-        }
-        for sig in signals
-    ]
+    return signals

@@ -15,66 +15,187 @@ from typing import Dict, List
 
 # ---------------------------------------------------------------------------
 # LSE / FTSE ICB Sector Taxonomy + Sector-Specific Keywords
+#
+# Granular sub-sectors rather than broad ICB buckets, so signals name
+# specific stock clusters the LLM (and the trader) can act on.
 # ---------------------------------------------------------------------------
 
 LSE_SECTORS: Dict[str, List[str]] = {
-    "Technology": [
-        "semiconductor", "chip", "AI", "artificial intelligence", "cloud",
-        "cybersecurity", "data centre", "ARM", "Sage", "Aveva", "SaaS",
-        "export controls", "TSMC", "Nvidia", "supply chain tech",
+
+    # ---- Technology --------------------------------------------------------
+    "Semiconductors & EDA": [
+        "semiconductor", "chip", "wafer", "foundry", "fabless", "EDA",
+        "ARM Holdings", "TSMC", "Nvidia", "Intel", "ASML", "export controls",
+        "chip shortage", "advanced packaging", "HBM", "CoWoS",
     ],
-    "Financials": [
-        "bank", "insurance", "asset management", "HSBC", "Barclays",
-        "Lloyds", "NatWest", "Standard Chartered", "Prudential", "Aviva",
-        "interest rate", "BoE", "Bank of England", "credit spreads",
-        "gilt", "yield curve", "Basel", "capital requirements", "fintech",
+    "Cloud & SaaS": [
+        "cloud", "SaaS", "software-as-a-service", "Sage Group", "Aveva",
+        "Micro Focus", "Azure", "AWS", "GCP", "enterprise software",
+        "subscription revenue", "ARR", "churn",
     ],
-    "Energy": [
-        "oil", "gas", "energy", "renewables", "wind", "solar", "BP",
-        "Shell", "North Sea", "LNG", "brent", "crude", "OPEC",
-        "carbon price", "windfall tax", "energy transition", "hydrogen",
+    "Cybersecurity": [
+        "cybersecurity", "cyber attack", "ransomware", "data breach",
+        "NCC Group", "Darktrace", "zero-trust", "NCSC", "vulnerability",
+        "critical infrastructure attack",
     ],
-    "Healthcare": [
-        "pharma", "biotech", "drug approval", "clinical trial", "FDA",
-        "MHRA", "AstraZeneca", "GSK", "Smith+Nephew", "Hikma", "vaccine",
-        "NHS", "GLP-1", "weight loss drug", "patent cliff", "biosimilar",
+    "AI Infrastructure": [
+        "artificial intelligence", "AI", "large language model", "LLM",
+        "GPU cluster", "data centre AI", "inference", "training compute",
+        "AI chips", "AI regulation", "foundation model",
     ],
-    "Consumer Discretionary": [
-        "retail", "luxury", "automotive", "travel", "hospitality",
-        "Marks & Spencer", "Next", "JD Sports", "easyJet", "IAG",
-        "Burberry", "consumer confidence", "real wages", "credit card",
+    "Data Centres & Digital Infrastructure": [
+        "data centre", "colocation", "hyperscaler", "Digital 9 Infrastructure",
+        "Segro tech", "power demand data centre", "cooling", "rack density",
+        "network capacity",
     ],
-    "Consumer Staples": [
-        "food", "beverage", "household", "tobacco", "Unilever", "Diageo",
-        "Reckitt", "British American Tobacco", "grocery", "FMCG",
-        "input costs", "commodity prices", "pricing power",
+
+    # ---- Financials --------------------------------------------------------
+    "UK Retail Banks": [
+        "Lloyds Banking", "NatWest", "Barclays retail", "Halifax",
+        "mortgage", "net interest margin", "NIM", "loan impairment",
+        "BoE base rate", "Bank of England", "credit card default",
+        "consumer credit", "savings rate",
     ],
-    "Industrials": [
-        "manufacturing", "aerospace", "defence", "logistics", "engineering",
-        "Rolls-Royce", "BAE Systems", "Babcock", "infrastructure",
-        "supply chain", "reshoring", "nearshoring", "government contract",
-        "defence spending", "NATO",
+    "Investment Banks & Brokers": [
+        "Barclays investment bank", "HSBC", "Standard Chartered",
+        "investment banking", "M&A advisory", "ECM", "DCM", "trading revenue",
+        "capital markets", "IPO pipeline",
     ],
-    "Materials": [
-        "mining", "metals", "chemicals", "steel", "copper", "lithium",
-        "Rio Tinto", "Anglo American", "Glencore", "Antofagasta",
-        "commodities", "rare earth", "EV battery", "critical minerals",
+    "Insurance": [
+        "Aviva", "Legal & General", "Prudential", "Admiral",
+        "Direct Line", "Beazley", "Lloyd's of London", "reinsurance",
+        "combined ratio", "catastrophe loss", "premium rate",
     ],
-    "Real Estate": [
-        "REIT", "property", "housing", "commercial real estate",
-        "Segro", "Land Securities", "British Land", "Rightmove",
-        "mortgage rates", "housebuilder", "Taylor Wimpey", "Persimmon",
-        "office vacancy", "logistics property",
+    "Asset Management & Wealth": [
+        "asset management", "fund manager", "abrdn", "Schroders",
+        "Man Group", "Intermediate Capital", "AUM", "flows",
+        "passive vs active", "fee compression",
     ],
-    "Utilities": [
-        "electricity", "water", "grid", "National Grid",
-        "Severn Trent", "United Utilities", "SSE", "Centrica",
-        "ofwat", "ofgem", "regulation", "price cap", "network investment",
+    "Fintech & Payments": [
+        "fintech", "payments", "Wise", "Network International",
+        "open banking", "buy now pay later", "BNPL", "digital wallet",
+        "interchange", "PSR",
     ],
-    "Telecommunications": [
-        "telecom", "5G", "broadband", "BT Group", "Vodafone",
-        "fibre rollout", "spectrum auction", "mobile", "consolidation",
-        "ofcom",
+
+    # ---- Energy ------------------------------------------------------------
+    "Integrated Oil & Gas": [
+        "BP", "Shell", "TotalEnergies", "oil price", "brent crude",
+        "upstream", "downstream", "refining margin", "OPEC", "LNG",
+        "North Sea", "windfall tax", "energy profits levy",
+    ],
+    "Renewables & Clean Energy": [
+        "wind farm", "solar", "offshore wind", "Orsted", "SSE renewables",
+        "green hydrogen", "CfD auction", "capacity market", "Vattenfall",
+        "energy transition", "net zero", "National Grid ESO",
+    ],
+    "Oil Field Services": [
+        "Petrofac", "John Wood Group", "Hunting", "Expro",
+        "oilfield services", "drilling rig", "subsea", "well completion",
+        "capex upstream",
+    ],
+
+    # ---- Healthcare --------------------------------------------------------
+    "Pharma & Biotech": [
+        "AstraZeneca", "GSK", "Hikma", "Indivior",
+        "drug approval", "FDA", "MHRA", "clinical trial phase",
+        "patent cliff", "biosimilar", "GLP-1", "oncology",
+    ],
+    "Medical Devices & Services": [
+        "Smith+Nephew", "ConvaTec", "Spectranetics", "Electrocomponents health",
+        "NHS contract", "surgical robot", "orthopaedic", "wound care",
+        "diagnostics", "point-of-care",
+    ],
+
+    # ---- Consumer ----------------------------------------------------------
+    "UK General Retail": [
+        "Marks & Spencer", "Next", "B&M", "Primark", "Dunelm",
+        "footfall", "like-for-like sales", "LFL", "consumer confidence",
+        "real wages", "discretionary spend",
+    ],
+    "Luxury & Lifestyle": [
+        "Burberry", "Watches of Switzerland", "Mulberry",
+        "luxury goods", "China consumption", "aspirational spending",
+        "duty free", "tourism spend",
+    ],
+    "Travel, Leisure & Hospitality": [
+        "easyJet", "IAG", "Jet2", "TUI", "Whitbread",
+        "hotel occupancy", "yield management", "load factor",
+        "holiday booking", "staycation", "cruise",
+    ],
+    "Grocery & Food Retail": [
+        "Tesco", "J Sainsbury", "Ocado", "Marks & Spencer food",
+        "grocery inflation", "own-label", "shrinkflation",
+        "food price index", "discounters", "Aldi", "Lidl pressure",
+    ],
+    "Consumer Staples & FMCG": [
+        "Unilever", "Reckitt", "Diageo", "British American Tobacco",
+        "Imperial Brands", "pricing power", "volume growth",
+        "input cost", "commodity inflation FMCG", "emerging markets FMCG",
+    ],
+
+    # ---- Industrials -------------------------------------------------------
+    "Aerospace & Defence": [
+        "BAE Systems", "Rolls-Royce", "Babcock", "QinetiQ", "Ultra Electronics",
+        "defence budget", "NATO spending", "Eurofighter", "Type 26 frigate",
+        "government defence contract", "geopolitical rearmament",
+    ],
+    "Engineering & Industrials": [
+        "Weir Group", "IMI", "Melrose Industries", "GKN",
+        "industrial automation", "reshoring manufacturing",
+        "capex cycle", "order book", "book-to-bill", "supply chain nearshoring",
+    ],
+    "Logistics & Transport": [
+        "Royal Mail", "International Distributions Services", "DHL UK",
+        "parcel volumes", "last-mile delivery", "freight rates",
+        "rail freight", "port throughput", "haulage", "e-commerce logistics",
+    ],
+
+    # ---- Materials ---------------------------------------------------------
+    "Diversified Mining": [
+        "Rio Tinto", "Anglo American", "Glencore", "BHP",
+        "iron ore", "copper price", "thermal coal", "metallurgical coal",
+        "China steel demand", "mining capex",
+    ],
+    "Specialty Metals & Battery Materials": [
+        "Antofagasta", "Centamin", "Hochschild", "Polymetal",
+        "lithium", "cobalt", "nickel", "rare earth", "EV battery supply",
+        "critical minerals", "CBAM", "battery gigafactory",
+    ],
+
+    # ---- Real Estate -------------------------------------------------------
+    "Commercial & Logistics REITs": [
+        "Segro", "Tritax Big Box", "LondonMetric", "Warehouse REIT",
+        "logistics property", "last-mile warehouse", "rent indexation",
+        "vacancy rate industrial",
+    ],
+    "Retail & Office REITs": [
+        "Land Securities", "British Land", "Hammerson", "Derwent London",
+        "office vacancy", "hybrid working", "retail park",
+        "footfall retail property", "yield expansion commercial",
+    ],
+    "Housebuilders": [
+        "Taylor Wimpey", "Persimmon", "Barratt Developments", "Bellway",
+        "Berkeley Group", "Help to Buy", "planning reform",
+        "mortgage approval", "house price index", "build cost inflation",
+    ],
+
+    # ---- Utilities ---------------------------------------------------------
+    "Electricity & Grid": [
+        "National Grid", "SSE", "Drax", "Centrica",
+        "electricity price", "grid investment", "transmission", "ofgem",
+        "capacity market", "power purchase agreement", "battery storage grid",
+    ],
+    "Water": [
+        "Severn Trent", "United Utilities", "Pennon", "South West Water",
+        "ofwat", "price review PR24", "leakage target", "wastewater",
+        "regulatory settlement water",
+    ],
+
+    # ---- Telecoms ----------------------------------------------------------
+    "UK Telecoms & Broadband": [
+        "BT Group", "Vodafone UK", "Virgin Media O2", "TalkTalk",
+        "fibre rollout", "FTTP", "Openreach", "5G spectrum",
+        "mobile consolidation", "ofcom", "broadband subsidy",
     ],
 }
 
@@ -163,65 +284,24 @@ RSS_FEEDS: List[Dict[str, str]] = [
 
 # ---------------------------------------------------------------------------
 # OpenRouter Model Configs
-#
-# Each entry declares the model string plus the two capability flags that
-# affect how the payload is built. Set these once here — llm_analyzer.py
-# reads them and never probes or retries to discover them at runtime, so
-# no free-tier requests are wasted on capability detection.
-#
-# use_json_schema : True  → response_format=json_schema (enforced structure)
-#                  False → response_format=json_object  (plain JSON mode)
-#
-# use_reasoning   : True  → reasoning.effort="high" is added to the payload
-#                  False → param is omitted entirely
-#
-# How to know which flags to set for a new model
-# -----------------------------------------------
-# Check the model's page on openrouter.ai/models — look for:
-#   "Structured outputs"  → use_json_schema: True
-#   "Reasoning / Thinking"→ use_reasoning:   True
-# If unsure, default both to False — the model will still produce valid
-# JSON via prompt instruction alone; it just won't be schema-enforced.
 # ---------------------------------------------------------------------------
 
 @dataclass
 class ModelConfig:
-    model:            str
-    use_json_schema:  bool = True   # send response_format=json_schema
-    use_reasoning:    bool = True   # send reasoning.effort="high"
+    model: str
 
 
 OPENROUTER_MODELS: List[ModelConfig] = [
-    # Primary: Gemma 4 31B — supports both json_schema and reasoning
-    ModelConfig(
-        model           = "google/gemma-4-31b-it:free",
-        use_json_schema = True,
-        use_reasoning   = True,
-    ),
-    # Secondary: Gemma 4 26B MoE — same capability profile as 31B
-    ModelConfig(
-        model           = "google/gemma-4-26b-a4b-it:free",
-        use_json_schema = True,
-        use_reasoning   = True,
-    ),
-    # Tertiary: Nemotron Super 120B — does NOT support reasoning param;
-    # json_schema also unreliable so use plain json_object mode
-    ModelConfig(
-        model           = "nvidia/nemotron-3-super-120b-a12b:free",
-        use_json_schema = False,
-        use_reasoning   = False,
-    ),
-    # Fallback: Nemotron Nano Omni — same limitations as Super
-    ModelConfig(
-        model           = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-        use_json_schema = False,
-        use_reasoning   = False,
-    ),
+    ModelConfig(model="google/gemma-4-31b-it:free"),
+    ModelConfig(model="google/gemma-4-26b-a4b-it:free"),
+    ModelConfig(model="qwen/qwen3-next-80b-a3b-instruct:free"),
+    ModelConfig(model="google/gemma-3-27b-it:free"),
+    ModelConfig(model="openrouter/owl-alpha"),
+    ModelConfig(model="openrouter/free"),
 ]
 
 # Retry delays in seconds between attempts on the same model (429 / timeout).
-# After these are exhausted the next model in the list is tried.
-OPENROUTER_RETRY_DELAYS: List[int] = [15, 15, 30, 30, 60, 60]
+OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
 
 
 # ---------------------------------------------------------------------------
@@ -230,18 +310,9 @@ OPENROUTER_RETRY_DELAYS: List[int] = [15, 15, 30, 30, 60, 60]
 
 @dataclass
 class SchedulerConfig:
-    # Headlines passed to the LLM per cycle
     max_headlines_per_cycle: int = 500
-
-    # Minimum LLM confidence to emit a SectorSignal
     min_confidence: float = 0.60
-
-    # Minimum disruption strength to consider a thesis actionable
     min_disruption_strength: float = 0.55
 
-
-# ---------------------------------------------------------------------------
-# Shared singleton instance
-# ---------------------------------------------------------------------------
 
 SCHEDULER_CFG = SchedulerConfig()
