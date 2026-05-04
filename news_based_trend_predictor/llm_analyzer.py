@@ -40,8 +40,8 @@ import requests
 from config import (
     DISRUPTION_CATEGORIES,
     LSE_SECTORS,
-    ModelConfig,
     OPENROUTER_MODELS,
+    OPENROUTER_PRIMARY,
     OPENROUTER_RETRY_DELAYS,
     SCHEDULER_CFG,
 )
@@ -181,20 +181,30 @@ def _get_headers() -> dict:
     }
 
 
-def _build_payload(messages: list, cfg: ModelConfig) -> dict:
+def _build_payload(messages: list, model_chunk: list) -> dict:
+    """
+    Build the request payload for OpenRouter's /v1/chat/completions endpoint.
+
+    OpenRouter's native fallback accepts up to 3 models per request via
+    `models` + `route: "fallback"`.  The first entry in the chunk is also
+    set as the top-level `model` field (required by the API).  If all models
+    in the chunk are exhausted server-side, the caller tries the next chunk.
+    """
     return {
-        "model":       cfg.model,
+        "model":       model_chunk[0],
         "messages":    messages,
         "temperature": 0.35,
         "max_tokens":  4096,
         "reasoning":   {"effort": "high", "exclude": True},
         "response_format": {"type": "json_object"},
+        "models": model_chunk,   # OpenRouter native fallback — max 3 per request
+        "route":  "fallback",
     }
 
 
-def _call_openrouter(messages: list, cfg: ModelConfig) -> tuple:
-    """Returns (content, finish_reason). finish_reason is 'stop' on clean completion."""
-    payload = _build_payload(messages, cfg)
+def _call_openrouter(messages: list, model_chunk: list) -> tuple:
+    """Returns (content, finish_reason, model_used). finish_reason is 'stop' on clean completion."""
+    payload = _build_payload(messages, model_chunk)
     resp = requests.post(
         _OR_URL,
         headers=_get_headers(),
@@ -202,8 +212,11 @@ def _call_openrouter(messages: list, cfg: ModelConfig) -> tuple:
         timeout=180,
     )
     resp.raise_for_status()
-    choice = resp.json()["choices"][0]
-    return choice["message"]["content"], choice.get("finish_reason", "unknown")
+    data   = resp.json()
+    choice = data["choices"][0]
+    # OpenRouter echoes back which model actually served the request
+    model_used = data.get("model", OPENROUTER_PRIMARY)
+    return choice["message"]["content"], choice.get("finish_reason", "unknown"), model_used
 
 
 # ---------------------------------------------------------------------------
@@ -328,76 +341,87 @@ def _validate_signal(raw: dict) -> Optional[dict]:
 
 def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]]:
     """
-    Try each ModelConfig in OPENROUTER_MODELS in priority order.
-    Returns (decoded_dict, model_name) on success, or (None, None) if all
-    models fail.  The raw response is always persisted to disk when received.
+    Iterate through OPENROUTER_MODELS in windows of 3, sending each window
+    as a single OpenRouter request with `models` + `route: "fallback"`.
+    OpenRouter handles intra-chunk fallback server-side; this function handles
+    inter-chunk fallback (i.e. all 3 models in a window failed → try next window).
+
+    Within each chunk, transient errors (429, 5xx, timeout) are retried up to
+    len(OPENROUTER_RETRY_DELAYS) times before the chunk is abandoned and the
+    next chunk is tried.  Permanent 4xx errors abort immediately.
+
+    Example with 6 models:
+      Chunk 1: [model_0, model_1, model_2]  — one OpenRouter request
+      Chunk 2: [model_3, model_4, model_5]  — tried only if chunk 1 fully fails
+
+    Returns (decoded_dict, model_name_that_served_request) on success,
+    or (None, None) if every chunk is exhausted.
     """
-    for cfg in OPENROUTER_MODELS:
+    chunks = [OPENROUTER_MODELS[i:i+3] for i in range(0, len(OPENROUTER_MODELS), 3)]
+    total_chunks = len(chunks)
+
+    for chunk_idx, chunk in enumerate(chunks, start=1):
+        logger.info(
+            "OpenRouter: chunk %d/%d — models: %s",
+            chunk_idx, total_chunks, " → ".join(chunk),
+        )
+
         for attempt, delay in enumerate(OPENROUTER_RETRY_DELAYS, start=1):
             try:
-                logger.info(
-                    "OpenRouter: trying %s (attempt %d/%d) ...",
-                    cfg.model, attempt, len(OPENROUTER_RETRY_DELAYS),
-                )
-                raw, finish_reason = _call_openrouter(messages, cfg)
+                raw, finish_reason, model_used = _call_openrouter(messages, chunk)
 
-                # Always persist the raw response to disk for post-hoc inspection
-                _save_raw_response(raw, cfg.model)
+                logger.info("+ Served by model: %s (chunk %d/%d)", model_used, chunk_idx, total_chunks)
+                _save_raw_response(raw, model_used)
 
                 decoded = _extract_and_decode(raw, finish_reason)
                 if decoded is not None:
-                    logger.info("+ %s — decoded successfully.", cfg.model)
-                    return decoded, cfg.model
+                    return decoded, model_used
 
-                # Decode failed — raw already saved above with no suffix;
-                # re-save with a "decode_failed" tag for easy grepping
-                _save_raw_response(raw, cfg.model, suffix="decode_failed")
+                _save_raw_response(raw, model_used, suffix="decode_failed")
                 logger.error(
-                    "%s: could not decode JSON — skipping to next model.", cfg.model
+                    "Could not decode JSON from chunk %d — trying next chunk.", chunk_idx
                 )
-                break
+                break  # JSON decode failed — skip to next chunk immediately
 
             except requests.HTTPError as exc:
                 status = exc.response.status_code if exc.response is not None else 0
 
                 if status == 429:
                     logger.warning(
-                        "%s: rate limited (429) — sleeping %ds.", cfg.model, delay
+                        "Chunk %d: rate limited (429) — sleeping %ds (attempt %d/%d).",
+                        chunk_idx, delay, attempt, len(OPENROUTER_RETRY_DELAYS),
                     )
                     time.sleep(delay)
 
                 elif status in (502, 503, 504):
                     logger.warning(
-                        "%s: provider error (%d) — sleeping 10s.", cfg.model, status
+                        "Chunk %d: gateway error (%d) — sleeping %ds (attempt %d/%d).",
+                        chunk_idx, status, delay, attempt, len(OPENROUTER_RETRY_DELAYS),
                     )
-                    time.sleep(10)
+                    time.sleep(delay)
 
                 else:
                     logger.error(
-                        "%s: HTTP %d — skipping to next model.\n%s",
-                        cfg.model, status,
-                        (exc.response.text or "")[:400],
+                        "Chunk %d: HTTP %d — non-retryable, trying next chunk.\n%s",
+                        chunk_idx, status, (exc.response.text or "")[:400],
                     )
-                    break
+                    break  # non-retryable — move to next chunk
 
             except requests.Timeout:
                 logger.warning(
-                    "%s: timeout (attempt %d/%d) — sleeping %ds.",
-                    cfg.model, attempt, len(OPENROUTER_RETRY_DELAYS), delay,
+                    "Chunk %d: timeout (attempt %d/%d) — sleeping %ds.",
+                    chunk_idx, attempt, len(OPENROUTER_RETRY_DELAYS), delay,
                 )
                 time.sleep(delay)
 
             except Exception as exc:
-                logger.error(
-                    "%s: unexpected error: %s — skipping.", cfg.model, exc
-                )
+                logger.error("Chunk %d: unexpected error: %s — trying next chunk.", chunk_idx, exc)
                 break
 
         else:
-            logger.warning(
-                "%s: all retries exhausted — moving to next model.", cfg.model
-            )
+            logger.warning("Chunk %d: all retry attempts exhausted — trying next chunk.", chunk_idx)
 
+    logger.error("All %d chunks exhausted — no model succeeded.", total_chunks)
     return None, None
 
 

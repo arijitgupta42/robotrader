@@ -10,7 +10,7 @@ treated semiconductors during export-control escalations.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -284,24 +284,28 @@ RSS_FEEDS: List[Dict[str, str]] = [
 
 # ---------------------------------------------------------------------------
 # OpenRouter Model Configs
+#
+# OPENROUTER_PRIMARY  — the model name sent in the top-level "model" field.
+# OPENROUTER_MODELS   — full ordered fallback list sent in extra_body["models"].
+#                       OpenRouter tries each in sequence if the previous one
+#                       is rate-limited, unavailable, or returns an error.
+#                       The primary should appear first in this list.
 # ---------------------------------------------------------------------------
 
-@dataclass
-class ModelConfig:
-    model: str
+OPENROUTER_PRIMARY: str = "google/gemma-4-31b-it:free"
 
-
-OPENROUTER_MODELS: List[ModelConfig] = [
-    ModelConfig(model="google/gemma-4-31b-it:free"),
-    ModelConfig(model="google/gemma-4-26b-a4b-it:free"),
-    ModelConfig(model="qwen/qwen3-next-80b-a3b-instruct:free"),
-    ModelConfig(model="google/gemma-3-27b-it:free"),
-    ModelConfig(model="openrouter/owl-alpha"),
-    ModelConfig(model="openrouter/free"),
+OPENROUTER_MODELS: List[str] = [
+    "google/gemma-4-31b-it:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "google/gemma-3-27b-it:free",
+    "openrouter/owl-alpha",
 ]
 
-# Retry delays in seconds between attempts on the same model (429 / timeout).
-OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
+# Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
+# The model-level Python fallback loop is gone — OpenRouter handles model
+# rotation server-side.  These delays cover network-level retries only.
+OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60, 15, 30, 60, 15, 30, 60]
 
 
 # ---------------------------------------------------------------------------
