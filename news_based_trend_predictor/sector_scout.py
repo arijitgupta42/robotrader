@@ -252,7 +252,7 @@ class SectorScout:
 
 if __name__ == "__main__":
 
-    os.environ["OPENROUTER_API_KEY"] = ''#Your API KEY here
+    os.environ["OPENROUTER_API_KEY"] = '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'
     scout   = SectorScout()
     signals = scout.run_cycle()
     sys.exit(0 if signals is not None else 1)
