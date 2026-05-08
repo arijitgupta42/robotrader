@@ -10,18 +10,13 @@ All output structure is defined in the system prompt as a plain JSON
 schema description.  The response is decoded with json.loads(); if that
 fails the raw model output is printed and an empty result is returned.
 
-To add or swap a model: edit OPENROUTER_MODELS in config.py only.
+To add or swap models at runtime without redeploying the Lambda, update
+the SSM parameter /sector-scout/openrouter-models (comma-separated list).
+Falls back to OPENROUTER_MODELS in config.py if SSM is unreachable.
 
 Environment variable required
 ------------------------------
     OPENROUTER_API_KEY   — your OpenRouter API key
-
-Raw model responses
--------------------
-Every raw response string from the model is written to:
-    ./raw_model_responses/raw_<timestamp>_<model_slug>.txt
-This allows post-hoc inspection when JSON decoding fails or signals are
-unexpectedly empty.
 """
 
 from __future__ import annotations
@@ -31,8 +26,6 @@ import logging
 import os
 import re
 import time
-from datetime import datetime, timezone
-from pathlib import Path
 from typing import Dict, List, Optional
 
 import requests
@@ -40,38 +33,13 @@ import requests
 from config import (
     DISRUPTION_CATEGORIES,
     LSE_SECTORS,
-    OPENROUTER_MODELS,
-    OPENROUTER_PRIMARY,
     OPENROUTER_RETRY_DELAYS,
     SCHEDULER_CFG,
+    load_openrouter_models,
 )
 from news_fetcher import Headline
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Raw response persistence
-# ---------------------------------------------------------------------------
-
-_RAW_RESPONSE_DIR = Path("raw_model_responses")
-
-
-def _save_raw_response(raw: str, model: str, suffix: str = "") -> Path:
-    """
-    Write the raw model response string to a timestamped file under
-    ./raw_model_responses/.  Returns the path written.
-
-    suffix  — optional tag appended to the filename, e.g. "decode_failed"
-    """
-    _RAW_RESPONSE_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    slug = re.sub(r"[^a-zA-Z0-9_-]", "_", model)[:60]
-    tag = f"_{suffix}" if suffix else ""
-    path = _RAW_RESPONSE_DIR / f"raw_{ts}_{slug}{tag}.txt"
-    path.write_text(raw, encoding="utf-8")
-    logger.info("Raw model response saved → %s", path)
-    return path
-
 
 # ---------------------------------------------------------------------------
 # Prompt construction
@@ -165,13 +133,53 @@ def _build_messages(headlines: List[Headline]) -> list:
 _OR_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
+_cached_api_key: Optional[str] = None
+
+def _load_api_key() -> str:
+    """
+    Load the OpenRouter API key from SSM Parameter Store.
+    Cached after first fetch for the Lambda container lifetime.
+    Falls back to OPENROUTER_API_KEY env var for local development.
+    Raises EnvironmentError if neither source yields a key.
+    """
+    global _cached_api_key
+
+    if _cached_api_key:
+        return _cached_api_key
+
+    try:
+        import boto3
+        ssm = boto3.client("ssm", region_name=os.environ.get("AWS_REGION", "eu-west-1"))
+        logger.info("SSM: fetching OpenRouter API key ...")
+        resp = ssm.get_parameter(
+            Name="/sector-scout/openrouter-api-key",
+            WithDecryption=True,
+        )
+        key = resp["Parameter"]["Value"].strip()
+        if key:
+            logger.info("SSM: OpenRouter API key loaded successfully.")
+            _cached_api_key = key
+            return _cached_api_key
+        else:
+            logger.warning("SSM: parameter exists but value is empty")
+    except Exception as exc:
+        logger.warning(
+            "SSM: could not load OpenRouter API key (%s: %s) — trying env var fallback.",
+            type(exc).__name__, exc,
+        )
+
+    raise EnvironmentError(
+        "OpenRouter API key not found. Tried:\n"
+        "  - SSM parameter: /sector-scout/openrouter-api-key (SecureString)\n"
+        "Set this before running."
+    )
 def _get_headers() -> dict:
-    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    api_key = _load_api_key()
     if not api_key:
         raise EnvironmentError(
             "OPENROUTER_API_KEY environment variable is not set. "
             "Create a free account at https://openrouter.ai, generate an API key, "
-            "and set it before running: export OPENROUTER_API_KEY=sk-or-..."
+            "and set it in SSM before running"
         )
     return {
         "Authorization": f"Bearer {api_key}",
@@ -208,14 +216,14 @@ def _call_openrouter(messages: list, model_chunk: list) -> tuple:
     resp = requests.post(
         _OR_URL,
         headers=_get_headers(),
-        json=payload,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
         timeout=180,
     )
     resp.raise_for_status()
     data   = resp.json()
     choice = data["choices"][0]
     # OpenRouter echoes back which model actually served the request
-    model_used = data.get("model", OPENROUTER_PRIMARY)
+    model_used = data.get("model", model_chunk[0])
     return choice["message"]["content"], choice.get("finish_reason", "unknown"), model_used
 
 
@@ -341,8 +349,9 @@ def _validate_signal(raw: dict) -> Optional[dict]:
 
 def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]]:
     """
-    Iterate through OPENROUTER_MODELS in windows of 3, sending each window
-    as a single OpenRouter request with `models` + `route: "fallback"`.
+    Iterate through models (loaded from SSM at runtime, falling back to
+    config.py) in windows of 3, sending each window as a single OpenRouter
+    request with `models` + `route: "fallback"`.
     OpenRouter handles intra-chunk fallback server-side; this function handles
     inter-chunk fallback (i.e. all 3 models in a window failed → try next window).
 
@@ -357,7 +366,8 @@ def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]
     Returns (decoded_dict, model_name_that_served_request) on success,
     or (None, None) if every chunk is exhausted.
     """
-    chunks = [OPENROUTER_MODELS[i:i+3] for i in range(0, len(OPENROUTER_MODELS), 3)]
+    models = load_openrouter_models()
+    chunks = [models[i:i+3] for i in range(0, len(models), 3)]
     total_chunks = len(chunks)
 
     for chunk_idx, chunk in enumerate(chunks, start=1):
@@ -371,13 +381,11 @@ def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]
                 raw, finish_reason, model_used = _call_openrouter(messages, chunk)
 
                 logger.info("+ Served by model: %s (chunk %d/%d)", model_used, chunk_idx, total_chunks)
-                _save_raw_response(raw, model_used)
 
                 decoded = _extract_and_decode(raw, finish_reason)
                 if decoded is not None:
                     return decoded, model_used
 
-                _save_raw_response(raw, model_used, suffix="decode_failed")
                 logger.error(
                     "Could not decode JSON from chunk %d — trying next chunk.", chunk_idx
                 )
@@ -480,16 +488,24 @@ def _keyword_fallback(headlines: List[Headline]) -> List[Dict]:
 # Public API
 # ---------------------------------------------------------------------------
 
-def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
+def analyse_headlines(headlines: List[Headline]) -> tuple[List[Dict], bool]:
     """
-    Call OpenRouter with the supplied headlines and return a list of
-    swing signal dicts.
+    Call OpenRouter with the supplied headlines and return a tuple of:
+        (signals, llm_succeeded)
 
-    Falls back to keyword heuristic if all OpenRouter models fail.
+    llm_succeeded = True  — at least one OpenRouter model was called and
+                            returned a decodable JSON response.
+    llm_succeeded = False — all OpenRouter models failed; signals were
+                            produced by the keyword heuristic fallback only.
+
+    Callers that care about pipeline quality (e.g. the Lambda handler) must
+    treat llm_succeeded=False as a failure and trigger a retry, even when
+    the signals list is non-empty.  Keyword-fallback signals are not
+    suitable for live trading decisions.
     """
     if not headlines:
         logger.warning("analyse_headlines called with empty list.")
-        return []
+        return [], False
 
     messages = _build_messages(headlines)
     logger.info("Invoking OpenRouter on %d headlines ...", len(headlines))
@@ -498,7 +514,7 @@ def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
 
     if decoded is None:
         logger.error("All OpenRouter models failed — using keyword fallback.")
-        return _keyword_fallback(headlines)
+        return _keyword_fallback(headlines), False
 
     macro_obj = decoded.get("macro", {})
     macro = (
@@ -512,7 +528,7 @@ def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
     raw_signals = decoded.get("signals", [])
     if not isinstance(raw_signals, list):
         logger.warning("'signals' field is not a list — using keyword fallback.")
-        return _keyword_fallback(headlines)
+        return _keyword_fallback(headlines), False
 
     logger.info(
         "Raw signals from model (%s): %d total before validation.",
@@ -529,9 +545,8 @@ def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
 
     if len(raw_signals) == 0:
         logger.warning(
-            "Model returned 0 signals. Raw response saved to %s/. "
-            "This is likely prompt self-censorship — review the saved file.",
-            _RAW_RESPONSE_DIR,
+            "Model returned 0 signals — likely prompt self-censorship. "
+            "Check CloudWatch logs for the raw model output."
         )
 
     signals = []
@@ -556,5 +571,5 @@ def analyse_headlines(headlines: List[Headline]) -> List[Dict]:
         })
 
     signals.sort(key=lambda s: s["confidence"], reverse=True)
-    logger.info("Returning %d validated signals.", len(signals))
-    return signals
+    logger.info("Returning %d validated signals (llm_succeeded=True).", len(signals))
+    return signals, True

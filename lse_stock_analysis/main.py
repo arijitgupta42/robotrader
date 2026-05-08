@@ -17,13 +17,24 @@ logging.basicConfig(level=logging.INFO)
 # ---------------------------------------------------------------------------
 
 CAPITAL       = 1000.0    # Total account capital (GBP)
-RISK_PCT      = 0.02        # Max risk per trade (2%)
+RISK_PCT      = 0.02      # Max risk per trade (2%)
 INDEX         = 'FTSE 250'
-LOOKBACK_DAYS = 180         # ~6 months of daily bars
+LOOKBACK_DAYS = 180       # ~6 months of daily bars
 
 # Set to a filename to cache today's raw download and skip re-downloading
 # on subsequent runs.  Set to None to always download fresh.
 CACHE_FILE    = 'data_cache.csv'
+
+# ---------------------------------------------------------------------------
+# OpenRouter configuration
+# ---------------------------------------------------------------------------
+# Preference order:
+#   1. OPENROUTER_API_KEY environment variable
+#   2. Hard-coded fallback below (replace the empty string before committing)
+# ---------------------------------------------------------------------------
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")   # ← paste key here if not using env var
+OPENROUTER_MODEL   = "google/gemma-2-9b-it"                 # any model on openrouter.ai/models
 
 # ---------------------------------------------------------------------------
 # Pipeline
@@ -114,8 +125,11 @@ if __name__ == "__main__":
     else:
         print("No setups passed all filters today.")
 
-    # ---- 6. SLM projections (A/B grade only) ------------------------------
-    loader = ModelLoader()
+    # ---- 6. OpenRouter projections (A/B grade only) -----------------------
+    loader = ModelLoader(
+        api_key  = OPENROUTER_API_KEY,
+        model_id = OPENROUTER_MODEL,
+    )
     loader.load()
 
     ab_tickers = [
@@ -132,7 +146,7 @@ if __name__ == "__main__":
 
     # ---- 7. Final output --------------------------------------------------
     print(f"\n{'='*62}")
-    print("  SLM projections — A/B grade setups")
+    print("  OpenRouter projections — A/B grade setups")
     print(f"{'='*62}")
 
     for ticker, r in projection_results.items():

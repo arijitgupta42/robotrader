@@ -8,10 +8,16 @@ dislocations, macro regime changes, geopolitical shocks — that the market
 has begun pricing but not yet fully digested, similar to how the market
 treated semiconductors during export-control escalations.
 """
-
+import os
+import logging
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # ---------------------------------------------------------------------------
 # LSE / FTSE ICB Sector Taxonomy + Sector-Specific Keywords
@@ -281,18 +287,81 @@ RSS_FEEDS: List[Dict[str, str]] = [
     {"name": "Investing.com UK Commodities","url": "https://uk.investing.com/rss/news_11.rss"},
 ]
 
-
 # ---------------------------------------------------------------------------
-# OpenRouter Model Configs
+# Reddit Subreddit Configuration
 #
-# OPENROUTER_PRIMARY  — the model name sent in the top-level "model" field.
-# OPENROUTER_MODELS   — full ordered fallback list sent in extra_body["models"].
-#                       OpenRouter tries each in sequence if the previous one
-#                       is rate-limited, unavailable, or returns an error.
-#                       The primary should appear first in this list.
+# Each entry configures one subreddit to scrape.
+#
+# Fields:
+#   subreddit  : subreddit name (no r/ prefix)
+#   sorts      : list of sort modes to fetch — "hot" captures current buzz,
+#                "top" with t=week catches the week's highest-conviction posts
+#   limit      : max posts per sort request (Reddit API hard cap = 100)
+#   min_score  : discard posts below this net-upvote count to filter noise.
+#                Lower for niche UK subs (less traffic), higher for WSB-scale.
+#
+# Subreddit selection rationale:
+#   UKInvesting / UKPersonalFinance — retail LSE-focused discussion
+#   investing / stocks              — global but high DD quality; catches
+#                                     macro/sector moves before UK press does
+#   wallstreetbets                  — useful as a CONTRARIAN signal when
+#                                     crowded; also surfaces momentum names
+#                                     that often have LSE-dual-listed exposure
+#   SecurityAnalysis                — institutional-quality long-form DD
+#   Economics                       — macro regime commentary
+#   Commodities / energy            — commodity price thesis; maps to Mining,
+#                                     Oil & Gas, Renewables sectors directly
+#   options / thetagang             — options flow can lead equity moves by
+#                                     days; surfaces near-term catalyst plays
 # ---------------------------------------------------------------------------
 
-OPENROUTER_PRIMARY: str = "google/gemma-4-31b-it:free"
+REDDIT_SUBREDDITS: List[Dict] = [
+    # --- UK-focused ---
+    # Both "hot" and "top" sorts are used now that OAuth bypasses the Lambda
+    # IP blocks that caused 403s on /top with the unauthenticated API.
+    # "hot"       → current buzz and active discussions this week
+    # "top" t=week → the week's highest-conviction posts by community vote
+    {"subreddit": "UKInvesting",         "sorts": ["hot", "top"], "limit": 30, "min_score": 20},
+    {"subreddit": "UKPersonalFinance",   "sorts": ["hot"],        "limit": 20, "min_score": 50},
+
+    # --- Global / high-quality DD ---
+    {"subreddit": "investing",           "sorts": ["hot", "top"], "limit": 35, "min_score": 200},
+    {"subreddit": "stocks",              "sorts": ["hot", "top"], "limit": 35, "min_score": 150},
+    {"subreddit": "SecurityAnalysis",    "sorts": ["hot", "top"], "limit": 25, "min_score": 50},
+
+    # --- Macro / commodities ---
+    {"subreddit": "Economics",           "sorts": ["hot"],        "limit": 20, "min_score": 100},
+    {"subreddit": "Commodities",         "sorts": ["hot", "top"], "limit": 20, "min_score": 30},
+    {"subreddit": "energy",              "sorts": ["hot"],        "limit": 15, "min_score": 30},
+
+    # --- Sentiment / momentum (contrarian + momentum signals) ---
+    {"subreddit": "wallstreetbets",      "sorts": ["hot"],        "limit": 25, "min_score": 500},
+    {"subreddit": "options",             "sorts": ["hot"],        "limit": 20, "min_score": 100},
+    {"subreddit": "thetagang",           "sorts": ["hot"],        "limit": 15, "min_score": 50},
+]
+
+
+@dataclass
+class RedditConfig:
+    max_posts_per_cycle: int = 200
+    # Fallback min_score if not specified per-subreddit.
+    # RSS feeds do not expose scores so this is not actively used —
+    # quality filtering is delegated entirely to the LLM pass.
+    default_min_score:     int = 50
+    # Minimum bullish_conviction from reddit_analyzer to include in consolidation
+    min_reddit_conviction: float = 0.40
+
+
+REDDIT_CFG = RedditConfig()
+
+
+# ---------------------------------------------------------------------------
+# OpenRouter Model Config
+#
+# OPENROUTER_MODELS is the local fallback used when SSM is unreachable.
+# To change models without redeploying the Lambda, edit the SSM parameter:
+#   /sector-scout/openrouter-models  (comma-separated, same order)
+# ---------------------------------------------------------------------------
 
 OPENROUTER_MODELS: List[str] = [
     "google/gemma-4-31b-it:free",
@@ -303,9 +372,30 @@ OPENROUTER_MODELS: List[str] = [
 ]
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
-# The model-level Python fallback loop is gone — OpenRouter handles model
-# rotation server-side.  These delays cover network-level retries only.
-OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60, 15, 30, 60, 15, 30, 60]
+OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
+
+
+def load_openrouter_models() -> List[str]:
+    """
+    Load the OpenRouter model list from SSM Parameter Store at runtime.
+    This allows updating the model list without redeploying the Lambda —
+    just edit /sector-scout/openrouter-models in the AWS console.
+
+    Falls back to OPENROUTER_MODELS (defined above) if SSM is unreachable
+    or the parameter is missing/empty.
+    """
+    try:
+        import boto3
+        ssm = boto3.client("ssm", region_name=os.environ.get("AWS_REGION", "eu-west-1"))
+        resp = ssm.get_parameter(Name="/sector-scout/openrouter-models")
+        models = [m.strip() for m in resp["Parameter"]["Value"].split(",") if m.strip()]
+        if models:
+            return models
+        logger.warning("SSM: openrouter-models is empty — using config fallback.")
+    except Exception as exc:
+        logger.warning("SSM: could not load openrouter-models (%s: %s) — using config fallback.",
+                       type(exc).__name__, exc)
+    return OPENROUTER_MODELS
 
 
 # ---------------------------------------------------------------------------
@@ -315,8 +405,8 @@ OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60, 15, 30, 60, 15, 30, 60]
 @dataclass
 class SchedulerConfig:
     max_headlines_per_cycle: int = 500
-    min_confidence: float = 0.60
-    min_disruption_strength: float = 0.55
+    min_confidence:          float = 0.55   # lowered slightly — consolidator re-filters
+    min_disruption_strength: float = 0.50   # lowered slightly — consolidator re-filters
 
 
 SCHEDULER_CFG = SchedulerConfig()

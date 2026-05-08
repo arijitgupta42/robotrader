@@ -1,3 +1,7 @@
 data_cache.csv
 raw_model_responses
+*.zip
 *.pyc
+financial_market_news_analyzer/*/
+*.so
+financial_market_news_analyzer\lambda_handler.py

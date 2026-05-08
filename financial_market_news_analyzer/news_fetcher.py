@@ -195,9 +195,9 @@ def fetch_rss(feed_cfg: dict, timeout: int = 10) -> List[Headline]:
 
         if entries_parsed > 0:
             _health.record_success(url)
-            logger.info("  ✓ %-30s  %d headlines", name, entries_parsed)
+            logger.info("%-30s  %d headlines", name, entries_parsed)
         else:
-            logger.debug("  ✗ %-30s  0 headlines (empty feed)", name)
+            logger.debug("%-30s  0 headlines (empty feed)", name)
 
     except Exception as exc:
         level = _health.log_level(url)
@@ -282,7 +282,7 @@ def fetch_hl_weekly_outlook() -> List[Headline]:
                 ))
 
             if headlines:
-                logger.info("  ✓ HL Weekly Outlook          %d items from %s",
+                logger.info("HL Weekly Outlook          %d items from %s",
                             len(headlines), url)
                 return headlines   # got a valid page, stop trying
 
@@ -365,21 +365,33 @@ def fetch_html_headlines(target: dict, timeout: int = 12) -> List[Headline]:
 # Aggregator
 # ---------------------------------------------------------------------------
 
-def collect_headlines(max_total: Optional[int] = None) -> List[Headline]:
+def collect_headlines(max_total: Optional[int] = None, max_age_days: int = 7) -> List[Headline]:
     """
     Pulls from all configured RSS feeds and scrape targets.
-    Deduplicates by title hash, sorts newest-first, caps at max_total.
+    Deduplicates by title hash, filters to the last ``max_age_days`` days,
+    sorts newest-first, and caps at max_total.
+
+    ``max_age_days`` defaults to 7 so only headlines from the past week are
+    forwarded to the LLM.  HL Weekly Outlook items are always included because
+    they are scraped with ``datetime.now()`` and are inherently current.
     """
     max_total = max_total or SCHEDULER_CFG.max_headlines_per_cycle
+    cutoff    = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+
     all_headlines: List[Headline] = []
     seen_uids: set = set()
 
-    logger.info("--- Fetching RSS feeds ---")
+    logger.info("--- Fetching RSS feeds (cutoff: last %d days) ---", max_age_days)
+    stale_count = 0
     for feed_cfg in RSS_FEEDS:
         for h in fetch_rss(feed_cfg):
-            if h.uid not in seen_uids:
-                seen_uids.add(h.uid)
-                all_headlines.append(h)
+            if h.uid in seen_uids:
+                continue
+            seen_uids.add(h.uid)
+            if h.published < cutoff:
+                stale_count += 1
+                continue
+            all_headlines.append(h)
         time.sleep(0.4)   # polite crawl delay
 
     all_headlines.sort(key=lambda h: h.published, reverse=True)
@@ -387,8 +399,9 @@ def collect_headlines(max_total: Optional[int] = None) -> List[Headline]:
     total = len(all_headlines)
     sources_active = len({h.source for h in all_headlines})
     logger.info(
-        "Collection complete — %d unique headlines from %d sources (cap=%d).",
-        total, sources_active, max_total,
+        "Collection complete — %d unique headlines from %d sources "
+        "(%d stale discarded, cap=%d).",
+        total, sources_active, stale_count, max_total,
     )
 
     if total == 0:
@@ -398,7 +411,8 @@ def collect_headlines(max_total: Optional[int] = None) -> List[Headline]:
             "Run: python -c \"import socket; socket.getaddrinfo('feeds.bbci.co.uk', None)\" "
             "to verify basic DNS resolution."
         )
-        
+
+    # HL Weekly Outlook is always current (scraped with datetime.now()) — no age filter needed
     logger.info("--- Fetching HL weekly outlook ---")
     for h in fetch_hl_weekly_outlook():
         if h.uid not in seen_uids:
