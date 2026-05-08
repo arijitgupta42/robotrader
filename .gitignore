@@ -4,4 +4,4 @@ raw_model_responses
 *.pyc
 financial_market_news_analyzer/*/
 *.so
-financial_market_news_analyzer\lambda_handler.py
+financial_market_news_analyzer/lambda_handler.py
