@@ -53,9 +53,11 @@ _SECTOR_LIST      = " | ".join(_SECTOR_NAMES)
 _DISRUPTION_LIST  = " | ".join(_DISRUPTION_NAMES)
 
 # ---------------------------------------------------------------------------
-# Output schema — terse field comments keep the response compact.
-# conviction_drivers is capped at 2 items (source tag mandatory) to bound
-# the single largest per-signal token cost.
+# Output schema
+# ---------------------------------------------------------------------------
+# conviction_drivers: 3 items max, ≤15 words each (tighter than before).
+# source_diversity: computed pre-LLM and injected into the user message;
+#   the model uses it as a confidence anchor, not a field it must fill.
 # ---------------------------------------------------------------------------
 _OUTPUT_SCHEMA = """\
 {"macro":
@@ -72,52 +74,123 @@ _OUTPUT_SCHEMA = """\
    "rationale": "<≤25w: why now>",
    "key_catalysts": ["<near-term confirming event>"],
    "correlated_sectors": ["<0-2 exact sector names>"],
-   "conviction_drivers": ["<headline paraphrase [Source]>", "<headline paraphrase [Source]>"]
+   "conviction_drivers": ["<≤15w fact + [Source]>", "<≤15w fact + [Source]>", "<≤15w fact + [Source]>"]
   }
  ]
 }"""
 
 _SYSTEM_PROMPT = f"""\
-You are a senior LSE equity portfolio manager. Identify LSE sub-sectors likely \
-to show POSITIVE price movement over 2-6 WEEKS from structural disruptions — \
-not daily noise.
+You are a senior LSE equity portfolio manager.
 
-MACRO FIRST: Summarise BoE stance (cutting/pausing/hiking), UK growth surprise \
-direction, and the single dominant global factor (rates/China/commodities/geopolitics).
+## ROLE
+Identify LSE sub-sectors likely to show POSITIVE price movement over 2-6 WEEKS \
+from structural disruptions — not daily noise.
 
-SCORE SIGNALS — target 3-6. Confidence anchors:
-  0.85+ structural certainty (multi-month)  |  0.70 clear, proof 2-4w away
-  0.55 directional lean, ~35% bear case     |  0.35-0.50 marginal but surfaceable
+## STEP 1 — MACRO SUMMARY
+Summarise in one sentence: BoE stance (cutting/pausing/hiking), UK growth \
+surprise direction, and the single dominant global factor \
+(rates/China/commodities/geopolitics).
 
-SCORE if: policy/regulatory with multi-week implementation lag | commodity/FX \
-move not yet in equities | cluster of earnings beats/misses | geopolitical \
-shift changing defence budgets or trade routes | tech adoption inflection.
+## STEP 2 — SIGNAL SCORING
+Target 3-6 signals. Confidence anchors:
+  0.85+ structural certainty (multi-month)
+  0.70  clear thesis, confirming proof expected 2-4w
+  0.55  directional lean, ~35% bear case
+  0.35-0.50  marginal but worth surfacing
 
-DO NOT score: single isolated earnings event | already-priced price moves | \
-analyst note without new fundamentals.
+SCORE when you see:
+  • Policy/regulatory change with multi-week implementation lag
+  • Commodity or FX move not yet reflected in equities
+  • Cluster of earnings beats or misses across a sector
+  • Geopolitical shift changing defence budgets or trade routes
+  • Technology adoption inflection point
 
-Even in stagflation/rate-pause regimes you MUST return ≥2 signals. Examples: \
-Aerospace & Defence (rearmament) | Integrated Oil & Gas (energy volatility) | \
-Housebuilders (rate expectations). Score at 0.40-0.55 and let the downstream \
-filter decide. An empty signals array is only valid if headlines contain zero \
-financial content.
+DO NOT score:
+  • Single isolated earnings event
+  • Already-priced moves (stock already moved >5% on the news)
+  • Analyst note with no new fundamental data
 
-SECTORS (use exact spelling):
+Even in stagflation or rate-pause regimes you MUST return ≥2 signals. \
+Fallback examples: Aerospace & Defence (rearmament) | Integrated Oil & Gas \
+(energy volatility) | Housebuilders (rate expectations). Score at 0.40-0.55 \
+and let the downstream filter decide. An empty signals array is only valid if \
+headlines contain zero financial content.
+
+## STEP 3 — SOURCE DIVERSITY ADJUSTMENT
+Each headline batch includes a per-sector source_diversity score (0-1) \
+representing how many distinct outlets back the thesis. \
+  diversity ≥ 0.7 → you may score up to your natural conviction ceiling
+  diversity 0.4-0.69 → cap confidence at 0.75 (single-outlet cluster risk)
+  diversity < 0.4  → cap confidence at 0.60 (treat as thin coverage)
+
+## REFERENCE LISTS
+SECTORS (exact spelling required):
 {_SECTOR_LIST}
 
-DISRUPTIONS (use exact spelling):
+DISRUPTIONS (exact spelling required):
 {_DISRUPTION_LIST}
 
-OUTPUT: respond with ONLY a valid JSON object — no fences, no preamble.
+## OUTPUT FORMAT
+Respond with ONLY a valid JSON object — no markdown fences, no preamble, \
+no trailing commentary. Every conviction_driver must be ≤15 words and end \
+with [Source name].
 Shape:
 {_OUTPUT_SCHEMA}
 """
 
 
+def _compute_source_diversity(headlines: List[Headline]) -> Dict[str, float]:
+    """
+    For each LSE sector, compute a source diversity score (0-1) based on
+    how many distinct outlet names cover it relative to the maximum seen
+    across all sectors.
+
+    A score of 1.0 means this sector is backed by the most outlet-diverse
+    set of headlines in this batch.  Scores below 0.4 indicate the sector
+    is covered by only one or two outlets (single-outlet cluster risk).
+
+    The score is injected into the user message as a pre-computed anchor
+    so the LLM can apply the diversity-cap rule from the system prompt
+    without having to count sources itself.
+    """
+    sector_sources: Dict[str, set] = {}
+    for h in headlines:
+        text = (h.title + " " + h.summary).lower()
+        for sector, keywords in LSE_SECTORS.items():
+            if any(kw.lower() in text for kw in keywords):
+                sector_sources.setdefault(sector, set()).add(h.source)
+
+    if not sector_sources:
+        return {}
+
+    max_count = max(len(v) for v in sector_sources.values())
+    if max_count == 0:
+        return {}
+
+    return {
+        sector: round(len(sources) / max_count, 3)
+        for sector, sources in sector_sources.items()
+    }
+
+
 def _build_messages(headlines: List[Headline]) -> list:
+    diversity = _compute_source_diversity(headlines)
+
+    # Compact diversity table — only sectors with at least one hit
+    if diversity:
+        div_lines = "  ".join(
+            f"{sector}: {score:.2f}"
+            for sector, score in sorted(diversity.items(), key=lambda x: -x[1])
+        )
+        diversity_block = f"\nSOURCE DIVERSITY SCORES (sector: 0-1):\n{div_lines}\n"
+    else:
+        diversity_block = ""
+
     lines = [f"{i+1}. {h.to_text()}" for i, h in enumerate(headlines)]
     user_text = (
-        f"Analyse these {len(headlines)} headlines and emit the JSON object.\n\n"
+        f"Analyse these {len(headlines)} headlines and emit the JSON object."
+        + diversity_block
+        + "\n\n"
         + "\n".join(lines)
     )
     return [
@@ -451,8 +524,9 @@ _POSITIVE_WORDS = {
 }
 
 
-def _keyword_fallback(headlines: List[Headline]) -> List[Dict]:
+def _keyword_fallback(headlines: List[Headline], diversity: Optional[Dict[str, float]] = None) -> List[Dict]:
     logger.warning("Using keyword heuristic fallback.")
+    diversity = diversity or {}
     all_text = " ".join(h.title.lower() + " " + h.summary.lower() for h in headlines)
     results  = []
     for sector, keywords in LSE_SECTORS.items():
@@ -479,6 +553,7 @@ def _keyword_fallback(headlines: List[Headline]) -> List[Dict]:
             "correlated_sectors":    [],
             "conviction_drivers":    ["Heuristic fallback — no LLM analysis available"],
             "macro_regime_summary":  "Heuristic fallback — no LLM macro analysis available.",
+            "source_diversity":      round(diversity.get(sector, 0.0), 3),
         })
     results.sort(key=lambda x: x["confidence"], reverse=True)
     return results[:5]
@@ -507,6 +582,10 @@ def analyse_headlines(headlines: List[Headline]) -> tuple[List[Dict], bool]:
         logger.warning("analyse_headlines called with empty list.")
         return [], False
 
+    # Pre-compute diversity so it's available for both the LLM path and
+    # the keyword fallback (used to annotate fallback signals).
+    diversity = _compute_source_diversity(headlines)
+
     messages = _build_messages(headlines)
     logger.info("Invoking OpenRouter on %d headlines ...", len(headlines))
 
@@ -514,7 +593,7 @@ def analyse_headlines(headlines: List[Headline]) -> tuple[List[Dict], bool]:
 
     if decoded is None:
         logger.error("All OpenRouter models failed — using keyword fallback.")
-        return _keyword_fallback(headlines), False
+        return _keyword_fallback(headlines, diversity), False
 
     macro_obj = decoded.get("macro", {})
     macro = (
@@ -528,7 +607,7 @@ def analyse_headlines(headlines: List[Headline]) -> tuple[List[Dict], bool]:
     raw_signals = decoded.get("signals", [])
     if not isinstance(raw_signals, list):
         logger.warning("'signals' field is not a list — using keyword fallback.")
-        return _keyword_fallback(headlines), False
+        return _keyword_fallback(headlines, diversity), False
 
     logger.info(
         "Raw signals from model (%s): %d total before validation.",
@@ -568,6 +647,7 @@ def analyse_headlines(headlines: List[Headline]) -> tuple[List[Dict], bool]:
             "correlated_sectors":    validated.get("correlated_sectors", []),
             "conviction_drivers":    validated.get("conviction_drivers", []),
             "macro_regime_summary":  macro,
+            "source_diversity":      round(diversity.get(validated["sector"], 0.0), 3),
         })
 
     signals.sort(key=lambda s: s["confidence"], reverse=True)

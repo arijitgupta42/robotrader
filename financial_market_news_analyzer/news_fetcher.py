@@ -195,7 +195,7 @@ def fetch_rss(feed_cfg: dict, timeout: int = 10) -> List[Headline]:
 
         if entries_parsed > 0:
             _health.record_success(url)
-            logger.info("%-30s  %d headlines", name, entries_parsed)
+            logger.info("SUCCESS %-30s  %d headlines", name, entries_parsed)
         else:
             logger.debug("%-30s  0 headlines (empty feed)", name)
 

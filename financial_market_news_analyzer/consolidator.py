@@ -70,8 +70,9 @@ _CONSOLIDATED_SCHEMA = """\
    "retail_thesis": "<≤20w: what the Reddit crowd believes, or 'No Reddit signal'>",
    "key_catalysts": ["<near-term confirming event>"],
    "correlated_sectors": ["<0-2 exact sector names>"],
-   "conviction_drivers": ["<evidence item [Source: News|Reddit]>",
-                          "<evidence item [Source: News|Reddit]>"]
+   "conviction_drivers": ["<≤15w fact [Source: News|Reddit]>",
+                          "<≤15w fact [Source: News|Reddit]>",
+                          "<≤15w fact [Source: News|Reddit]>"]
   }
  ]
 }"""
@@ -79,43 +80,58 @@ _CONSOLIDATED_SCHEMA = """\
 _SYSTEM_PROMPT = f"""\
 You are a senior LSE portfolio manager reviewing two independently scored
 intelligence feeds: (A) a structured news analysis and (B) retail trader
-sentiment from Reddit.  Your task is to produce a CONSOLIDATED set of
-swing trading signals (2-6 week horizon) for LSE-listed sectors.
+sentiment from Reddit.
 
-CONSOLIDATION RULES:
+## ROLE
+Produce a CONSOLIDATED set of swing trading signals (2-6 week horizon) for
+LSE-listed sectors by merging both feeds and labelling the degree of agreement.
 
-1. CONVERGENT signals (news thesis + Reddit conviction agree):
-   Boost confidence by up to +0.10 relative to the news score.
-   These are your highest-conviction signals.  Label convergence_type="Convergent".
+## STEP 1 — CONVERGENCE CLASSIFICATION
+Apply exactly one label per signal:
 
-2. NEWS-LED signals (strong news thesis, Reddit absent or neutral):
-   Keep confidence at the news score or apply a small discount (-0.05) if the
-   news thesis is macro/policy-driven (retail wouldn't necessarily know yet).
-   Label convergence_type="News-Led".
+  Convergent  — news thesis and Reddit conviction point in the same direction.
+                Boost confidence by up to +0.10 relative to the news score.
+                These are your highest-conviction signals.
 
-3. REDDIT-LED signals (strong Reddit DD/Discussion, news pass found nothing):
-   Only surface if bullish_conviction >= 0.60 AND signal_quality is DD or
-   Discussion.  Set confidence = bullish_conviction × 0.85 (haircut for lack
-   of macro/news confirmation).  Label convergence_type="Reddit-Led".
+  News-Led    — strong news thesis; Reddit absent or neutral.
+                Keep confidence at the news score, or discount by −0.05 if the
+                thesis is macro/policy-driven (retail wouldn't know yet).
 
-4. DIVERGENT signals (news bullish, Reddit explicitly bearish — not just absent):
-   Surface with confidence discounted by -0.15.  Note the divergence clearly.
-   Label convergence_type="Divergent".
+  Reddit-Led  — strong Reddit DD/Discussion; news pass found nothing.
+                Only surface if bullish_conviction ≥ 0.60 AND signal_quality
+                is DD or Discussion. Set confidence = bullish_conviction × 0.85.
 
-SCORING ANCHORS (same as news pass):
-  0.85+ structural certainty  |  0.70 clear, proof 2-4w away
-  0.55 directional lean       |  0.35-0.50 marginal but worth noting
+  Divergent   — news bullish, Reddit explicitly bearish (not merely absent).
+                Discount confidence by −0.15. Note the divergence clearly.
 
-TARGET: 3-7 signals.  Quality > quantity.  An empty signals array is only
-valid if both inputs are empty or entirely noise.
+## STEP 2 — CONFIDENCE ANCHORS
+  0.85+  structural certainty (multi-month)
+  0.70   clear thesis, confirming proof expected 2-4w
+  0.55   directional lean, ~35% bear case
+  0.35-0.50  marginal but worth surfacing
 
+## STEP 3 — SOURCE DIVERSITY ADJUSTMENT
+Each news signal carries a source_diversity score (0-1).
+  diversity ≥ 0.7 → no cap; score to your natural ceiling
+  diversity 0.4-0.69 → cap confidence at 0.75
+  diversity < 0.4  → cap confidence at 0.60
+
+## STEP 4 — OUTPUT RULES
+  • Target 3-7 signals. Quality > quantity.
+  • An empty signals array is only valid if both inputs are empty or pure noise.
+  • Every conviction_driver must be ≤15 words and end with [Source: News] or
+    [Source: Reddit].
+
+## REFERENCE LISTS
 SECTORS (exact spelling):
 {" | ".join(_SECTOR_NAMES)}
 
 DISRUPTION TYPES (exact spelling):
 {" | ".join(_DISRUPTION_NAMES)}
 
-OUTPUT: respond with ONLY a valid JSON object — no fences, no preamble.
+## OUTPUT FORMAT
+Respond with ONLY a valid JSON object — no markdown fences, no preamble,
+no trailing commentary.
 Shape:
 {_CONSOLIDATED_SCHEMA}
 """
@@ -136,9 +152,11 @@ def _format_news_signals(news_signals: list) -> str:
             d = s.to_dict()
         else:
             d = s
+        diversity_str = f"{d.get('source_diversity', 0.0):.2f}" if "source_diversity" in d else "n/a"
         lines.append(
             f"{i}. Sector: {d['sector']}\n"
-            f"   Confidence: {d['confidence']:.0%}  Bear: {d['bear_case_probability']:.0%}\n"
+            f"   Confidence: {d['confidence']:.0%}  Bear: {d['bear_case_probability']:.0%}"
+            f"  Source diversity: {diversity_str}\n"
             f"   Disruption: {d['disruption_type']}  Strength: {d['disruption_strength']:.0%}\n"
             f"   Impact: ~{d['time_to_impact_weeks']}w\n"
             f"   Rationale: {d['rationale']}\n"
@@ -280,6 +298,7 @@ class ConsolidatedSignal:
     correlated_sectors:   List[str]
     conviction_drivers:   List[str]
     macro_regime_summary: str
+    source_diversity:     float = 0.0   # 0-1; inherited from news pass
     timestamp:            datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __repr__(self) -> str:
@@ -307,6 +326,7 @@ class ConsolidatedSignal:
             "correlated_sectors":   self.correlated_sectors,
             "conviction_drivers":   self.conviction_drivers,
             "macro_regime_summary": self.macro_regime_summary,
+            "source_diversity":     self.source_diversity,
             "timestamp":            self.timestamp.isoformat(),
         }
 
@@ -373,6 +393,7 @@ def _validate_consolidated(raw: dict, macro: str) -> Optional[ConsolidatedSignal
         correlated_sectors   = raw.get("correlated_sectors", []),
         conviction_drivers   = raw.get("conviction_drivers", []),
         macro_regime_summary = macro,
+        source_diversity     = round(float(raw.get("source_diversity", 0.0)), 3),
     )
 
 
@@ -479,6 +500,7 @@ def _wrap_news_signals_as_consolidated(
                 correlated_sectors   = d.get("correlated_sectors", []),
                 conviction_drivers   = d.get("conviction_drivers", []),
                 macro_regime_summary = macro_regime,
+                source_diversity     = round(float(d.get("source_diversity", 0.0)), 3),
             ))
         except (KeyError, TypeError) as exc:
             logger.warning("_wrap_news_signals: could not wrap signal: %s", exc)

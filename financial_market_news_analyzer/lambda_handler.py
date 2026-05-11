@@ -146,6 +146,23 @@ def _save_failure(payload: dict, reason: str) -> str:
 # Email formatter
 # ---------------------------------------------------------------------------
 
+# Convergence type → badge colours (inline CSS for email client compatibility)
+_CONV_BADGE: dict = {
+    "Convergent":  ("✦ CONVERGENT",  "#1a7a4a", "#d4edda"),   # green
+    "News-Led":    ("◈ NEWS-LED",    "#1a5276", "#d6eaf8"),   # blue
+    "Reddit-Led":  ("◉ REDDIT-LED",  "#6c3483", "#e8daef"),   # purple
+    "Divergent":   ("⚡ DIVERGENT",  "#922b21", "#fadbd8"),   # red
+}
+
+# Source diversity → descriptive label + colour
+def _diversity_label(score: float) -> tuple[str, str]:
+    if score >= 0.7:
+        return "High source diversity", "#1a7a4a"
+    if score >= 0.4:
+        return "Moderate source diversity", "#b7770d"
+    return "Low source diversity", "#922b21"
+
+
 def _build_email(signals: list, macro: str, cycle_ts: str, s3_key: str) -> tuple[str, str]:
     """Returns (subject, html_body) for SES."""
     subject = (
@@ -155,27 +172,77 @@ def _build_email(signals: list, macro: str, cycle_ts: str, s3_key: str) -> tuple
 
     rows = []
     for sig in signals:
-        bull_pct = int(sig["confidence"] * 100)
-        bear_pct = int(sig["bear_case_probability"] * 100)
-        drivers  = "".join(
+        bull_pct  = int(sig["confidence"] * 100)
+        bear_pct  = int(sig["bear_case_probability"] * 100)
+        drivers   = "".join(
             f"<li style='margin:2px 0;font-size:12px;color:#555;'>{d}</li>"
             for d in sig.get("conviction_drivers", [])
         )
-        catalysts = " &nbsp;|&nbsp; ".join(sig.get("key_catalysts", []))
+        catalysts  = " &nbsp;|&nbsp; ".join(sig.get("key_catalysts", []))
         correlated = ", ".join(sig.get("correlated_sectors", []))
+
+        # Convergence badge
+        conv_type  = sig.get("convergence_type", "News-Led")
+        conv_label, conv_fg, conv_bg = _CONV_BADGE.get(
+            conv_type, ("◈ NEWS-LED", "#1a5276", "#d6eaf8")
+        )
+        conv_note  = sig.get("convergence_note", "")
+        conv_badge_html = (
+            f"<span style='display:inline-block;padding:2px 8px;border-radius:3px;"
+            f"background:{conv_bg};color:{conv_fg};font-size:11px;font-weight:700;"
+            f"letter-spacing:0.3px;'>{conv_label}</span>"
+        )
+
+        # Retail thesis row — only shown when it has real content
+        retail_thesis = sig.get("retail_thesis", "")
+        retail_html   = ""
+        if retail_thesis and retail_thesis not in ("No Reddit signal", "No Reddit signal (consolidator fallback)"):
+            retail_html = (
+                f"<p style='margin:0 0 3px;font-size:12px;'>"
+                f"<b>Reddit crowd:</b> {retail_thesis}</p>"
+            )
+
+        # Convergence note row
+        conv_note_html = ""
+        if conv_note:
+            conv_note_html = (
+                f"<p style='margin:0 0 3px;font-size:12px;color:#555;'>"
+                f"<b>Convergence:</b> {conv_note}</p>"
+            )
+
+        # Source diversity indicator
+        diversity     = sig.get("source_diversity", 0.0)
+        div_text, div_colour = _diversity_label(diversity)
+        diversity_html = (
+            f"<span style='font-size:11px;color:{div_colour};'>"
+            f"● {div_text} ({diversity:.0%})</span>"
+        )
+
+        # Border colour follows convergence type
+        border_colour = conv_fg
 
         rows.append(f"""
 <table width="100%" cellpadding="0" cellspacing="0"
        style="margin-bottom:20px;border:1px solid #e0e0e0;border-radius:6px;
-              border-left:4px solid #1a5276;background:#fafafa;">
+              border-left:4px solid {border_colour};background:#fafafa;">
   <tr>
     <td style="padding:14px 18px;">
-      <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#1a5276;">
-        {sig['sector']}
-      </p>
+      <!-- Header row: sector name + convergence badge -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:6px;">
+        <tr>
+          <td>
+            <p style="margin:0;font-size:16px;font-weight:700;color:#1a5276;">
+              {sig['sector']}
+            </p>
+          </td>
+          <td align="right">{conv_badge_html}</td>
+        </tr>
+      </table>
+      <!-- Subtitle: disruption + diversity -->
       <p style="margin:0 0 8px;font-size:12px;color:#777;">
         {sig['disruption_type']} &nbsp;·&nbsp; ~{sig['time_to_impact_weeks']} week(s) to impact
         &nbsp;·&nbsp; Disruption strength: {int(sig['disruption_strength']*100)}%
+        &nbsp;·&nbsp; {diversity_html}
       </p>
       <!-- Bull/Bear bars -->
       <table cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
@@ -192,6 +259,8 @@ def _build_email(signals: list, macro: str, cycle_ts: str, s3_key: str) -> tuple
       <p style="margin:0 0 3px;font-size:12px;"><b>Rationale:</b> {sig.get('rationale','')}</p>
       <p style="margin:0 0 3px;font-size:12px;"><b>Mechanism:</b> {sig.get('propagation','')}</p>
       <p style="margin:0 0 3px;font-size:12px;"><b>Kill switch:</b> {sig.get('invalidation_risk','')}</p>
+      {conv_note_html}
+      {retail_html}
       {"<p style='margin:0 0 3px;font-size:12px;'><b>Catalysts:</b> " + catalysts + "</p>" if catalysts else ""}
       {"<p style='margin:0 0 3px;font-size:12px;'><b>Also watch:</b> " + correlated + "</p>" if correlated else ""}
       {"<p style='margin:6px 0 2px;font-size:12px;'><b>Evidence:</b></p><ul style='margin:2px 0;padding-left:18px;'>" + drivers + "</ul>" if drivers else ""}
@@ -233,6 +302,73 @@ def _build_email(signals: list, macro: str, cycle_ts: str, s3_key: str) -> tuple
 </body></html>"""
 
     return subject, html
+
+
+# ---------------------------------------------------------------------------
+# Signal outcome tracking
+# ---------------------------------------------------------------------------
+
+def _save_outcome_stubs(signals: list, cycle_ts: str, s3_key: str) -> None:
+    """
+    Write one outcome-stub record per signal to S3 immediately after a
+    successful cycle.  Each stub captures the signal as emitted and
+    reserves slots for realised price data to be filled in later
+    (manually or by a separate outcome-checker Lambda).
+
+    Layout:
+      outcomes/YYYY-WW/stubs_<ISO8601>.json
+
+    Stub schema:
+      {
+        "signal_ts":          ISO8601 string — when the signal was emitted
+        "sector":             str
+        "confidence":         float
+        "disruption_type":    str
+        "convergence_type":   str
+        "time_to_impact_weeks": int
+        "source_s3_key":      str — the successful run that produced it
+        "outcome_2w":         null  ← to be filled: % price change at 2 weeks
+        "outcome_4w":         null  ← to be filled: % price change at 4 weeks
+        "outcome_6w":         null  ← to be filled: % price change at 6 weeks
+        "hit":                null  ← to be filled: bool, true if positive return
+        "notes":              ""    ← free-text for manual annotation
+      }
+
+    These stubs are intentionally simple so they can be read and updated
+    by a lightweight outcome-checker without a database dependency.
+    """
+    week    = _week_prefix()
+    ts      = _iso_ts()
+    stubs   = [
+        {
+            "signal_ts":            cycle_ts,
+            "sector":               s.get("sector", ""),
+            "confidence":           s.get("confidence", 0.0),
+            "disruption_type":      s.get("disruption_type", ""),
+            "convergence_type":     s.get("convergence_type", ""),
+            "source_diversity":     s.get("source_diversity", 0.0),
+            "time_to_impact_weeks": s.get("time_to_impact_weeks", 0),
+            "source_s3_key":        s3_key,
+            "outcome_2w":           None,
+            "outcome_4w":           None,
+            "outcome_6w":           None,
+            "hit":                  None,
+            "notes":                "",
+        }
+        for s in signals
+    ]
+    key = f"outcomes/{week}/stubs_{ts}.json"
+    try:
+        s3.put_object(
+            Bucket      = BUCKET_NAME,
+            Key         = key,
+            Body        = json.dumps(stubs, indent=2, default=str),
+            ContentType = "application/json",
+        )
+        logger.info("Outcome stubs saved → s3://%s/%s (%d stubs)", BUCKET_NAME, key, len(stubs))
+    except Exception as exc:
+        # Non-fatal — outcome tracking failure must not block the email send
+        logger.error("Could not save outcome stubs (non-fatal): %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -330,6 +466,9 @@ def handler(event: dict, context) -> dict:
     if result["success"]:
         s3_key = _save_success(result)
         _close_window()
+
+        # Save outcome stubs for later hit-rate tracking
+        _save_outcome_stubs(result["signals"], cycle_ts, s3_key)
 
         # Send email
         subject, html_body = _build_email(

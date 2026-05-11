@@ -243,6 +243,19 @@ def _validate_reddit_signal(raw: dict, posts: List[RedditPost]) -> Optional[Redd
         return None
     conviction = max(0.0, min(1.0, float(conviction)))
 
+    # Hard guard: meme-quality posts carry no investable conviction regardless
+    # of upvote count or what the model scored.  Enforced in code, not just
+    # in the prompt, so model drift can't slip meme signals through.
+    signal_quality = raw.get("signal_quality", "Mixed")
+    if signal_quality == "Meme":
+        if conviction > 0.0:
+            logger.debug(
+                "Reddit signal %r: signal_quality=Meme — zeroing bullish_conviction "
+                "(was %.2f). Meme signals are not investable.",
+                sector, conviction,
+            )
+        conviction = 0.0
+
     # Attach source posts that mention this sector's keywords
     kws = [kw.lower() for kw in LSE_SECTORS.get(sector, [])]
     relevant_posts = [
@@ -255,7 +268,7 @@ def _validate_reddit_signal(raw: dict, posts: List[RedditPost]) -> Optional[Redd
         bullish_conviction     = round(conviction, 4),
         retail_thesis          = raw.get("retail_thesis", "")[:300],
         representative_tickers = raw.get("representative_tickers", [])[:5],
-        signal_quality         = raw.get("signal_quality", "Mixed"),
+        signal_quality         = signal_quality,
         crowd_risk             = raw.get("crowd_risk", "")[:200],
         post_count             = max(0, int(raw.get("post_count", 0))),
         avg_score              = float(raw.get("avg_score", 0.0)),

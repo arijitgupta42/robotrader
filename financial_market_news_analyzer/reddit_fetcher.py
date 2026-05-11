@@ -220,7 +220,7 @@ def fetch_subreddit_rss(subreddit: str, sort: str = "hot") -> List[RedditPost]:
             created_utc  = published,
         ))
 
-    logger.info("  ✓ r/%-22s  %d posts (sort=%s, via RSS)", subreddit, len(posts), sort)
+    logger.info("  SUCCESS r/%-22s  %d posts (sort=%s, via RSS)", subreddit, len(posts), sort)
     return posts
 
 
