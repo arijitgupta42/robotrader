@@ -10,8 +10,8 @@ All output structure is defined in the system prompt as a plain JSON
 schema description.  The response is decoded with json.loads(); if that
 fails the raw model output is printed and an empty result is returned.
 
-The model list lives only in config.py (OPENROUTER_MODELS): DeepSeek V4 Flash,
-pinned to a dated release, with the earlier release as fallback.
+The model list lives only in config.py (OPENROUTER_MODELS): GPT-6 Luna Pro
+with DeepSeek V4.1 Flash as fallback, both with reasoning disabled.
 
 Environment variable required
 ------------------------------
@@ -275,7 +275,7 @@ def _build_payload(messages: list, model_chunk: list) -> dict:
         "messages":    messages,
         "temperature": 0.35,
         "max_tokens":  4096,
-        "reasoning":   {"effort": "high", "exclude": True},
+        "reasoning":   {"enabled": False},   # reasoning on can exhaust max_tokens (finish=length, empty/truncated JSON)
         "response_format": {"type": "json_object"},
         "models": model_chunk,   # OpenRouter native fallback — max 3 per request
         "route":  "fallback",

@@ -225,7 +225,7 @@ def _call_openrouter(messages: list, model_chunk: list) -> tuple:
         "messages":    messages,
         "temperature": 0.30,
         "max_tokens":  4096,
-        "reasoning":   {"effort": "high", "exclude": True},
+        "reasoning":   {"enabled": False},   # reasoning on can exhaust max_tokens (finish=length, empty/truncated JSON)
         "response_format": {"type": "json_object"},
         "models": model_chunk,
         "route":  "fallback",

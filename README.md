@@ -51,7 +51,7 @@ If `boto3` is available, the key is also looked up from SSM at `/sector-scout/op
 
 ### Models
 
-Every LLM call uses DeepSeek V4 Flash on OpenRouter. The model list lives only in `config.py` under `OPENROUTER_MODELS`: the primary is pinned to the dated release `deepseek/deepseek-v4-flash-0731` (not the `-latest` alias, so each week's signals can be traced to one model version), with the earlier `deepseek/deepseek-v4-flash` as fallback. The pipeline chunks models in groups of three and uses OpenRouter's native fallback (`route: "fallback"`) within each chunk.
+Every LLM call goes through OpenRouter. The model list lives only in `config.py` under `OPENROUTER_MODELS`: the primary is `openai/gpt-6-luna-pro`, with `deepseek/deepseek-v4.1-flash` as fallback. Both are fixed model IDs (no `-latest` aliases, so each week's signals can be traced to one model version), and every request disables reasoning, because with reasoning on both models intermittently exhausted `max_tokens` and returned truncated or empty JSON. The pipeline chunks models in groups of three and uses OpenRouter's native fallback (`route: "fallback"`) within each chunk.
 
 ### Thresholds
 

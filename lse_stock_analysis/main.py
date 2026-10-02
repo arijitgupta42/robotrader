@@ -34,7 +34,7 @@ CACHE_FILE    = 'data_cache.csv'
 # ---------------------------------------------------------------------------
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")   # ← paste key here if not using env var
-OPENROUTER_MODEL   = "deepseek/deepseek-v4-flash-0731"      # DeepSeek V4 Flash, pinned release
+OPENROUTER_MODEL   = "openai/gpt-6-luna-pro"                  # same primary model as the sector scout
 
 # ---------------------------------------------------------------------------
 # Pipeline

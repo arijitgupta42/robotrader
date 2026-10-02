@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class ReturnProjectionAgent(BaseAgent):
     """
     Projects short-term return estimates for a swing trade candidate
-    using an LLM (DeepSeek V4 Flash via OpenRouter).
+    using an LLM via OpenRouter.
 
     Takes the combined output of TrendAnalysisAgent and RiskScoringAgent
     and produces 1-week, 1-month, and 3-month return projections along

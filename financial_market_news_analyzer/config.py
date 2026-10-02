@@ -358,17 +358,22 @@ REDDIT_CFG = RedditConfig()
 # ---------------------------------------------------------------------------
 # OpenRouter Model Config
 #
-# Every LLM call in this project uses DeepSeek V4 Flash on OpenRouter.
-# The primary is pinned to a dated release (not the "-latest" alias) so each
-# week's signals can be traced to one model version for backtesting; the
-# fallback is the earlier April release of the same model.
-# The list lives only here, so git history records which models produced
-# which weeks' signals.
+# Every LLM call in this project goes through OpenRouter to one of these
+# models, with reasoning disabled (the request payloads set it): with
+# reasoning on, both models intermittently spent the whole max_tokens budget
+# thinking and returned empty or truncated JSON.  Live comparison on the
+# real news + Reddit pipeline (see the PR that introduced this list):
+# openai/gpt-6-luna-pro with reasoning off was the most reliable and gave
+# the most stable, highest-confidence signals; deepseek/deepseek-v4.1-flash
+# works but its reasoning-off signals were noisier.
+# Both are fixed model IDs (no "-latest" alias) so each week's signals can be
+# traced to one model version for backtesting.  The list lives only here, so
+# git history records which models produced which weeks' signals.
 # ---------------------------------------------------------------------------
 
 OPENROUTER_MODELS: List[str] = [
-    "deepseek/deepseek-v4-flash-0731",
-    "deepseek/deepseek-v4-flash",
+    "openai/gpt-6-luna-pro",
+    "deepseek/deepseek-v4.1-flash",
 ]
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
