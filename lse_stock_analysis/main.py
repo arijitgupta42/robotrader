@@ -34,7 +34,7 @@ CACHE_FILE    = 'data_cache.csv'
 # ---------------------------------------------------------------------------
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")   # ← paste key here if not using env var
-OPENROUTER_MODEL   = "google/gemma-2-9b-it"                 # any model on openrouter.ai/models
+OPENROUTER_MODEL   = "deepseek/deepseek-v4-flash-0731"      # DeepSeek V4 Flash, pinned release
 
 # ---------------------------------------------------------------------------
 # Pipeline

@@ -33,7 +33,7 @@ Merges both inputs and labels each signal as one of:
 pip install feedparser requests beautifulsoup4 boto3
 ```
 
-> `boto3` is only required if you're loading the OpenRouter API key and model list from AWS SSM. For local use, see **Configuration** below.
+> `boto3` is only required if you're loading the OpenRouter API key from AWS SSM. For local use, see **Configuration** below.
 
 ---
 
@@ -51,7 +51,7 @@ If `boto3` is available, the key is also looked up from SSM at `/sector-scout/op
 
 ### Models
 
-The default model list is in `config.py` under `OPENROUTER_MODELS`. These are free-tier models on OpenRouter — swap them out for anything supported by the API. The pipeline chunks models in groups of three and uses OpenRouter's native fallback (`route: "fallback"`) within each chunk.
+Every LLM call uses DeepSeek V4 Flash on OpenRouter. The model list lives only in `config.py` under `OPENROUTER_MODELS`: the primary is pinned to the dated release `deepseek/deepseek-v4-flash-0731` (not the `-latest` alias, so each week's signals can be traced to one model version), with the earlier `deepseek/deepseek-v4-flash` as fallback. The pipeline chunks models in groups of three and uses OpenRouter's native fallback (`route: "fallback"`) within each chunk.
 
 ### Thresholds
 
@@ -142,7 +142,7 @@ result = scout.run_cycle_verbose()
 
 ## Sector & Disruption Taxonomy
 
-The full sector list (35 LSE sub-sectors) and disruption category definitions live in `config.py`. Sectors span Technology, Financials, Energy, Healthcare, Consumer, Industrials, Materials, Real Estate, Utilities, and Telecoms. The eight disruption types are:
+The full sector list (31 LSE sub-sectors) and disruption category definitions live in `config.py`. Sectors span Technology, Financials, Energy, Healthcare, Consumer, Industrials, Materials, Real Estate, Utilities, and Telecoms. The eight disruption types are:
 
 - Supply Chain Dislocation
 - Regulatory / Policy Shift

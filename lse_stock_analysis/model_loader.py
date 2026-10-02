@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 _OPENROUTER_BASE = "https://openrouter.ai/api/v1/chat/completions"
-_DEFAULT_MODEL   = "google/gemma-2-9b-it"   # closest freely-available Gemma on OpenRouter
+_DEFAULT_MODEL   = "deepseek/deepseek-v4-flash-0731"   # DeepSeek V4 Flash, pinned release
 
 
 class ModelLoader:
@@ -18,7 +18,7 @@ class ModelLoader:
     Attributes
     ----------
     model_id : str
-        OpenRouter model string, e.g. "google/gemma-2-9b-it".
+        OpenRouter model string, e.g. "deepseek/deepseek-v4-flash-0731".
     api_key : str
         OpenRouter API key (Bearer token).
     timeout : float
@@ -39,7 +39,7 @@ class ModelLoader:
         api_key : str
             Your OpenRouter API key. Required.
         model_id : str, optional
-            OpenRouter model identifier. Defaults to 'google/gemma-2-9b-it'.
+            OpenRouter model identifier. Defaults to 'deepseek/deepseek-v4-flash-0731'.
             See https://openrouter.ai/models for the full list.
         timeout : float, optional
             HTTP timeout per request in seconds. Default 60.

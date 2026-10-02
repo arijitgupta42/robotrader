@@ -10,9 +10,8 @@ All output structure is defined in the system prompt as a plain JSON
 schema description.  The response is decoded with json.loads(); if that
 fails the raw model output is printed and an empty result is returned.
 
-To add or swap models at runtime without redeploying the Lambda, update
-the SSM parameter /sector-scout/openrouter-models (comma-separated list).
-Falls back to OPENROUTER_MODELS in config.py if SSM is unreachable.
+The model list lives only in config.py (OPENROUTER_MODELS): DeepSeek V4 Flash,
+pinned to a dated release, with the earlier release as fallback.
 
 Environment variable required
 ------------------------------
@@ -35,7 +34,7 @@ from config import (
     LSE_SECTORS,
     OPENROUTER_RETRY_DELAYS,
     SCHEDULER_CFG,
-    load_openrouter_models,
+    OPENROUTER_MODELS,
 )
 from news_fetcher import Headline
 
@@ -422,9 +421,8 @@ def _validate_signal(raw: dict) -> Optional[dict]:
 
 def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]]:
     """
-    Iterate through models (loaded from SSM at runtime, falling back to
-    config.py) in windows of 3, sending each window as a single OpenRouter
-    request with `models` + `route: "fallback"`.
+    Iterate through OPENROUTER_MODELS (config.py) in windows of 3, sending
+    each window as a single OpenRouter request with `models` + `route: "fallback"`.
     OpenRouter handles intra-chunk fallback server-side; this function handles
     inter-chunk fallback (i.e. all 3 models in a window failed → try next window).
 
@@ -439,7 +437,7 @@ def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]
     Returns (decoded_dict, model_name_that_served_request) on success,
     or (None, None) if every chunk is exhausted.
     """
-    models = load_openrouter_models()
+    models = OPENROUTER_MODELS
     chunks = [models[i:i+3] for i in range(0, len(models), 3)]
     total_chunks = len(chunks)
 
