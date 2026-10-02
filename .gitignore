@@ -5,3 +5,5 @@ raw_model_responses
 financial_market_news_analyzer/*/
 *.so
 financial_market_news_analyzer/lambda_handler.py
+CLAUDE.md
+docs/agents/
