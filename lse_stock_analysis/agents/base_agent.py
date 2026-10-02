@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pydantic import BaseModel
 import logging
 
 logger = logging.getLogger(__name__)

@@ -34,6 +34,10 @@ def normalise_stock_data(stock_data: dict[str, pd.DataFrame]) -> dict[str, pd.Da
             print(f"  ✗ {ticker}: missing columns, skipping")
             continue
 
+        # Drop rows with no price (dates other tickers traded on, left over
+        # from the shared date index) so dtype conversion cannot fail
+        df = df.dropna(subset=["Close"])
+
         # Enforce dtypes
         for col in ["Open", "High", "Low", "Close"]:
             df[col] = df[col].astype(float)

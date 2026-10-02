@@ -1,7 +1,12 @@
 import logging
 import pandas as pd
 import yfinance as yf
-from tqdm import tqdm
+
+try:
+    from tqdm import tqdm
+except ImportError:                     # progress bar is optional
+    def tqdm(iterable, **_kwargs):
+        return iterable
 
 logger = logging.getLogger(__name__)
 

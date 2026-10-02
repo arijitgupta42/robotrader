@@ -1,5 +1,5 @@
 import pandas as pd
-from agents.base_agent import BaseAgent
+from .base_agent import BaseAgent
 
 
 class RiskScoringAgent(BaseAgent):

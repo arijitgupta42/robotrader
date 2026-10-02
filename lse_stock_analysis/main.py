@@ -3,12 +3,12 @@ import logging
 import pandas as pd
 from datetime import date, timedelta
 
-from model_loader import ModelLoader
-from get_stock_data import get_index_data, save_data, load_data
-from data_utils import normalise_stock_data
-from agents.risk_scoring_agent import RiskScoringAgent
-from agents.trend_analysis_agent import TrendAnalysisAgent
-from agents.return_projection_agent import ReturnProjectionAgent
+from lse_stock_analysis.model_loader import ModelLoader
+from lse_stock_analysis.get_stock_data import get_index_data, save_data, load_data
+from lse_stock_analysis.data_utils import normalise_stock_data
+from lse_stock_analysis.agents.risk_scoring_agent import RiskScoringAgent
+from lse_stock_analysis.agents.trend_analysis_agent import TrendAnalysisAgent
+from lse_stock_analysis.agents.return_projection_agent import ReturnProjectionAgent
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,7 +23,7 @@ LOOKBACK_DAYS = 180       # ~6 months of daily bars
 
 # Set to a filename to cache today's raw download and skip re-downloading
 # on subsequent runs.  Set to None to always download fresh.
-CACHE_FILE    = 'data_cache.csv'
+CACHE_FILE    = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_cache.csv')
 
 # ---------------------------------------------------------------------------
 # OpenRouter configuration
