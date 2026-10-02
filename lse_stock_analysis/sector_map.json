@@ -1,0 +1,2810 @@
+{
+ "_meta": {
+  "description": "Static map from each FTSE 350 stock (Yahoo ticker) to one Primary Sector and optional Secondary Sectors from config.LSE_SECTORS. primary_sector null = Unmapped Stock. Refresh after each quarterly FTSE review with: python -m lse_stock_analysis.universe_check",
+  "constituents_source": "Wikipedia FTSE 100 and FTSE 250 constituent tables",
+  "constituents_as_of": "2026-10-02"
+ },
+ "stocks": {
+  "3IN.L": {
+   "company": "3i Infrastructure",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "AAF.L": {
+   "company": "Airtel Africa",
+   "index": "FTSE 100",
+   "icb_sector": "Telecommunications services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "African mobile telecoms; the UK Telecoms sector is UK-specific"
+  },
+  "AAL.L": {
+   "company": "Anglo American plc",
+   "index": "FTSE 100",
+   "icb_sector": "Mining",
+   "primary_sector": "Diversified Mining",
+   "secondary_sectors": [
+    "Specialty Metals & Battery Materials"
+   ]
+  },
+  "AAS.L": {
+   "company": "Aberdeen Asia Focus",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "ABDN.L": {
+   "company": "Aberdeen Group",
+   "index": "FTSE 100",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "ABF.L": {
+   "company": "Associated British Foods",
+   "index": "FTSE 100",
+   "icb_sector": "Food & tobacco",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [
+    "Consumer Staples & FMCG"
+   ],
+   "note": "Primark is about half of group profit; the rest is food and ingredients"
+  },
+  "ADM.L": {
+   "company": "Admiral Group",
+   "index": "FTSE 100",
+   "icb_sector": "Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "AEP.L": {
+   "company": "AEP Plantations",
+   "index": "FTSE 250",
+   "icb_sector": "Food Producers",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Palm oil producer (Indonesia)"
+  },
+  "AGT.L": {
+   "company": "AVI Global Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "AIE.L": {
+   "company": "Ashoka India Equity Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "AJB.L": {
+   "company": "AJ Bell",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Investment platform"
+  },
+  "ALFA.L": {
+   "company": "Alfa Financial Software",
+   "index": "FTSE 250",
+   "icb_sector": "Software and Computer Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": [],
+   "note": "Asset finance software"
+  },
+  "ALW.L": {
+   "company": "Alliance Witan",
+   "index": "FTSE 100",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "ANTO.L": {
+   "company": "Antofagasta plc",
+   "index": "FTSE 100",
+   "icb_sector": "Mining",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [
+    "Diversified Mining"
+   ],
+   "note": "Copper miner; the config lists Antofagasta under Specialty Metals"
+  },
+  "AO.L": {
+   "company": "AO World",
+   "index": "FTSE 250",
+   "icb_sector": "Retail",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "APN.L": {
+   "company": "Applied Nutrition",
+   "index": "FTSE 250",
+   "icb_sector": "Food Producers",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Sports nutrition"
+  },
+  "ASC.L": {
+   "company": "ASOS",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [
+    "Luxury & Lifestyle"
+   ],
+   "note": "Online fashion"
+  },
+  "ASHM.L": {
+   "company": "Ashmore Group",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "ASL.L": {
+   "company": "Aberforth Smaller Companies Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "ATG.L": {
+   "company": "Auction Technology Group",
+   "index": "FTSE 250",
+   "icb_sector": "Software and Computer Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Online auction marketplaces; no matching sector"
+  },
+  "ATR.L": {
+   "company": "Schroder Asian Total Return Investment Company",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "ATT.L": {
+   "company": "Allianz Technology Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "ATYM.L": {
+   "company": "Atalaya Mining",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Metals and Mining",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Copper miner"
+  },
+  "AUTO.L": {
+   "company": "Autotrader Group",
+   "index": "FTSE 100",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Online car marketplace; no matching sector"
+  },
+  "AV.L": {
+   "company": "Aviva",
+   "index": "FTSE 100",
+   "icb_sector": "Life insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": [
+    "Asset Management & Wealth"
+   ]
+  },
+  "AVON.L": {
+   "company": "Avon Technologies",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Goods and Services",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": [],
+   "note": "Protective equipment for defence and emergency services"
+  },
+  "AZN.L": {
+   "company": "AstraZeneca",
+   "index": "FTSE 100",
+   "icb_sector": "Pharmaceuticals & biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "BA.L": {
+   "company": "BAE Systems",
+   "index": "FTSE 100",
+   "icb_sector": "Aerospace & defence",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "BAB.L": {
+   "company": "Babcock International",
+   "index": "FTSE 100",
+   "icb_sector": "Aerospace & defence",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "BAG.L": {
+   "company": "A.G. Barr",
+   "index": "FTSE 250",
+   "icb_sector": "Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Soft drinks"
+  },
+  "BARC.L": {
+   "company": "Barclays",
+   "index": "FTSE 100",
+   "icb_sector": "Banks",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": [
+    "Investment Banks & Brokers"
+   ]
+  },
+  "BATS.L": {
+   "company": "British American Tobacco",
+   "index": "FTSE 100",
+   "icb_sector": "Tobacco",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "BBOX.L": {
+   "company": "Tritax Big Box REIT",
+   "index": "FTSE 100",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
+  "BBY.L": {
+   "company": "Balfour Beatty",
+   "index": "FTSE 100",
+   "icb_sector": "Construction & Materials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Construction and infrastructure"
+  },
+  "BCG.L": {
+   "company": "Baltic Classifieds",
+   "index": "FTSE 250",
+   "icb_sector": "Consumer Digital Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Online classifieds in the Baltics; no matching sector"
+  },
+  "BGEO.L": {
+   "company": "Lion Finance Group",
+   "index": "FTSE 100",
+   "icb_sector": "Banking Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Georgian bank; the UK Retail Banks sector is UK-specific"
+  },
+  "BGFD.L": {
+   "company": "Baillie Gifford Japan Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BHMG.L": {
+   "company": "BH Macro",
+   "index": "FTSE 250",
+   "icb_sector": "Hedge Funds",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BKG.L": {
+   "company": "Berkeley Group Holdings",
+   "index": "FTSE 250",
+   "icb_sector": "Household goods & home construction",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "BLND.L": {
+   "company": "British Land",
+   "index": "FTSE 100",
+   "icb_sector": "Real estate",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "BME.L": {
+   "company": "B&M",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "BMY.L": {
+   "company": "Bloomsbury Publishing",
+   "index": "FTSE 250",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Publishing; no matching sector"
+  },
+  "BNKR.L": {
+   "company": "Bankers Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BNZL.L": {
+   "company": "Bunzl",
+   "index": "FTSE 100",
+   "icb_sector": "Support services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Industrial and consumables distribution"
+  },
+  "BOWL.L": {
+   "company": "Hollywood Bowl Group",
+   "index": "FTSE 250",
+   "icb_sector": "Travel and leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Bowling and mini-golf"
+  },
+  "BOY.L": {
+   "company": "Bodycote",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Heat treatment services"
+  },
+  "BP.L": {
+   "company": "BP",
+   "index": "FTSE 100",
+   "icb_sector": "Oil & gas producers",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "BPCR.L": {
+   "company": "Biopharma Credit",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BPT.L": {
+   "company": "Bridgepoint Group",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Private equity manager"
+  },
+  "BRBY.L": {
+   "company": "Burberry Group",
+   "index": "FTSE 100",
+   "icb_sector": "Personal goods",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": []
+  },
+  "BREE.L": {
+   "company": "Breedon Group",
+   "index": "FTSE 250",
+   "icb_sector": "Construction & Materials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [
+    "Housebuilders"
+   ],
+   "note": "Aggregates and cement"
+  },
+  "BRGE.L": {
+   "company": "BlackRock Greater Europe Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BRSC.L": {
+   "company": "BlackRock Smaller Companies Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BRWM.L": {
+   "company": "BlackRock World Mining Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BT-A.L": {
+   "company": "BT Group",
+   "index": "FTSE 100",
+   "icb_sector": "Telecommunications services",
+   "primary_sector": "UK Telecoms & Broadband",
+   "secondary_sectors": []
+  },
+  "BTRW.L": {
+   "company": "Barratt Redrow",
+   "index": "FTSE 100",
+   "icb_sector": "Household goods & home construction",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "BUT.L": {
+   "company": "Brunner Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "BWY.L": {
+   "company": "Bellway",
+   "index": "FTSE 250",
+   "icb_sector": "Home Construction",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "BYG.L": {
+   "company": "Big Yellow Group",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": [],
+   "note": "Self storage"
+  },
+  "BYIT.L": {
+   "company": "Bytes Technology Group",
+   "index": "FTSE 250",
+   "icb_sector": "Aerospace & Defence",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": [],
+   "note": "Microsoft licensing and cloud reseller; mislabelled as Aerospace & Defence on Wikipedia"
+  },
+  "CBG.L": {
+   "company": "Close Brothers Group",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": [],
+   "note": "Merchant bank and lender"
+  },
+  "CCC.L": {
+   "company": "Computacenter",
+   "index": "FTSE 100",
+   "icb_sector": "Software & Computer Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "IT hardware reseller and services; no matching sector"
+  },
+  "CCEP.L": {
+   "company": "Coca-Cola Europacific Partners",
+   "index": "FTSE 100",
+   "icb_sector": "Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "CCH.L": {
+   "company": "Coca-Cola HBC",
+   "index": "FTSE 100",
+   "icb_sector": "Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "CGT.L": {
+   "company": "Capital Gearing Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "CHG.L": {
+   "company": "Chemring Group",
+   "index": "FTSE 250",
+   "icb_sector": "Aerospace & Defence",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "CKN.L": {
+   "company": "Clarkson",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": [],
+   "note": "Shipbroking"
+  },
+  "CLDN.L": {
+   "company": "Caledonia Investments",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "CMCX.L": {
+   "company": "CMC Markets",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [],
+   "note": "Retail trading broker"
+  },
+  "CNA.L": {
+   "company": "Centrica",
+   "index": "FTSE 100",
+   "icb_sector": "Multiline utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": [
+    "Integrated Oil & Gas"
+   ],
+   "note": "Energy supplier plus gas and power trading"
+  },
+  "COA.L": {
+   "company": "Coats Group",
+   "index": "FTSE 250",
+   "icb_sector": "Consumer Staples",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Industrial and apparel thread; no matching sector"
+  },
+  "CORD.L": {
+   "company": "Cordiant Digital Infrastructure",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund (digital infrastructure)"
+  },
+  "COST.L": {
+   "company": "Costain Group",
+   "index": "FTSE 250",
+   "icb_sector": "Engineering and Construction",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "CPG.L": {
+   "company": "Compass Group",
+   "index": "FTSE 100",
+   "icb_sector": "Support services",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Contract catering; classed as hospitality under GICS"
+  },
+  "CRDA.L": {
+   "company": "Croda International",
+   "index": "FTSE 100",
+   "icb_sector": "Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Specialty chemicals; no matching sector"
+  },
+  "CSN.L": {
+   "company": "Chesnara",
+   "index": "FTSE 250",
+   "icb_sector": "Life Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": [],
+   "note": "Closed-book life insurance consolidator"
+  },
+  "CTEC.L": {
+   "company": "Convatec",
+   "index": "FTSE 100",
+   "icb_sector": "Health care equipment & supplies",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "CTY.L": {
+   "company": "City of London Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "CURY.L": {
+   "company": "Currys",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [],
+   "note": "Electrical retailer"
+  },
+  "CVSG.L": {
+   "company": "CVS Group",
+   "index": "FTSE 250",
+   "icb_sector": "Health Care",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": [],
+   "note": "Veterinary services"
+  },
+  "CWK.L": {
+   "company": "Cranswick",
+   "index": "FTSE 250",
+   "icb_sector": "Food Producers",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Pork and food producer"
+  },
+  "CWR.L": {
+   "company": "Ceres Power",
+   "index": "FTSE 250",
+   "icb_sector": "Alternative Energy",
+   "primary_sector": "Renewables & Clean Energy",
+   "secondary_sectors": [],
+   "note": "Fuel cells"
+  },
+  "DATA.L": {
+   "company": "GlobalData",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Goods and Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Data and analytics; no matching sector"
+  },
+  "DCC.L": {
+   "company": "DCC Energy",
+   "index": "FTSE 100",
+   "icb_sector": "Support services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Energy distribution, healthcare and technology conglomerate; no matching sector"
+  },
+  "DGE.L": {
+   "company": "Diageo",
+   "index": "FTSE 100",
+   "icb_sector": "Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "DLN.L": {
+   "company": "Derwent London",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": [],
+   "note": "London offices"
+  },
+  "DNLM.L": {
+   "company": "Dunelm Group",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "DOCS.L": {
+   "company": "Dr. Martens",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": [
+    "UK General Retail"
+   ],
+   "note": "Footwear brand"
+  },
+  "DOM.L": {
+   "company": "Domino's Pizza",
+   "index": "FTSE 250",
+   "icb_sector": "Travel & Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Pizza franchise"
+  },
+  "DPLM.L": {
+   "company": "Diploma",
+   "index": "FTSE 100",
+   "icb_sector": "Industrial Support services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Specialist industrial distribution"
+  },
+  "DRX.L": {
+   "company": "Drax Group",
+   "index": "FTSE 250",
+   "icb_sector": "Electricity",
+   "primary_sector": "Renewables & Clean Energy",
+   "secondary_sectors": [
+    "Electricity & Grid"
+   ],
+   "note": "Biomass power generation"
+  },
+  "DSCV.L": {
+   "company": "discoverIE",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Electronic components"
+  },
+  "EDIN.L": {
+   "company": "Edinburgh Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "EDV.L": {
+   "company": "Endeavour Mining",
+   "index": "FTSE 100",
+   "icb_sector": "Mining",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Gold miner; the config lists gold miners under Specialty Metals"
+  },
+  "ELM.L": {
+   "company": "Elementis",
+   "index": "FTSE 250",
+   "icb_sector": "Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Specialty chemicals; no matching sector"
+  },
+  "EMG.L": {
+   "company": "Man Group",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Hedge fund manager; mislabelled as Investment Trusts on Wikipedia"
+  },
+  "ENOG.L": {
+   "company": "Energean",
+   "index": "FTSE 250",
+   "icb_sector": "Oil & Gas Producers",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": [],
+   "note": "Exploration and production; closest sector is oil price exposure"
+  },
+  "ENT.L": {
+   "company": "Entain",
+   "index": "FTSE 250",
+   "icb_sector": "Travel & leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Gambling operator"
+  },
+  "ESCT.L": {
+   "company": "European Smaller Companies Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "EWG.L": {
+   "company": "Eurowag",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": [],
+   "note": "Fleet payments and tolling"
+  },
+  "EWI.L": {
+   "company": "Edinburgh Worldwide Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "EXPN.L": {
+   "company": "Experian",
+   "index": "FTSE 100",
+   "icb_sector": "Support services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Credit data and analytics; no matching sector"
+  },
+  "EZJ.L": {
+   "company": "EasyJet",
+   "index": "FTSE 100",
+   "icb_sector": "Travel and Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Airline"
+  },
+  "FAN.L": {
+   "company": "Volution Group",
+   "index": "FTSE 250",
+   "icb_sector": "Construction & Materials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [
+    "Housebuilders"
+   ],
+   "note": "Ventilation products"
+  },
+  "FCH.L": {
+   "company": "Funding Circle",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": [],
+   "note": "SME lending platform"
+  },
+  "FCIT.L": {
+   "company": "F & C Investment Trust",
+   "index": "FTSE 100",
+   "icb_sector": "Collective investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "FCSS.L": {
+   "company": "Fidelity China Special Situations",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "FEML.L": {
+   "company": "Fidelity Emerging Markets",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "FEV.L": {
+   "company": "Fidelity European Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "FGEN.L": {
+   "company": "Foresight Environmental Infrastructure",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund (renewables)"
+  },
+  "FGP.L": {
+   "company": "FirstGroup",
+   "index": "FTSE 250",
+   "icb_sector": "Travel & Leisure",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": [],
+   "note": "Buses and rail"
+  },
+  "FGT.L": {
+   "company": "Finsbury Growth & Income Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Equity Investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "FOUR.L": {
+   "company": "4imprint",
+   "index": "FTSE 250",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Promotional products distributor; no matching sector"
+  },
+  "FRAS.L": {
+   "company": "Frasers Group",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [
+    "Luxury & Lifestyle"
+   ]
+  },
+  "FRES.L": {
+   "company": "Fresnillo plc",
+   "index": "FTSE 100",
+   "icb_sector": "Mining",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Silver and gold miner"
+  },
+  "FSG.L": {
+   "company": "Foresight Group",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Banking and Brokerage Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Alternative asset manager"
+  },
+  "FSV.L": {
+   "company": "Fidelity Special Values",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "GAMA.L": {
+   "company": "Gamma Communications",
+   "index": "FTSE 250",
+   "icb_sector": "Telecommunications",
+   "primary_sector": "UK Telecoms & Broadband",
+   "secondary_sectors": [
+    "Cloud & SaaS"
+   ],
+   "note": "Cloud communications"
+  },
+  "GAW.L": {
+   "company": "Games Workshop",
+   "index": "FTSE 100",
+   "icb_sector": "Leisure Goods",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": [],
+   "note": "Hobby brand; closest fit is Luxury & Lifestyle (aspirational spend)"
+  },
+  "GCP.L": {
+   "company": "GCP Infrastructure Investments",
+   "index": "FTSE 250",
+   "icb_sector": "General Financial",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "GDWN.L": {
+   "company": "Goodwin",
+   "index": "FTSE 250",
+   "icb_sector": "General Industrials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Pumps and mining equipment"
+  },
+  "GEN.L": {
+   "company": "Genuit Group",
+   "index": "FTSE 250",
+   "icb_sector": "Construction & Materials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [
+    "Housebuilders"
+   ],
+   "note": "Building products"
+  },
+  "GFRD.L": {
+   "company": "Galliford Try",
+   "index": "FTSE 250",
+   "icb_sector": "Construction",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Construction"
+  },
+  "GFTU.L": {
+   "company": "Grafton Group",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [
+    "Housebuilders"
+   ],
+   "note": "Builders' merchants"
+  },
+  "GLEN.L": {
+   "company": "Glencore",
+   "index": "FTSE 100",
+   "icb_sector": "Mining",
+   "primary_sector": "Diversified Mining",
+   "secondary_sectors": [
+    "Specialty Metals & Battery Materials"
+   ]
+  },
+  "GNC.L": {
+   "company": "Greencore",
+   "index": "FTSE 250",
+   "icb_sector": "Food, Beverage and Tobacco",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Convenience food"
+  },
+  "GNS.L": {
+   "company": "Genus",
+   "index": "FTSE 250",
+   "icb_sector": "Pharmaceuticals & Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": [],
+   "note": "Animal genetics; classed as pharmaceuticals"
+  },
+  "GPE.L": {
+   "company": "Great Portland Estates",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": [],
+   "note": "London offices and retail"
+  },
+  "GRG.L": {
+   "company": "Greggs",
+   "index": "FTSE 250",
+   "icb_sector": "Food & Drug Retailers",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": [
+    "Travel, Leisure & Hospitality"
+   ],
+   "note": "Food-to-go retailer"
+  },
+  "GRI.L": {
+   "company": "Grainger",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment & Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Residential rental; no matching sector"
+  },
+  "GROW.L": {
+   "company": "Molten Ventures",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Venture investor"
+  },
+  "GSCT.L": {
+   "company": "Global Smaller Companies Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "GSK.L": {
+   "company": "GSK plc",
+   "index": "FTSE 100",
+   "icb_sector": "Pharmaceuticals & biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "HANA.L": {
+   "company": "Hansa Investment Company",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "HAS.L": {
+   "company": "Hays",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Recruitment; no matching sector"
+  },
+  "HBR.L": {
+   "company": "Harbour Energy",
+   "index": "FTSE 250",
+   "icb_sector": "Oil & Gas Producers",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": [],
+   "note": "Exploration and production; closest sector is oil price exposure"
+  },
+  "HFD.L": {
+   "company": "Halfords",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "HFEL.L": {
+   "company": "Henderson Far East Income",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "HFG.L": {
+   "company": "Hilton Food Group",
+   "index": "FTSE 250",
+   "icb_sector": "Food Producers",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Meat packing and food supply"
+  },
+  "HGT.L": {
+   "company": "Hg Capital Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "HICL.L": {
+   "company": "HICL Infrastructure Company",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "HIK.L": {
+   "company": "Hikma Pharmaceuticals",
+   "index": "FTSE 250",
+   "icb_sector": "Pharmaceuticals and Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": [],
+   "note": "Generics and injectables"
+  },
+  "HILS.L": {
+   "company": "Hill & Smith",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Galvanizing and road safety"
+  },
+  "HLMA.L": {
+   "company": "Halma plc",
+   "index": "FTSE 100",
+   "icb_sector": "Electronic equipment & parts",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "HLN.L": {
+   "company": "Haleon",
+   "index": "FTSE 100",
+   "icb_sector": "Pharmaceuticals & biotechnology",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Consumer health"
+  },
+  "HMSO.L": {
+   "company": "Hammerson",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "HOC.L": {
+   "company": "Hochschild Mining",
+   "index": "FTSE 250",
+   "icb_sector": "Basic Resources",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Gold and silver miner"
+  },
+  "HRI.L": {
+   "company": "Herald Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "HSBA.L": {
+   "company": "HSBC",
+   "index": "FTSE 100",
+   "icb_sector": "Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [
+    "UK Retail Banks"
+   ],
+   "note": "The config lists HSBC under Investment Banks & Brokers"
+  },
+  "HSL.L": {
+   "company": "Henderson Smaller Companies Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "HSX.L": {
+   "company": "Hiscox",
+   "index": "FTSE 100",
+   "icb_sector": "Non-life Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "HTG.L": {
+   "company": "Hunting",
+   "index": "FTSE 250",
+   "icb_sector": "Oil, Gas and Coal",
+   "primary_sector": "Oil Field Services",
+   "secondary_sectors": []
+  },
+  "HTWS.L": {
+   "company": "Helios Towers",
+   "index": "FTSE 250",
+   "icb_sector": "Telecomms",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "African mobile towers; the UK Telecoms sector is UK-specific"
+  },
+  "HVPE.L": {
+   "company": "HarbourVest Global Private Equity",
+   "index": "FTSE 250",
+   "icb_sector": "Equity Investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "HWDN.L": {
+   "company": "Howdens Joinery",
+   "index": "FTSE 100",
+   "icb_sector": "Homebuilding & construction supplies",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [
+    "Housebuilders"
+   ],
+   "note": "Trade kitchen supplier; demand follows housing and repair/maintenance"
+  },
+  "HWG.L": {
+   "company": "Harworth Group",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Land regeneration; no matching sector"
+  },
+  "IAD.L": {
+   "company": "Invesco Asia Dragon Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "IAG.L": {
+   "company": "International Airlines Group",
+   "index": "FTSE 100",
+   "icb_sector": "Travel & leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Airline group"
+  },
+  "ICG.L": {
+   "company": "ICG",
+   "index": "FTSE 100",
+   "icb_sector": "Financial services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "ICGT.L": {
+   "company": "ICG Enterprise Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "IGG.L": {
+   "company": "IG Group",
+   "index": "FTSE 100",
+   "icb_sector": "Financial services",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [],
+   "note": "Retail trading broker"
+  },
+  "IHG.L": {
+   "company": "IHG Hotels & Resorts",
+   "index": "FTSE 100",
+   "icb_sector": "Travel & leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "IHP.L": {
+   "company": "IntegraFin Holdings",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Investment platform"
+  },
+  "III.L": {
+   "company": "3i",
+   "index": "FTSE 100",
+   "icb_sector": "Financial services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Private equity; largest holding is Action (discount retail)"
+  },
+  "IMB.L": {
+   "company": "Imperial Brands",
+   "index": "FTSE 100",
+   "icb_sector": "Tobacco",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "IMI.L": {
+   "company": "IMI",
+   "index": "FTSE 100",
+   "icb_sector": "Industrial engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "INCH.L": {
+   "company": "Inchcape",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [],
+   "note": "Car distribution and retail"
+  },
+  "INF.L": {
+   "company": "Informa",
+   "index": "FTSE 100",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Events and publishing; no matching sector"
+  },
+  "INPP.L": {
+   "company": "International Public Partnerships",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "INVP.L": {
+   "company": "Investec",
+   "index": "FTSE 100",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [
+    "Asset Management & Wealth"
+   ],
+   "note": "Specialist bank plus wealth management"
+  },
+  "IPO.L": {
+   "company": "IP Group",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Intellectual property commercialisation and venture investor"
+  },
+  "ITH.L": {
+   "company": "Ithaca Energy",
+   "index": "FTSE 100",
+   "icb_sector": "Oil & Gas Producers",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": [],
+   "note": "Exploration and production; closest sector is oil price exposure"
+  },
+  "ITRK.L": {
+   "company": "Intertek",
+   "index": "FTSE 100",
+   "icb_sector": "Support services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Testing and certification; no matching sector"
+  },
+  "ITV.L": {
+   "company": "ITV",
+   "index": "FTSE 250",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Broadcaster; no matching sector"
+  },
+  "IWG.L": {
+   "company": "International Workplace Group",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Flexible workspace operator; no matching sector"
+  },
+  "JAM.L": {
+   "company": "JPMorgan American Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JCH.L": {
+   "company": "JPMorgan Claverhouse Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JD.L": {
+   "company": "JD Sports",
+   "index": "FTSE 100",
+   "icb_sector": "General retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "JDW.L": {
+   "company": "Wetherspoons",
+   "index": "FTSE 250",
+   "icb_sector": "Travel & Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Pubs"
+  },
+  "JEDT.L": {
+   "company": "JPMorgan European Discovery",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JEGI.L": {
+   "company": "JPMorgan European Growth & Income",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JEMI.L": {
+   "company": "JPMorgan Emerging Markets Dividend Income",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JFJ.L": {
+   "company": "JPMorgan Japanese Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JGGI.L": {
+   "company": "JPMorgan Global Growth & Income",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JMAT.L": {
+   "company": "Johnson Matthey",
+   "index": "FTSE 250",
+   "icb_sector": "Chemicals",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Catalysts and platinum group metals"
+  },
+  "JMGI.L": {
+   "company": "JPMorgan Emerging Markets Growth & Income",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "JSG.L": {
+   "company": "Johnson Service Group",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Support Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Textile rental; no matching sector"
+  },
+  "JUP.L": {
+   "company": "Jupiter Fund Management",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "KGF.L": {
+   "company": "Kingfisher plc",
+   "index": "FTSE 100",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [
+    "Housebuilders"
+   ]
+  },
+  "KIE.L": {
+   "company": "Kier Group",
+   "index": "FTSE 250",
+   "icb_sector": "Construction & Materials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Construction"
+  },
+  "KLR.L": {
+   "company": "Keller Group",
+   "index": "FTSE 250",
+   "icb_sector": "Construction & Materials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Ground engineering"
+  },
+  "KNOS.L": {
+   "company": "Kainos",
+   "index": "FTSE 250",
+   "icb_sector": "Software & Computer Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": [],
+   "note": "Digital services and software"
+  },
+  "LAND.L": {
+   "company": "Land Securities",
+   "index": "FTSE 100",
+   "icb_sector": "Real estate investment trusts",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "LGEN.L": {
+   "company": "Legal & General",
+   "index": "FTSE 100",
+   "icb_sector": "Life insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": [
+    "Asset Management & Wealth"
+   ]
+  },
+  "LLOY.L": {
+   "company": "Lloyds Banking Group",
+   "index": "FTSE 100",
+   "icb_sector": "Banks",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": []
+  },
+  "LMP.L": {
+   "company": "LondonMetric Property",
+   "index": "FTSE 100",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
+  "LRE.L": {
+   "company": "Lancashire Holdings",
+   "index": "FTSE 250",
+   "icb_sector": "Nonlife Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": [],
+   "note": "Specialty insurer"
+  },
+  "LSEG.L": {
+   "company": "London Stock Exchange Group",
+   "index": "FTSE 100",
+   "icb_sector": "Financial services",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [
+    "Fintech & Payments"
+   ],
+   "note": "Exchange, clearing and data"
+  },
+  "LWDB.L": {
+   "company": "Law Debenture",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "MAB.L": {
+   "company": "Mitchells & Butlers",
+   "index": "FTSE 250",
+   "icb_sector": "Travel & Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Pubs and restaurants"
+  },
+  "MEGP.L": {
+   "company": "ME Group International",
+   "index": "FTSE 250",
+   "icb_sector": "Leisure Goods",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Photo booths and laundry; no matching sector"
+  },
+  "MGAM.L": {
+   "company": "Morgan Advanced Materials",
+   "index": "FTSE 250",
+   "icb_sector": "Electronic & Electrical Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "MGNS.L": {
+   "company": "Morgan Sindall Group",
+   "index": "FTSE 250",
+   "icb_sector": "Construction & Materials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Construction"
+  },
+  "MKS.L": {
+   "company": "Marks & Spencer",
+   "index": "FTSE 100",
+   "icb_sector": "Food & drug retailing",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": [
+    "UK General Retail"
+   ],
+   "note": "Food is now over half of sales"
+  },
+  "MNDI.L": {
+   "company": "Mondi",
+   "index": "FTSE 250",
+   "icb_sector": "Containers & packaging",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Packaging and paper; no matching sector"
+  },
+  "MNG.L": {
+   "company": "M&G",
+   "index": "FTSE 100",
+   "icb_sector": "Financial services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [
+    "Insurance"
+   ]
+  },
+  "MNKS.L": {
+   "company": "Monks Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "MNO.L": {
+   "company": "Meridian Mining",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Metals and Mining",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Mining developer (Brazil)"
+  },
+  "MNTN.L": {
+   "company": "Schiehallion Fund",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "MONY.L": {
+   "company": "MONY Group",
+   "index": "FTSE 250",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Price comparison; no matching sector"
+  },
+  "MOON.L": {
+   "company": "Moonpig",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [],
+   "note": "Online cards and gifts"
+  },
+  "MRC.L": {
+   "company": "Mercantile Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Collective Investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "MRCH.L": {
+   "company": "Merchants Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "MRO.L": {
+   "company": "Melrose Industries",
+   "index": "FTSE 100",
+   "icb_sector": "Aerospace & defence",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": [
+    "Engineering & Industrials"
+   ]
+  },
+  "MTLN.L": {
+   "company": "Metlen Energy & Metals",
+   "index": "FTSE 100",
+   "icb_sector": "Multiline utilities",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Greek metals, energy and engineering group; no matching sector"
+  },
+  "MTO.L": {
+   "company": "Mitie",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Facilities management; no matching sector"
+  },
+  "MTRO.L": {
+   "company": "Metro Bank",
+   "index": "FTSE 250",
+   "icb_sector": "Banks",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": []
+  },
+  "MUT.L": {
+   "company": "Murray Income Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "MYI.L": {
+   "company": "Murray International Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "N91.L": {
+   "company": "Ninety One",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "NAIT.L": {
+   "company": "North American Income Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "NAS.L": {
+   "company": "North Atlantic Smaller Companies Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "NBPE.L": {
+   "company": "Neuberger Private Equity Partners",
+   "index": "FTSE 250",
+   "icb_sector": "Collective Investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "NCC.L": {
+   "company": "NCC Group",
+   "index": "FTSE 250",
+   "icb_sector": "Software and Computer Services",
+   "primary_sector": "Cybersecurity",
+   "secondary_sectors": []
+  },
+  "NG.L": {
+   "company": "National Grid plc",
+   "index": "FTSE 100",
+   "icb_sector": "Multiline utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "NWG.L": {
+   "company": "NatWest Group",
+   "index": "FTSE 100",
+   "icb_sector": "Banks",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": []
+  },
+  "NXT.L": {
+   "company": "Next plc",
+   "index": "FTSE 100",
+   "icb_sector": "General retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "OCDO.L": {
+   "company": "Ocado Group",
+   "index": "FTSE 250",
+   "icb_sector": "Food & drug retailers",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": [],
+   "note": "Online grocery technology and delivery"
+  },
+  "OCI.L": {
+   "company": "Oakley Capital Investments",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "ONT.L": {
+   "company": "Oxford Nanopore Technologies",
+   "index": "FTSE 250",
+   "icb_sector": "Health Care",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": [
+    "Medical Devices & Services"
+   ],
+   "note": "DNA sequencing technology"
+  },
+  "OSB.L": {
+   "company": "OSB Group",
+   "index": "FTSE 250",
+   "icb_sector": "Banks",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": [],
+   "note": "Specialist mortgage lender"
+  },
+  "OXB.L": {
+   "company": "Oxford Biomedica",
+   "index": "FTSE 250",
+   "icb_sector": "Pharmaceuticals and Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": [],
+   "note": "Gene therapy manufacturing"
+  },
+  "OXIG.L": {
+   "company": "Oxford Instruments",
+   "index": "FTSE 250",
+   "icb_sector": "Electronic & Electrical Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Scientific instruments"
+  },
+  "PAF.L": {
+   "company": "Pan African Resources",
+   "index": "FTSE 250",
+   "icb_sector": "Precious Metals and Mining",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Gold miner (South Africa)"
+  },
+  "PAG.L": {
+   "company": "Paragon Banking Group",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": []
+  },
+  "PAGE.L": {
+   "company": "Michael Page",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Recruitment; no matching sector"
+  },
+  "PCGH.L": {
+   "company": "Polar Capital Global Healthcare Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PCT.L": {
+   "company": "Polar Capital Technology Trust",
+   "index": "FTSE 100",
+   "icb_sector": "Investment trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PETS.L": {
+   "company": "Pets at Home",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "PEY.L": {
+   "company": "Partners Group Private Equity",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PFD.L": {
+   "company": "Premier Foods",
+   "index": "FTSE 250",
+   "icb_sector": "Food & Drug Retailers",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Packaged food brands"
+  },
+  "PHI.L": {
+   "company": "Pacific Horizon Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PHP.L": {
+   "company": "Primary Health Properties",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": [],
+   "note": "Healthcare property"
+  },
+  "PIN.L": {
+   "company": "Pantheon International",
+   "index": "FTSE 250",
+   "icb_sector": "Equity Investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PINE.L": {
+   "company": "Pinewood Technologies",
+   "index": "FTSE 250",
+   "icb_sector": "Software and Computer Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": [],
+   "note": "Dealer management software"
+  },
+  "PINT.L": {
+   "company": "Pantheon Infrastructure",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PLUS.L": {
+   "company": "Plus500",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [],
+   "note": "Retail trading broker"
+  },
+  "PNL.L": {
+   "company": "Personal Assets Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PNN.L": {
+   "company": "Pennon Group",
+   "index": "FTSE 250",
+   "icb_sector": "Gas, Water & Multiutilities",
+   "primary_sector": "Water",
+   "secondary_sectors": []
+  },
+  "POLN.L": {
+   "company": "Pollen Street Group",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": [],
+   "note": "Private credit manager and lender"
+  },
+  "PPET.L": {
+   "company": "Patria Private Equity Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PPH.L": {
+   "company": "PPHE Hotel Group",
+   "index": "FTSE 250",
+   "icb_sector": "Travel and Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Hotels"
+  },
+  "PRN.L": {
+   "company": "Princes Group",
+   "index": "FTSE 250",
+   "icb_sector": "Food and drink",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Canned food and oils"
+  },
+  "PRU.L": {
+   "company": "Prudential plc",
+   "index": "FTSE 100",
+   "icb_sector": "Life insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": [
+    "Asset Management & Wealth"
+   ],
+   "note": "Asia and Africa life insurance"
+  },
+  "PSH.L": {
+   "company": "Pershing Square Holdings",
+   "index": "FTSE 100",
+   "icb_sector": "Financial services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "PSN.L": {
+   "company": "Persimmon",
+   "index": "FTSE 250",
+   "icb_sector": "Household goods & home construction",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "PSON.L": {
+   "company": "Pearson plc",
+   "index": "FTSE 100",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Education publishing; no matching sector"
+  },
+  "PTEC.L": {
+   "company": "Playtech",
+   "index": "FTSE 250",
+   "icb_sector": "Software & Computer Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Gaming software; no matching sector"
+  },
+  "QLT.L": {
+   "company": "Quilter",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "QQ.L": {
+   "company": "Qinetiq",
+   "index": "FTSE 250",
+   "icb_sector": "Aerospace & Defence",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "RAT.L": {
+   "company": "Rathbones",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "RCP.L": {
+   "company": "RIT Capital Partners",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "REL.L": {
+   "company": "RELX",
+   "index": "FTSE 100",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Information analytics; no matching sector"
+  },
+  "RHIM.L": {
+   "company": "RHI Magnesita",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Refractories for steelmakers"
+  },
+  "RICA.L": {
+   "company": "Ruffer Investment Company",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "RIO.L": {
+   "company": "Rio Tinto",
+   "index": "FTSE 100",
+   "icb_sector": "Mining",
+   "primary_sector": "Diversified Mining",
+   "secondary_sectors": [
+    "Specialty Metals & Battery Materials"
+   ]
+  },
+  "RKT.L": {
+   "company": "Reckitt",
+   "index": "FTSE 100",
+   "icb_sector": "Household goods & home construction",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "RMV.L": {
+   "company": "Rightmove",
+   "index": "FTSE 250",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Property portal; no matching sector"
+  },
+  "RNK.L": {
+   "company": "Rank Group",
+   "index": "FTSE 250",
+   "icb_sector": "Travel and Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Casinos and bingo"
+  },
+  "ROR.L": {
+   "company": "Rotork",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Flow control"
+  },
+  "ROSE.L": {
+   "company": "Rosebank Industries",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Goods and Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Industrial holding company"
+  },
+  "RPI.L": {
+   "company": "Raspberry Pi Holdings",
+   "index": "FTSE 250",
+   "icb_sector": "Technology",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": [],
+   "note": "Single-board computers built on its own silicon; closest sector fit"
+  },
+  "RR.L": {
+   "company": "Rolls-Royce Holdings",
+   "index": "FTSE 100",
+   "icb_sector": "Aerospace & defence",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "RS1.L": {
+   "company": "RS Group",
+   "index": "FTSE 250",
+   "icb_sector": "Industrials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Industrial and electronics distribution"
+  },
+  "RSW.L": {
+   "company": "Renishaw",
+   "index": "FTSE 250",
+   "icb_sector": "Electronic & Electrical Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Metrology and sensing"
+  },
+  "RTO.L": {
+   "company": "Rentokil Initial",
+   "index": "FTSE 100",
+   "icb_sector": "Support services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Pest control and hygiene services; no matching sector"
+  },
+  "RTW.L": {
+   "company": "RTW Biotech Opportunities",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "SAFE.L": {
+   "company": "Safestore",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": [],
+   "note": "Self storage"
+  },
+  "SAGA.L": {
+   "company": "Saga",
+   "index": "FTSE 250",
+   "icb_sector": "Travel and Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Over-50s travel and insurance"
+  },
+  "SAIN.L": {
+   "company": "Scottish American Investment Company",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "SBRY.L": {
+   "company": "Sainsbury's",
+   "index": "FTSE 100",
+   "icb_sector": "Food & drug retailing",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
+  "SCT.L": {
+   "company": "Softcat",
+   "index": "FTSE 250",
+   "icb_sector": "Software & Computer Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": [],
+   "note": "IT reseller with cloud and software exposure"
+  },
+  "SDLF.L": {
+   "company": "Standard Life",
+   "index": "FTSE 100",
+   "icb_sector": "Life insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": [
+    "Asset Management & Wealth"
+   ],
+   "note": "Phoenix Group, renamed Standard Life"
+  },
+  "SDP.L": {
+   "company": "Schroder AsiaPacific Fund",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "SEIT.L": {
+   "company": "SDCL Efficiency Income Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Energy",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund (energy efficiency)"
+  },
+  "SEQI.L": {
+   "company": "Sequoia Economic Infrastructure Income Fund",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "SGE.L": {
+   "company": "Sage Group",
+   "index": "FTSE 100",
+   "icb_sector": "Software & computer services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "SGRO.L": {
+   "company": "Segro",
+   "index": "FTSE 100",
+   "icb_sector": "Real estate investment trusts",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": [
+    "Data Centres & Digital Infrastructure"
+   ],
+   "note": "Data centre developments are a growing part"
+  },
+  "SHAW.L": {
+   "company": "Shawbrook Bank",
+   "index": "FTSE 250",
+   "icb_sector": "Banking",
+   "primary_sector": "UK Retail Banks",
+   "secondary_sectors": [],
+   "note": "Specialist lender"
+  },
+  "SHC.L": {
+   "company": "Shaftesbury Capital",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": [],
+   "note": "West End retail and leisure property"
+  },
+  "SHEL.L": {
+   "company": "Shell plc",
+   "index": "FTSE 100",
+   "icb_sector": "Oil & gas producers",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "SMIN.L": {
+   "company": "Smiths Group",
+   "index": "FTSE 100",
+   "icb_sector": "General industrials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "SMT.L": {
+   "company": "Scottish Mortgage Investment Trust",
+   "index": "FTSE 100",
+   "icb_sector": "Collective investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "SMWH.L": {
+   "company": "WHSmith",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "SN.L": {
+   "company": "Smith & Nephew",
+   "index": "FTSE 100",
+   "icb_sector": "Health care equipment & supplies",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "SNR.L": {
+   "company": "Senior",
+   "index": "FTSE 250",
+   "icb_sector": "Aerospace & Defence",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": [],
+   "note": "Aerostructures and flexonics"
+  },
+  "SOI.L": {
+   "company": "Schroder Oriental Income Fund",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "SPI.L": {
+   "company": "Spire Healthcare",
+   "index": "FTSE 250",
+   "icb_sector": "Health Care Equipment & Services",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": [],
+   "note": "Private hospitals"
+  },
+  "SPX.L": {
+   "company": "Spirax Group",
+   "index": "FTSE 100",
+   "icb_sector": "Industrial engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "SRE.L": {
+   "company": "Sirius Real Estate",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": [],
+   "note": "Business parks (Germany and UK)"
+  },
+  "SRP.L": {
+   "company": "Serco",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Government outsourcing; no matching sector"
+  },
+  "SSE.L": {
+   "company": "SSE plc",
+   "index": "FTSE 100",
+   "icb_sector": "Electrical utilities & independent power producers",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": [
+    "Renewables & Clean Energy"
+   ]
+  },
+  "SSIT.L": {
+   "company": "Seraphim Space Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "SSPG.L": {
+   "company": "SSP Group",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Travel food concessions"
+  },
+  "STAN.L": {
+   "company": "Standard Chartered",
+   "index": "FTSE 100",
+   "icb_sector": "Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [
+    "UK Retail Banks"
+   ],
+   "note": "The config lists Standard Chartered under Investment Banks & Brokers"
+  },
+  "STJ.L": {
+   "company": "St. James's Place",
+   "index": "FTSE 100",
+   "icb_sector": "Financial services",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "SUPR.L": {
+   "company": "Supermarket Income REIT",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": [],
+   "note": "Supermarket property"
+  },
+  "SVS.L": {
+   "company": "Savills",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment & Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Estate agency and property services; no matching sector"
+  },
+  "SVT.L": {
+   "company": "Severn Trent",
+   "index": "FTSE 100",
+   "icb_sector": "Multiline utilities",
+   "primary_sector": "Water",
+   "secondary_sectors": []
+  },
+  "SYNC.L": {
+   "company": "Syncona",
+   "index": "FTSE 250",
+   "icb_sector": "Pharmaceuticals & Biotechnology",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund (life sciences)"
+  },
+  "TATE.L": {
+   "company": "Tate & Lyle",
+   "index": "FTSE 250",
+   "icb_sector": "Food Producers",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": [],
+   "note": "Sweeteners and food ingredients"
+  },
+  "TBCG.L": {
+   "company": "TBC Bank",
+   "index": "FTSE 250",
+   "icb_sector": "Banks",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Georgian bank; the UK Retail Banks sector is UK-specific"
+  },
+  "TCAP.L": {
+   "company": "TP ICAP",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": [],
+   "note": "Inter-dealer broker"
+  },
+  "TEM.L": {
+   "company": "Templeton Emerging Markets Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "TEP.L": {
+   "company": "Telecom Plus",
+   "index": "FTSE 250",
+   "icb_sector": "Telecomms",
+   "primary_sector": "UK Telecoms & Broadband",
+   "secondary_sectors": [
+    "Electricity & Grid"
+   ],
+   "note": "Utility Warehouse: energy, broadband, mobile bundle"
+  },
+  "TFIF.L": {
+   "company": "Twentyfour Income Fund",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "THG.L": {
+   "company": "THG",
+   "index": "FTSE 250",
+   "icb_sector": "Personal Products",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [
+    "Luxury & Lifestyle"
+   ],
+   "note": "Online beauty and nutrition"
+  },
+  "THRL.L": {
+   "company": "Target Healthcare REIT",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": [],
+   "note": "Healthcare property"
+  },
+  "TMPL.L": {
+   "company": "Temple Bar Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Collective Investments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "TPK.L": {
+   "company": "Travis Perkins",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [
+    "Housebuilders"
+   ],
+   "note": "Builders' merchants"
+  },
+  "TRIG.L": {
+   "company": "The Renewables Infrastructure Group",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund (renewables)"
+  },
+  "TRN.L": {
+   "company": "Trainline",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Transportation",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [
+    "Logistics & Transport"
+   ],
+   "note": "Rail ticketing platform"
+  },
+  "TRST.L": {
+   "company": "Trustpilot",
+   "index": "FTSE 250",
+   "icb_sector": "Technology",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Online reviews platform; no matching sector"
+  },
+  "TRY.L": {
+   "company": "TR Property Investment Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "TSCO.L": {
+   "company": "Tesco",
+   "index": "FTSE 100",
+   "icb_sector": "Food & drug retailing",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
+  "TW.L": {
+   "company": "Taylor Wimpey",
+   "index": "FTSE 250",
+   "icb_sector": "Household goods & home construction",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "UEM.L": {
+   "company": "Utilico Emerging Markets",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "UKW.L": {
+   "company": "Greencoat UK Wind",
+   "index": "FTSE 250",
+   "icb_sector": "Gas, Water & Multiutilities",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund (renewables)"
+  },
+  "ULVR.L": {
+   "company": "Unilever",
+   "index": "FTSE 100",
+   "icb_sector": "Personal goods",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "USA.L": {
+   "company": "Baillie Gifford US Growth Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "UTG.L": {
+   "company": "Unite Group",
+   "index": "FTSE 250",
+   "icb_sector": "Real estate investment trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Student accommodation; no matching sector"
+  },
+  "UU.L": {
+   "company": "United Utilities",
+   "index": "FTSE 100",
+   "icb_sector": "Multiline utilities",
+   "primary_sector": "Water",
+   "secondary_sectors": []
+  },
+  "VCT.L": {
+   "company": "Victrex",
+   "index": "FTSE 250",
+   "icb_sector": "Chemicals",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [
+    "Aerospace & Defence"
+   ],
+   "note": "High-performance polymers"
+  },
+  "VEIL.L": {
+   "company": "Vietnam Enterprise Investments",
+   "index": "FTSE 250",
+   "icb_sector": "General Financial",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "VLX.L": {
+   "company": "Volex",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Goods and Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Cable assemblies"
+  },
+  "VOD.L": {
+   "company": "Vodafone Group",
+   "index": "FTSE 100",
+   "icb_sector": "Mobile telecommunications",
+   "primary_sector": "UK Telecoms & Broadband",
+   "secondary_sectors": [],
+   "note": "Global group, but the UK business is the main read-across"
+  },
+  "VOF.L": {
+   "company": "VinaCapital Vietnam Opportunity Fund",
+   "index": "FTSE 250",
+   "icb_sector": "General Financial",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "VSVS.L": {
+   "company": "Vesuvius",
+   "index": "FTSE 250",
+   "icb_sector": "General Industrials",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Steel industry consumables"
+  },
+  "VTY.L": {
+   "company": "Vistry Group",
+   "index": "FTSE 250",
+   "icb_sector": "Home Construction",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "WEIR.L": {
+   "company": "Weir",
+   "index": "FTSE 100",
+   "icb_sector": "Industrial goods and services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [
+    "Diversified Mining"
+   ],
+   "note": "Mining equipment"
+  },
+  "WIX.L": {
+   "company": "Wickes",
+   "index": "FTSE 250",
+   "icb_sector": "Retailers",
+   "primary_sector": "UK General Retail",
+   "secondary_sectors": [
+    "Housebuilders"
+   ],
+   "note": "Home improvement retailer"
+  },
+  "WIZZ.L": {
+   "company": "Wizz Air",
+   "index": "FTSE 250",
+   "icb_sector": "Travel & Leisure",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": [],
+   "note": "Airline"
+  },
+  "WKP.L": {
+   "company": "Workspace Group",
+   "index": "FTSE 250",
+   "icb_sector": "Real Estate Investment Trusts",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": [],
+   "note": "London flexible offices"
+  },
+  "WOSG.L": {
+   "company": "Watches of Switzerland",
+   "index": "FTSE 250",
+   "icb_sector": "Personal Goods",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": [
+    "UK General Retail"
+   ],
+   "note": "Luxury watch retailer"
+  },
+  "WPP.L": {
+   "company": "WPP",
+   "index": "FTSE 100",
+   "icb_sector": "Media",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Advertising; no matching sector"
+  },
+  "WTB.L": {
+   "company": "Whitbread",
+   "index": "FTSE 100",
+   "icb_sector": "Retail hospitality",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "WWH.L": {
+   "company": "Worldwide Healthcare Trust",
+   "index": "FTSE 250",
+   "icb_sector": "Investment Trusts",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Investment trust / closed-end fund"
+  },
+  "XPP.L": {
+   "company": "XP Power",
+   "index": "FTSE 250",
+   "icb_sector": "Industrial Goods and Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": [],
+   "note": "Power conversion"
+  },
+  "XPS.L": {
+   "company": "XPS Pensions",
+   "index": "FTSE 250",
+   "icb_sector": "Financial Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "Pensions consulting; no matching sector"
+  },
+  "ZIG.L": {
+   "company": "Zigup",
+   "index": "FTSE 250",
+   "icb_sector": "Support Services",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": [],
+   "note": "Vehicle leasing and fleet services"
+  }
+ }
+}
