@@ -55,6 +55,18 @@ aws s3 ls s3://sector-scout-results-544611252144/snapshots/ --recursive
 
 Done when a picks email arrives and a new `snapshots/<week>/universe.csv` exists. A manual invocation (any event that isn't `WeeklyTrigger` or `HourlyRetry`) runs the scout's whole pipeline unconditionally, so it also sends the sector report email and uses OpenRouter credits.
 
+## Quarterly methodology review (`backtest.tf`)
+
+A second Lambda, `backtest-report`, runs from the same zip (handler `backtest_handler.handler`). EventBridge Scheduler starts it at 07:00 UTC on the 1st of January, April, July and October. It builds the backtest report from every `snapshots/` object, saves `reports/YYYY-Qn/backtest.html` and `backtest.json`, and emails the report. It changes nothing else; improving the prompts and thresholds is a reviewed pull request (`docs/methodology-review.md`).
+
+Run it now to see the report:
+
+```bash
+aws lambda invoke --function-name backtest-report --region eu-west-1 --payload '{"period":"manual"}' --cli-binary-format raw-in-base64-out out.json
+```
+
+or without AWS: `python stock_selection_lambda/backtest_report.py --bucket sector-scout-results-544611252144 --html report.html`.
+
 ## Settings worth knowing
 
 - `maximum_retry_attempts = 0`: the handler never re-raises (failures are written to `failed/` and emailed once); a retry would send the failure email three times.

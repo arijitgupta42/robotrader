@@ -9,7 +9,8 @@ locally.  The zip contains
 
   * the dependencies in requirements.txt (boto3 is NOT included — the Lambda
     runtime provides it; scipy is NOT included — it would break the size limit),
-  * handler.py and email_report.py at the root (handler is `handler.handler`),
+  * handler.py and email_report.py at the root (handler is `handler.handler`), plus
+    backtest_handler.py and backtest_report.py (the quarterly review, `backtest_handler.handler`),
   * the lse_stock_analysis package, including sector_map.json, without the
     local-only tooling (main.py, model_loader.py, get_stock_data.py,
     universe_check.py, the return-projection agent, the data cache).
@@ -28,7 +29,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 PACKAGE = ROOT / "lse_stock_analysis"
-ROOT_FILES = [HERE / "handler.py", HERE / "email_report.py"]
+ROOT_FILES = [HERE / "handler.py", HERE / "email_report.py", HERE / "backtest_handler.py", HERE / "backtest_report.py"]
 
 PYTHON_VERSION = "3.12"
 PLATFORMS = ("manylinux2014_x86_64", "manylinux_2_17_x86_64", "manylinux_2_28_x86_64")
