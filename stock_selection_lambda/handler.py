@@ -11,17 +11,19 @@ docs/adr/0001-stock-selection-runs-as-separate-lambda.md).  For that result:
      fail or return partial data);
   3. analyses every stock, picks stocks in each Signalled Sector by rule;
   4. writes the Universe Snapshot to  snapshots/YYYY-Www/universe.csv;
-  5. emails the picks through SES.
+  5. sends ONE email through SES: the scout's sector report with each sector's
+     picks inside its card (the scout itself no longer sends an email).
 
 Failure handling
 ----------------
 Any failure is caught here: a record is written to  failed/YYYY-Www/  and ONE
-short failure email is sent, and the function then returns normally.  It never
+email is sent, and the function then returns normally.  If the scout's result
+could be read, that email is still the full sector report with a failure notice
+in place of the picks; otherwise it is a short failure message.  It never
 re-raises, because Lambda would retry an S3-triggered invocation and every
 retry would send another failure email.  So the Terraform for this function
 must set  maximum_retry_attempts = 0  on its async invoke config; the retries
-that matter (the Yahoo download) happen inside the function.  The scout's own
-email is independent of all this.
+that matter (the Yahoo download) happen inside the function.
 
 Environment variables
 ---------------------
@@ -33,6 +35,7 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 import traceback
 from datetime import date, datetime, timezone
@@ -44,7 +47,7 @@ from lse_stock_analysis.selection import (
     analyse_universe, build_snapshot, select_stocks, snapshot_to_csv, week_label,
 )
 
-from email_report import build_failure_email, build_picks_email, sector_map_age_days
+from email_report import build_failure_email, build_report_email, sector_map_age_days
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -54,6 +57,9 @@ MIN_COVERAGE = 0.80                 # share of the Universe that must return pri
 FETCH_ATTEMPTS = 3
 FETCH_BACKOFF_SECONDS = (20, 60)    # waits before attempt 2 and 3
 MIN_TIME_FOR_RETRY_MS = 120_000     # don't start another download with less than this left
+RESERVE_SECONDS = 90                # kept back after a download for the analysis, the snapshot and the email
+MAX_ATTEMPT_SECONDS = 180           # one download attempt (normally about 45 s) is abandoned after this long
+MIN_ATTEMPT_SECONDS = 20            # ...but is always given at least this long
 
 
 class StockSelectionError(Exception):
@@ -82,12 +88,46 @@ def _remaining_ms(context) -> float:
     return getter() if getter else float("inf")
 
 
+def _call_with_deadline(fn: Callable, arg, seconds: Optional[float]):
+    """
+    Call fn(arg), giving up after `seconds` (None = no limit).  A download that hangs instead of failing must
+    not run into the Lambda timeout, because then no email would go out.  The abandoned thread is a daemon;
+    Lambda freezes the process once the handler returns.
+    """
+    if seconds is None:
+        return fn(arg)
+    box: dict = {}
+
+    def target():
+        try:
+            box["value"] = fn(arg)
+        except BaseException as exc:                                # noqa: BLE001 - re-raised below, in the caller
+            box["error"] = exc
+
+    thread = threading.Thread(target=target, daemon=True)
+    thread.start()
+    thread.join(seconds)
+    if thread.is_alive():
+        raise TimeoutError(f"price download still running after {seconds:.0f} s, abandoned")
+    if "error" in box:
+        raise box["error"]
+    return box["value"]
+
+
+def _attempt_seconds(context) -> Optional[float]:
+    """Time one download attempt may take: what is left minus the reserve, capped; None when there is no Lambda clock."""
+    remaining = _remaining_ms(context)
+    if remaining == float("inf"):
+        return None
+    return max(MIN_ATTEMPT_SECONDS, min(MAX_ATTEMPT_SECONDS, remaining / 1000 - RESERVE_SECONDS))
+
+
 def fetch_with_retries(signal_ts: datetime, context, fetch: Callable, sleep: Callable) -> PriceFetchResult:
     """Download Universe prices, retrying on errors or thin coverage, within the Lambda's time budget."""
     last_problem = "no attempt made"
     for attempt in range(1, FETCH_ATTEMPTS + 1):
         try:
-            result = fetch(signal_ts)
+            result = _call_with_deadline(fetch, signal_ts, _attempt_seconds(context))
             if result.coverage >= MIN_COVERAGE:
                 return result
             last_problem = f"only {len(result.data)} of {len(result.requested)} stocks returned prices ({result.coverage:.0%})"
@@ -117,6 +157,7 @@ def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sle
     """Handle one successful scout result.  Never raises: failures are recorded and emailed once."""
     sender, recipient = os.environ["SES_SENDER"], os.environ["SES_RECIPIENT"]
     week = week_label(now())
+    payload, signal_ts = None, None
     try:
         payload = json.loads(s3.get_object(Bucket=bucket, Key=key)["Body"].read())
         signals = payload.get("signals") or []
@@ -134,12 +175,11 @@ def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sle
         s3.put_object(Bucket=bucket, Key=snapshot_key, Body=snapshot_to_csv(snapshot).encode("utf-8"), ContentType="text/csv")
         logger.info("Snapshot saved → s3://%s/%s (%d rows)", bucket, snapshot_key, len(snapshot))
 
-        subject, html_body, text_body = build_picks_email(
-            week, signal_ts, selections, prices, snapshot_key=snapshot_key,
-            map_age_days=sector_map_age_days(date.today()))
-        _send(ses, sender, recipient, subject, html_body, text_body)
+        _send(ses, sender, recipient, *build_report_email(
+            week, signal_ts, payload, selections, prices, source_uri=f"s3://{bucket}/{key}", snapshot_key=snapshot_key,
+            map_age_days=sector_map_age_days(date.today())))
         picks = sum(len(s.picks) for s in selections)
-        logger.info("Picks email sent: %d picks across %d sectors", picks, len(selections))
+        logger.info("Report email sent: %d picks across %d sectors", picks, len(selections))
         return {"status": "ok", "week": week, "source_key": key, "snapshot_key": snapshot_key, "picks": picks}
 
     except Exception as exc:
@@ -155,7 +195,14 @@ def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sle
             logger.exception("Could not save the failure record")
             failed_key = None
         try:
-            _send(ses, sender, recipient, *build_failure_email(week, key, error, failed_key))
+            email = None
+            if isinstance(payload, dict) and payload.get("signals") and signal_ts is not None:
+                try:                                                # the sector report, in full, with a notice in place of the picks
+                    email = build_report_email(week, signal_ts, payload, source_uri=f"s3://{bucket}/{key}",
+                                               error=error, failed_key=failed_key)
+                except Exception:
+                    logger.exception("Could not render the sector report; sending the short failure email instead")
+            _send(ses, sender, recipient, *(email or build_failure_email(week, key, error, failed_key)))
         except Exception:
             logger.exception("Could not send the failure email")
         return {"status": "failed", "week": week, "source_key": key, "error": error, "failed_key": failed_key}

@@ -146,11 +146,14 @@ def test_success_writes_snapshot_and_sends_one_email(monkeypatch):
     assert len(ses.sent) == 1
     mail = ses.sent[0]
     assert mail["Source"] == "from@example.com" and mail["Destination"] == {"ToAddresses": ["to@example.com"]}
-    assert "2026-W40" in mail["Message"]["Subject"]["Data"] and "3 picks" in mail["Message"]["Subject"]["Data"]
+    assert mail["Message"]["Subject"]["Data"] == "LSE Sector Scout — 3 signals · 3 picks · 2026-W40"
     html_body, text_body = mail["Message"]["Body"]["Html"]["Data"], mail["Message"]["Body"]["Text"]["Data"]
-    for needle in (HOUSE, "AI Infrastructure", "Water", "Divergent"):
-        assert needle in html_body and needle in text_body
-    assert "No stock in the Sector Map has this as its Primary Sector" in text_body       # AI Infrastructure
+    for needle in (HOUSE, "AI Infrastructure", "Water", "MACRO REGIME", "STOCK PICKS"):
+        assert needle in html_body
+    for needle in (HOUSE, "AI Infrastructure", "Water", "Divergent", "MACRO REGIME", "PICK "):
+        assert needle in text_body
+    assert f"s3://bkt/{KEY}" in html_body                              # where the full data is
+    assert "no stock in the Sector Map has this as its Primary Sector" in text_body       # AI Infrastructure
     assert not any(k.startswith("failed/") for k in s3.objects)
 
 
@@ -179,14 +182,22 @@ def test_url_encoded_key_is_decoded():
 # Failure handling
 # ---------------------------------------------------------------------------
 
-def failure_checks(results, s3, ses, reason_part):
+def failure_checks(results, s3, ses, reason_part, report=True):
     assert results[0]["status"] == "failed" and reason_part in results[0]["error"]
     failed = [k for k in s3.objects if k.startswith("failed/2026-W40/stock_selection_")]
     assert len(failed) == 1 and results[0]["failed_key"] == failed[0]
     record = json.loads(s3.objects[failed[0]])
     assert record["source_key"] == KEY and reason_part in record["error"]
-    assert len(ses.sent) == 1                                                  # exactly one failure email
-    assert ses.sent[0]["Message"]["Subject"]["Data"].startswith("LSE Stock Picks FAILED")
+    assert len(ses.sent) == 1                                                  # exactly one email, whatever went wrong
+    subject = ses.sent[0]["Message"]["Subject"]["Data"]
+    html_body = ses.sent[0]["Message"]["Body"]["Html"]["Data"]
+    if report:                                                                 # the sector report still goes out, without picks
+        assert subject == "LSE Sector Scout — 3 signals · stock picks FAILED · 2026-W40"
+        assert HOUSE in html_body and "AI Infrastructure" in html_body and "MACRO REGIME" in html_body
+        assert "STOCK PICKS FAILED" in html_body and reason_part in html_body
+        assert "Stock picks unavailable this week" in html_body
+    else:                                                                      # nothing to build a sector report from
+        assert subject == "LSE Sector Scout FAILED — 2026-W40"
     assert "snapshots/2026-W40/universe.csv" not in s3.objects
 
 
@@ -238,7 +249,7 @@ def test_no_time_left_stops_retrying():
 def test_scout_result_without_signals_fails_before_downloading():
     calls = []
     results, s3, ses = run(fetch=make_fetch(calls=calls), scout=payload(signals=[]))
-    failure_checks(results, s3, ses, "no signals")
+    failure_checks(results, s3, ses, "no signals", report=False)
     assert calls == []
 
 
@@ -309,30 +320,90 @@ def prices_result(**kw):
     return p
 
 
-def test_email_escapes_html_in_company_names():
+SCOUT_SIGNAL = {
+    "sector": HOUSE, "confidence": 0.7, "bear_case_probability": 0.2, "convergence_type": "News-Led", "disruption_type": "Regulatory / Policy Shift",
+    "disruption_strength": 0.8, "time_to_impact_weeks": 3, "source_diversity": 0.75, "rationale": "Planning reform <b>speeds</b> approvals",
+    "propagation": "Faster consents lift completions", "invalidation_risk": "Gilt yields spike", "convergence_note": "News only",
+    "retail_thesis": "No Reddit signal", "key_catalysts": ["Spending review", "BoE cut"], "correlated_sectors": ["Building Materials"],
+    "conviction_drivers": ["Policy paper published"],
+}
+
+
+def scout_payload(*signals, macro="Rates falling"):
+    return {"signals": list(signals) or [SCOUT_SIGNAL], "macro": macro}
+
+
+def report(selections, signals=None, prices=None, **kw):
+    return email_report.build_report_email("2026-W40", SIGNAL_TS, scout_payload(*(signals or [])), selections,
+                                           prices or prices_result(), **kw)
+
+
+def test_email_shows_the_full_signal_card_with_picks_inside_it():
+    sel = selection(picks=[PICK], runners_up=[{"ticker": "BKG.L", "company": "Berkeley", "reason": "no swing setup"}])
+    subject, html_body, text_body = report([sel], source_uri="s3://bkt/successful/x.json")
+    assert subject == "LSE Sector Scout — 1 signal · 1 pick · 2026-W40"
+    for needle in ("MACRO REGIME", "Rates falling", "BULL 70%", "BEAR 20%", "Regulatory / Policy Shift", "3 week(s) to impact",
+                   "High source diversity", "Rationale", "Mechanism", "Kill switch", "Spending review | BoE cut", "Building Materials",
+                   "Policy paper published", "STOCK PICKS", "PSN.L", "CLOSE BUT NOT PICKED", "no swing setup", "s3://bkt/successful/x.json"):
+        assert needle in html_body, needle
+    assert html_body.index("Rationale") < html_body.index("STOCK PICKS") < html_body.index("PSN.L")   # picks sit inside the card
+    assert "Reddit crowd" not in html_body                                                          # "No Reddit signal" is hidden
+    assert "PICK PSN.L (Persimmon): momentum, grade B, risk 3/10, stop-loss 4.3%, max position 20.0%" in text_body
+    assert "Rationale: Planning reform" in text_body and "MACRO REGIME: Rates falling" in text_body
+
+
+def test_email_escapes_html_in_scout_text_and_company_names():
     sel = selection(picks=[{**PICK, "company": "AT&T <script>alert(1)</script>"}])
-    _, html_body, text_body = email_report.build_picks_email("2026-W40", SIGNAL_TS, [sel], prices_result())
+    _, html_body, text_body = report([sel])
     assert "<script>alert(1)</script>" not in html_body and "AT&amp;T &lt;script&gt;" in html_body
+    assert "Planning reform <b>speeds</b>" not in html_body and "Planning reform &lt;b&gt;speeds&lt;/b&gt;" in html_body
     assert "AT&T <script>" in text_body
 
 
-def test_email_messages_for_each_kind_of_sector():
+def test_email_messages_for_each_kind_of_sector_strongest_first():
+    signals = [{**SCOUT_SIGNAL, "sector": "Water", "confidence": 0.6}, SCOUT_SIGNAL,
+               {**SCOUT_SIGNAL, "sector": "AI Infrastructure", "confidence": 0.8}]
     sels = [selection(picks=[PICK], runners_up=[{"ticker": "BKG.L", "company": "Berkeley", "reason": "no swing setup"}]),
             selection(sector="Water", confidence=0.6, picks=[]),
             selection(sector="AI Infrastructure", confidence=0.8, investable=False, candidate_count=0)]
-    subject, html_body, text_body = email_report.build_picks_email("2026-W40", SIGNAL_TS, sels, prices_result())
-    assert subject == "LSE Stock Picks — 1 pick in 1 of 3 sectors · 2026-W40"
+    subject, html_body, text_body = report(sels, signals)
+    assert subject == "LSE Sector Scout — 3 signals · 1 pick · 2026-W40"
     assert "No eligible stock this week" in html_body and "no swing setup" in html_body
-    assert "Nothing to pick" not in html_body and "nothing to pick" in html_body
+    assert "nothing to pick" in html_body
     assert html_body.index("AI Infrastructure") < html_body.index(HOUSE) < html_body.index("Water")   # strongest first
-    assert "PICK PSN.L (Persimmon): momentum, grade B, risk 3/10, stop-loss 4.3%, max position 20.0%" in text_body
+    assert "no eligible stock this week" in text_body
+
+
+def test_a_sparse_older_signal_still_renders():
+    old = {"sector": "Insurance", "confidence": 0.85, "timestamp": "2026-05-04T23:30:06+00:00"}      # from before most fields existed
+    subject, html_body, _ = report([selection(sector="Insurance", confidence=0.85)], [old])
+    assert "Insurance" in html_body and "BULL 85%" in html_body and "BEAR" not in html_body
 
 
 def test_email_with_no_signals_and_singular_subject():
-    subject, html_body, _ = email_report.build_picks_email("2026-W40", SIGNAL_TS, [], prices_result())
-    assert subject == "LSE Stock Picks — 0 picks in 0 of 0 sectors · 2026-W40" and "no signals" in html_body
-    one, *_ = email_report.build_picks_email("2026-W40", SIGNAL_TS, [selection(picks=[PICK])], prices_result())
-    assert one == "LSE Stock Picks — 1 pick in 1 of 1 sector · 2026-W40"
+    subject, html_body, _ = email_report.build_report_email("2026-W40", SIGNAL_TS, {"signals": []}, [], prices_result())
+    assert subject == "LSE Sector Scout — 0 signals · 0 picks · 2026-W40" and "no signals" in html_body
+    one, *_ = report([selection(picks=[PICK])])
+    assert one == "LSE Sector Scout — 1 signal · 1 pick · 2026-W40"
+
+
+def test_failed_picks_still_give_the_complete_sector_report():
+    subject, html_body, text_body = email_report.build_report_email(
+        "2026-W40", SIGNAL_TS, scout_payload(), None, None, error="price download failed: Yahoo blocked this IP",
+        failed_key="failed/2026-W40/x.json")
+    assert subject == "LSE Sector Scout — 1 signal · stock picks FAILED · 2026-W40"
+    for needle in ("MACRO REGIME", "Rationale", "BULL 70%", "STOCK PICKS FAILED", "Yahoo blocked this IP", "failed/2026-W40/x.json",
+                   "Stock picks unavailable this week"):
+        assert needle in html_body, needle
+    assert "STOCK PICKS FAILED: price download failed" in text_body and "Rationale: Planning reform" in text_body
+    assert "DATA WARNINGS" not in html_body
+
+
+def test_a_clean_run_has_no_warnings():
+    p = prices_result(requested=["A.L"])
+    assert email_report.build_warnings(p, map_age_days=10) == []
+    assert "DATA WARNINGS" not in report([selection()], prices=p, map_age_days=10)[1]
+    assert "DATA WARNINGS" in report([selection()], prices=prices_result(no_data=["GONE.L"]))[1]
 
 
 def test_warnings_cover_every_data_problem():
@@ -343,12 +414,6 @@ def test_warnings_cover_every_data_problem():
     for needle in ("1 of 2 stocks", "GONE.L", "NEW.L (40 bars)", "OLD.L (last bar 2026-09-01)", "ROR.L (67%)",
                    "BCG.L", "2026-10-01, behind the 2026-10-02 cutoff", "120 days ago"):
         assert needle in warnings, needle
-
-
-def test_a_clean_run_has_no_warnings():
-    p = prices_result(requested=["A.L"])
-    assert email_report.build_warnings(p, map_age_days=10) == []
-    assert "DATA WARNINGS" not in email_report.build_picks_email("2026-W40", SIGNAL_TS, [selection()], p, map_age_days=10)[1]
 
 
 def test_long_warning_lists_are_truncated():
@@ -362,10 +427,61 @@ def test_sector_map_age_is_read_from_the_map():
     assert age == 10                                                           # map built from the 2026-10-02 constituents
 
 
-def test_failure_email():
+def test_short_failure_email_is_only_for_when_there_is_no_sector_report():
     subject, html_body, text = email_report.build_failure_email("2026-W40", KEY, "boom <b>", "failed/x.json")
-    assert subject == "LSE Stock Picks FAILED — 2026-W40"
+    assert subject == "LSE Sector Scout FAILED — 2026-W40"
     assert "boom <b>" in text and "failed/x.json" in text and "boom &lt;b&gt;" in html_body
+
+
+# ---------------------------------------------------------------------------
+# The email goes out even when Yahoo does not cooperate
+# ---------------------------------------------------------------------------
+
+def test_a_hanging_download_is_abandoned_in_time_and_the_sector_report_still_goes_out(monkeypatch):
+    import threading
+    release = threading.Event()
+    monkeypatch.setattr(handler, "MIN_ATTEMPT_SECONDS", 0.2)
+    monkeypatch.setattr(handler, "RESERVE_SECONDS", 0)
+
+    def hangs(ts):
+        release.wait(10)                                                       # a download that never answers
+        raise AssertionError("should have been abandoned")
+
+    try:
+        results, s3, ses = run(fetch=hangs, context=Context(300), sleeps=[])   # 0.3 s left, so no second attempt either
+    finally:
+        release.set()
+    failure_checks(results, s3, ses, "still running after")
+    assert "out of time to retry" in results[0]["error"]
+
+
+def test_the_attempt_time_limit_is_capped_and_reserves_time_for_the_email():
+    assert handler._attempt_seconds(Context(600_000)) == handler.MAX_ATTEMPT_SECONDS
+    assert handler._attempt_seconds(Context(150_000)) == 150 - handler.RESERVE_SECONDS
+    assert handler._attempt_seconds(Context(1_000)) == handler.MIN_ATTEMPT_SECONDS
+    assert handler._attempt_seconds(None) is None                              # no Lambda clock (tests, local runs)
+
+
+def test_if_the_report_cannot_be_rendered_the_short_failure_email_is_sent(monkeypatch):
+    def broken(*a, **k):
+        raise RuntimeError("template bug")
+
+    monkeypatch.setattr(handler, "build_report_email", broken)
+    results, s3, ses = run(fetch=lambda ts: (_ for _ in ()).throw(RuntimeError("Yahoo down")), sleeps=[])
+    assert results[0]["status"] == "failed" and len(ses.sent) == 1
+    assert ses.sent[0]["Message"]["Subject"]["Data"] == "LSE Sector Scout FAILED — 2026-W40"
+
+
+def test_a_slow_but_successful_download_is_not_cut_off():
+    inner = make_fetch()
+
+    def slow(ts):
+        import time
+        time.sleep(0.05)
+        return inner(ts)
+
+    results, s3, ses = run(fetch=slow, context=Context(600_000))
+    assert results[0]["status"] == "ok" and len(ses.sent) == 1
 
 
 # ---------------------------------------------------------------------------
