@@ -5,7 +5,7 @@ A weekly pipeline that finds sectors with bullish swing-trading conviction from 
 ## Sectors and signals
 
 **Sector**:
-One of the LSE sub-sectors in the scout's taxonomy (e.g. Housebuilders, Water), defined in `config.py`.
+One of the 31 sub-sectors in the scout's taxonomy (e.g. Housebuilders, Water), defined in `config.py` and shared by both Markets; three (UK Retail Banks, UK General Retail, UK Telecoms & Broadband) are UK-specific.
 _Avoid_: market, industry
 
 **Sector Signal**:

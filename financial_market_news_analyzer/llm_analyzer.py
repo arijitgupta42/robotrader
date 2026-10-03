@@ -31,7 +31,7 @@ import requests
 
 from config import (
     DISRUPTION_CATEGORIES,
-    LSE_SECTORS,
+    SECTORS,
     OPENROUTER_RETRY_DELAYS,
     SCHEDULER_CFG,
     OPENROUTER_MODELS,
@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 # Prompt construction
 # ---------------------------------------------------------------------------
 
-_SECTOR_NAMES     = list(LSE_SECTORS.keys())
+_SECTOR_NAMES     = list(SECTORS.keys())
 _DISRUPTION_NAMES = list(DISRUPTION_CATEGORIES.keys())
 
 # Compact representations used in the prompt
@@ -60,7 +60,7 @@ _DISRUPTION_LIST  = " | ".join(_DISRUPTION_NAMES)
 # ---------------------------------------------------------------------------
 _OUTPUT_SCHEMA = """\
 {"macro":
-  {"regime": "<1 sentence: BoE stance + dominant global factor>"},
+  {"regime": "<1 sentence: Fed and BoE stance + dominant global factor>"},
  "signals": [
   {"sector": "<exact from SECTORS>",
    "confidence": 0.0,
@@ -79,15 +79,19 @@ _OUTPUT_SCHEMA = """\
 }"""
 
 _SYSTEM_PROMPT = f"""\
-You are a senior LSE equity portfolio manager.
+You are a senior global equity portfolio manager covering two markets: \
+the FTSE 350 (London) and the S&P 500 (New York).
 
 ## ROLE
-Identify LSE sub-sectors likely to show POSITIVE price movement over 2-6 WEEKS \
-from structural disruptions — not daily noise.
+Identify sub-sectors likely to show POSITIVE price movement over 2-6 WEEKS \
+from structural disruptions — not daily noise. A sector qualifies if its UK or \
+US listed stocks stand to gain. Most sectors are global; three are \
+UK-specific (UK Retail Banks, UK General Retail, UK Telecoms & Broadband), so \
+use those only for UK-driven news.
 
 ## STEP 1 — MACRO SUMMARY
-Summarise in one sentence: BoE stance (cutting/pausing/hiking), UK growth \
-surprise direction, and the single dominant global factor \
+Summarise in one sentence: Fed and BoE stance (cutting/pausing/hiking), \
+US/UK growth surprise direction, and the single dominant global factor \
 (rates/China/commodities/geopolitics).
 
 ## STEP 2 — SIGNAL SCORING
@@ -155,7 +159,7 @@ def _compute_source_diversity(headlines: List[Headline]) -> Dict[str, float]:
     sector_sources: Dict[str, set] = {}
     for h in headlines:
         text = (h.title + " " + h.summary).lower()
-        for sector, keywords in LSE_SECTORS.items():
+        for sector, keywords in SECTORS.items():
             if any(kw.lower() in text for kw in keywords):
                 sector_sources.setdefault(sector, set()).add(h.source)
 
@@ -534,7 +538,7 @@ def _keyword_fallback(headlines: List[Headline], diversity: Optional[Dict[str, f
     diversity = diversity or {}
     all_text = " ".join(h.title.lower() + " " + h.summary.lower() for h in headlines)
     results  = []
-    for sector, keywords in LSE_SECTORS.items():
+    for sector, keywords in SECTORS.items():
         kw_hits  = sum(1 for kw in keywords if kw.lower() in all_text)
         if kw_hits == 0:
             continue

@@ -9,7 +9,7 @@ now and then for the S&P 500, which changes more often:
     python -m lse_stock_analysis.universe_check
 
 It only reports.  To apply the changes, edit sector_map.json by hand:
-add an entry (with a Primary Sector from config.LSE_SECTORS, or null if the
+add an entry (with a Primary Sector from config.SECTORS, or null if the
 stock fits none) for each stock that joined, and delete each stock that left.
 For S&P 500 joiners the report prints a suggested entry (GICS sub-industry
 mapping from sp500_map.py) that can be pasted in; add a sub-industry to
@@ -102,11 +102,11 @@ def diff_universe(current: dict[str, dict], sector_map: dict[str, dict]) -> dict
 
 
 def load_sector_names() -> set[str]:
-    """The 31 Sector names in the scout's taxonomy (config.LSE_SECTORS)."""
+    """The 31 Sector names in the scout's taxonomy (config.SECTORS)."""
     spec = importlib.util.spec_from_file_location("scout_config", _CONFIG_PATH)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return set(module.LSE_SECTORS)
+    return set(module.SECTORS)
 
 
 def validate_sector_map(sector_map: dict[str, dict], sector_names: set[str]) -> list[str]:

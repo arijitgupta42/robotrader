@@ -1,6 +1,6 @@
 {
  "_meta": {
-  "description": "Static map from each Universe stock (Yahoo ticker) - the FTSE 350 and the S&P 500 - to one Primary Sector and optional Secondary Sectors from config.LSE_SECTORS. primary_sector null = Unmapped Stock. US stocks are never mapped into the UK-specific Sectors (see lse_stock_analysis/sp500_map.py). Refresh after each quarterly index review with: python -m lse_stock_analysis.universe_check",
+  "description": "Static map from each Universe stock (Yahoo ticker) - the FTSE 350 and the S&P 500 - to one Primary Sector and optional Secondary Sectors from config.SECTORS. primary_sector null = Unmapped Stock. US stocks are never mapped into the UK-specific Sectors (see lse_stock_analysis/sp500_map.py). Refresh after each quarterly index review with: python -m lse_stock_analysis.universe_check",
   "constituents_source": "Wikipedia FTSE 100, FTSE 250 and S&P 500 constituent tables",
   "constituents_as_of": "2026-10-02",
   "sp500_as_of": "2026-10-03"

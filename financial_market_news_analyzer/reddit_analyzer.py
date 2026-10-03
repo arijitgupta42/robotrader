@@ -27,7 +27,7 @@ import requests
 
 from config import (
     DISRUPTION_CATEGORIES,
-    LSE_SECTORS,
+    SECTORS,
     OPENROUTER_RETRY_DELAYS,
     OPENROUTER_MODELS,
 )
@@ -36,7 +36,7 @@ from llm_analyzer import _load_api_key, _extract_and_decode   # reuse helpers
 
 logger = logging.getLogger(__name__)
 
-_SECTOR_NAMES     = list(LSE_SECTORS.keys())
+_SECTOR_NAMES     = list(SECTORS.keys())
 _DISRUPTION_NAMES = list(DISRUPTION_CATEGORIES.keys())
 _SECTOR_LIST      = " | ".join(_SECTOR_NAMES)
 
@@ -49,7 +49,7 @@ _REDDIT_SCHEMA = """\
   {"sector": "<exact from SECTORS>",
    "bullish_conviction": 0.0,
    "retail_thesis": "<≤30w: what the crowd believes>",
-   "representative_tickers": ["<LSE ticker or name>"],
+   "representative_tickers": ["<ticker or company name>"],
    "signal_quality": "<DD|Discussion|Meme|News|Mixed>",
    "crowd_risk": "<≤20w: main way this crowd thesis is wrong>",
    "post_count": 0,
@@ -59,33 +59,36 @@ _REDDIT_SCHEMA = """\
 }"""
 
 _SYSTEM_PROMPT = f"""\
-You are an LSE quantitative analyst specialising in retail sentiment.
+You are a global equity analyst specialising in retail sentiment, covering
+the FTSE 350 (London) and the S&P 500 (New York).
 
 Your job: read a batch of Reddit posts from finance/trading communities and
-identify LSE-relevant sectors where retail traders are BULLISH right now.
+identify sectors where retail traders are BULLISH right now.
 
 CRITICAL FILTERS — only surface a sector if:
   1. Multiple posts (or a high-conviction single DD post with significant engagement)
      express directional bullish views, not just curiosity or questions.
-  2. The thesis relates to a company or sector listed (or dual-listed) on the
-     London Stock Exchange, or to a macro/commodity factor that directly moves
-     LSE-listed equities (e.g. oil price → BP/Shell, copper → mining stocks).
+  2. The thesis relates to a company or sector in the FTSE 350 or the S&P 500
+     (including dual-listed names), or to a macro/commodity factor that
+     directly moves those equities (e.g. oil price → BP/Exxon, copper → miners,
+     mortgage rates → homebuilders). Posts about crypto or stocks outside both
+     indices count only if they point to a Sector listed below.
   3. The post is not pure meme content, loss porn, or off-topic discussion.
 
 QUALITY GRADES:
   DD       — original research post, detailed fundamentals/catalyst
   Discussion — structured debate with real investment thesis
-  News     — sharing/reacting to a breaking story with clear LSE impact
+  News     — sharing/reacting to a breaking story with clear impact on listed stocks
   Mixed    — combination of the above
   Meme     — humour/meme driven, minimal investment thesis
 
 Score bullish_conviction 0-1:
-  0.80+  Strong DD + high engagement + clear LSE linkage
+  0.80+  Strong DD + high engagement + clear linkage to a Sector
   0.60   Multiple quality Discussion posts in agreement
-  0.40   Some signal, noisy or indirect LSE linkage
+  0.40   Some signal, noisy or indirect Sector linkage
   0.20   Weak or single anecdote
 
-If no posts contain genuine LSE-relevant bullish sentiment, return an empty
+If no posts contain genuine bullish sentiment on a listed Sector, return an empty
 reddit_signals array — do NOT fabricate signals.
 
 SECTORS (use exact spelling):
@@ -257,7 +260,7 @@ def _validate_reddit_signal(raw: dict, posts: List[RedditPost]) -> Optional[Redd
         conviction = 0.0
 
     # Attach source posts that mention this sector's keywords
-    kws = [kw.lower() for kw in LSE_SECTORS.get(sector, [])]
+    kws = [kw.lower() for kw in SECTORS.get(sector, [])]
     relevant_posts = [
         p for p in posts
         if any(kw in p.title.lower() or kw in p.selftext.lower() for kw in kws)
