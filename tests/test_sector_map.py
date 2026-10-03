@@ -25,22 +25,25 @@ def test_sector_map_is_valid():
     assert validate_sector_map(load_sector_map(), SECTOR_NAMES) == []
 
 
-def test_universe_is_the_ftse_350():
-    assert len(universe_tickers()) == 350
+def test_universe_is_the_ftse_350_and_the_sp500():
+    assert len(universe_tickers()) == 350 + 503
     assert len(universe_tickers("FTSE 100")) == 100
     assert len(universe_tickers("FTSE 250")) == 250
+    assert len(universe_tickers("S&P 500")) == 503
+    assert len(universe_tickers(market="LSE")) == 350 and len(universe_tickers(market="US")) == 503
     assert set(universe_tickers("FTSE 100")).isdisjoint(universe_tickers("FTSE 250"))
+    assert set(universe_tickers(market="LSE")).isdisjoint(universe_tickers(market="US"))
 
 
 def test_every_universe_stock_has_a_sector_map_entry():
-    assert set(_INDEX_TICKERS["FTSE 350"]) == set(load_sector_map())
+    assert set(_INDEX_TICKERS["FTSE 350"]) == set(universe_tickers(market="LSE"))
 
 
 def test_uninvestable_sectors_are_reported():
     stocks = load_sector_map()
-    uninvestable = uninvestable_sectors(stocks, SECTOR_NAMES)
-    assert "AI Infrastructure" in uninvestable
-    assert "Housebuilders" not in uninvestable
+    assert uninvestable_sectors(stocks, SECTOR_NAMES) == []                    # the S&P 500 fills the global-theme sectors
+    assert uninvestable_sectors({}, SECTOR_NAMES) == sorted(SECTOR_NAMES)
+    assert "AI Infrastructure" in uninvestable_sectors({t: e for t, e in stocks.items() if e["index"] != "S&P 500"}, SECTOR_NAMES)
 
 
 def test_yahoo_ticker_conversion():

@@ -15,7 +15,7 @@ from typing import Optional
 
 from lse_stock_analysis.prices import PriceFetchResult
 from lse_stock_analysis.selection import SectorSelection
-from lse_stock_analysis.universe import SECTOR_MAP_PATH
+from lse_stock_analysis.universe import MARKETS, SECTOR_MAP_PATH, market_of
 
 MAP_REVIEW_DAYS = 95            # FTSE Russell reviews are quarterly; warn when the Sector Map is older
 MAX_LISTED = 12                 # tickers listed per warning before "and N more"
@@ -72,10 +72,14 @@ def build_warnings(prices: PriceFetchResult, map_age_days: Optional[int] = None)
                    + listing(f"{t} ({m:.0%})" for t, m in prices.price_anomalies.items()) + ".")
     if prices.unit_fixed:
         out.append("Pence/pounds switches in Yahoo's data were rescaled for: " + listing(prices.unit_fixed) + ".")
-    if prices.last_bar:
-        modal, count = Counter(prices.last_bar.values()).most_common(1)[0]
-        if modal < _latest_weekday(prices.cutoff_date):
-            out.append(f"Yahoo's latest bar for {count} stock(s) is {modal}, behind the {prices.cutoff_date} cutoff "
+    for market in MARKETS:
+        bars = {t: d for t, d in prices.last_bar.items() if market_of(t) == market}
+        if not bars:
+            continue
+        modal, count = Counter(bars.values()).most_common(1)[0]
+        cutoff = prices.cutoffs.get(market, prices.cutoff_date)
+        if modal < _latest_weekday(cutoff):
+            out.append(f"Yahoo's latest bar for {count} {market} stock(s) is {modal}, behind the {cutoff} cutoff "
                        f"(data lag or a market holiday), so prices may be a day old.")
     if map_age_days is not None and map_age_days > MAP_REVIEW_DAYS:
         out.append(f"The Sector Map was last refreshed {map_age_days} days ago; a FTSE quarterly review is probably "
@@ -87,14 +91,26 @@ def build_warnings(prices: PriceFetchResult, map_age_days: Optional[int] = None)
 # Picks (inside each sector's card)
 # ---------------------------------------------------------------------------
 
-_PICK_HEAD = ("Ticker", "Company", "Setup", "Grade", "Risk", "Stop-loss", "Max position", "Close")
+_PICK_HEAD = ("Ticker", "Mkt", "Company", "Setup", "Grade", "Risk", "Stop-loss", "Max position", "Close")
 _BADGE_LABEL = {"Convergent": "✦ CONVERGENT", "News-Led": "◈ NEWS-LED", "Reddit-Led": "◉ REDDIT-LED", "Divergent": "⚡ DIVERGENT"}
 _NO_REDDIT = ("No Reddit signal", "No Reddit signal (consolidator fallback)")
 
 
+def price_text(close: float, ticker: str) -> str:
+    """A close in its own currency: pence for LSE stocks, dollars for US stocks."""
+    return f"{close:,.2f}p" if market_of(ticker) == "LSE" else f"${close:,.2f}"
+
+
+def cutoff_text(prices: PriceFetchResult) -> str:
+    """'prices to 2026-10-02 close', with the US date added when the two markets' cutoffs differ."""
+    us = prices.cutoffs.get("US")
+    extra = f" (US {us})" if us and us != prices.cutoff_date else ""
+    return f"prices to {prices.cutoff_date} close{extra}"
+
+
 def _pick_rows(sel: SectorSelection) -> list[tuple]:
-    return [(p["ticker"], p["company"], p["swing_setup"], p["setup_grade"], f"{p['risk_score']}/10",
-             f"{p['stop_loss_pct']:.1f}%", f"{p['max_position_pct']:.1f}%", f"{p['close']:,.2f}")
+    return [(p["ticker"], market_of(p["ticker"]), p["company"], p["swing_setup"], p["setup_grade"], f"{p['risk_score']}/10",
+             f"{p['stop_loss_pct']:.1f}%", f"{p['max_position_pct']:.1f}%", price_text(p["close"], p["ticker"]))
             for p in sel.picks]
 
 
@@ -216,7 +232,8 @@ def _signal_text(sig: dict, sel: Optional[SectorSelection], failure_note: Option
         lines.append("  STOCK PICKS: no eligible stock this week.")
     for p in (sel.picks if sel else []):
         lines.append(f"  PICK {p['ticker']} ({p['company']}): {p['swing_setup']}, grade {p['setup_grade']}, risk {p['risk_score']}/10, "
-                     f"stop-loss {p['stop_loss_pct']:.1f}%, max position {p['max_position_pct']:.1f}%, close {p['close']:,.2f}")
+                     f"stop-loss {p['stop_loss_pct']:.1f}%, max position {p['max_position_pct']:.1f}%, "
+                     f"close {price_text(p['close'], p['ticker'])} ({market_of(p['ticker'])})")
     for r in (sel.runners_up if sel else []):
         lines.append(f"  not picked: {r['ticker']} ({r['company']}) — {r['reason']}")
     return lines + [""]
@@ -259,7 +276,7 @@ def build_report_email(
 
     facts = [esc(signal_ts.strftime("%d %b %Y %H:%M UTC")), plural(len(signals), "swing signal") + " detected"]
     if not failed:
-        facts += [f"prices to {prices.cutoff_date} close", f"{len(prices.data)} of {len(prices.requested)} stocks analysed"]
+        facts += [cutoff_text(prices), f"{len(prices.data)} of {len(prices.requested)} stocks analysed"]
     facts += [esc(x) for x in (source_uri, snapshot_key) if x]
 
     macro = payload.get("macro")
@@ -297,7 +314,7 @@ def build_report_email(
 </body></html>"""
 
     lines = [f"LSE Sector Scout — {week}", " · ".join([signal_ts.strftime("%d %b %Y %H:%M UTC"), plural(len(signals), "signal")]
-                                                     + ([f"prices to {prices.cutoff_date} close",
+                                                     + ([cutoff_text(prices),
                                                          f"{len(prices.data)} of {len(prices.requested)} stocks analysed"] if not failed else []))]
     if failed:
         lines += ["", f"STOCK PICKS FAILED: {error}", "The sector report below is complete; only the stock picks are missing this week."]

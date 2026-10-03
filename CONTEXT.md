@@ -19,11 +19,14 @@ _Avoid_: bullish market
 ## Stocks
 
 **Universe**:
-The FTSE 350 stocks (FTSE 100 plus FTSE 250) the system can analyse and pick from, refreshed after each quarterly index review.
+The FTSE 350 stocks (FTSE 100 plus FTSE 250) and the S&P 500 stocks the system can analyse and pick from, refreshed after each quarterly index review. See `docs/adr/0002-universe-includes-the-sp500.md`.
 _Avoid_: index list, ticker list
 
+**Market**:
+`LSE` (the FTSE 350, prices in pence) or `US` (the S&P 500, prices in US dollars). Cutoffs, the pence/pounds fix and the backtest benchmark are per Market.
+
 **Sector Map**:
-A static lookup that gives each Universe stock one Primary Sector and optionally some Secondary Sectors.
+A static lookup that gives each Universe stock one Primary Sector and optionally some Secondary Sectors. US stocks are never mapped into the UK-specific Sectors.
 _Avoid_: classification dictionary, market mapping
 
 **Primary Sector**:
@@ -60,7 +63,7 @@ A stock's price change over 2, 4 or 6 weeks after a Universe Snapshot, read from
 _Avoid_: outcome, realised return
 
 **Hit**:
-A stock whose Forward Return beats the equal-weight average Forward Return of the whole Universe over the same window.
+A stock whose Forward Return beats the equal-weight average Forward Return of its own Market over the same window.
 _Avoid_: win, correct call
 
 **Backtest Report**:

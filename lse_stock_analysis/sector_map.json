@@ -1,8 +1,9 @@
 {
  "_meta": {
-  "description": "Static map from each FTSE 350 stock (Yahoo ticker) to one Primary Sector and optional Secondary Sectors from config.LSE_SECTORS. primary_sector null = Unmapped Stock. Refresh after each quarterly FTSE review with: python -m lse_stock_analysis.universe_check",
-  "constituents_source": "Wikipedia FTSE 100 and FTSE 250 constituent tables",
-  "constituents_as_of": "2026-10-02"
+  "description": "Static map from each Universe stock (Yahoo ticker) - the FTSE 350 and the S&P 500 - to one Primary Sector and optional Secondary Sectors from config.LSE_SECTORS. primary_sector null = Unmapped Stock. US stocks are never mapped into the UK-specific Sectors (see lse_stock_analysis/sp500_map.py). Refresh after each quarterly index review with: python -m lse_stock_analysis.universe_check",
+  "constituents_source": "Wikipedia FTSE 100, FTSE 250 and S&P 500 constituent tables",
+  "constituents_as_of": "2026-10-02",
+  "sp500_as_of": "2026-10-03"
  },
  "stocks": {
   "3IN.L": {
@@ -12,6 +13,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "A": {
+   "company": "Agilent Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
   },
   "AAF.L": {
    "company": "Airtel Africa",
@@ -30,6 +41,17 @@
     "Specialty Metals & Battery Materials"
    ]
   },
+  "AAPL": {
+   "company": "Apple Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Technology Hardware, Storage & Peripherals)"
+  },
   "AAS.L": {
    "company": "Aberdeen Asia Focus",
    "index": "FTSE 250",
@@ -37,6 +59,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "ABBV": {
+   "company": "AbbVie",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
   },
   "ABDN.L": {
    "company": "Aberdeen Group",
@@ -55,11 +87,122 @@
    ],
    "note": "Primark is about half of group profit; the rest is food and ingredients"
   },
+  "ABNB": {
+   "company": "Airbnb",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "ABT": {
+   "company": "Abbott Laboratories",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "ACGL": {
+   "company": "Arch Capital Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "ACN": {
+   "company": "Accenture",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "IT Consulting & Other Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "ADBE": {
+   "company": "Adobe Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "ADI": {
+   "company": "Analog Devices",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "ADM": {
+   "company": "Archer Daniels Midland",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Agricultural Products & Services",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
   "ADM.L": {
    "company": "Admiral Group",
    "index": "FTSE 100",
    "icb_sector": "Insurance",
    "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "ADP": {
+   "company": "Automatic Data Processing",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Human Resource & Employment Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Human Resource & Employment Services)"
+  },
+  "ADSK": {
+   "company": "Autodesk",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "AEE": {
+   "company": "Ameren",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "AEP": {
+   "company": "American Electric Power",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
    "secondary_sectors": []
   },
   "AEP.L": {
@@ -69,6 +212,26 @@
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": [],
    "note": "Palm oil producer (Indonesia)"
+  },
+  "AES": {
+   "company": "AES Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Independent Power Producers & Energy Traders",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "AFL": {
+   "company": "Aflac",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Life & Health Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
   },
   "AGT.L": {
    "company": "AVI Global Trust",
@@ -86,6 +249,26 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "AIG": {
+   "company": "American International Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Multi-line Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "AIZ": {
+   "company": "Assurant",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Multi-line Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
   "AJB.L": {
    "company": "AJ Bell",
    "index": "FTSE 250",
@@ -93,6 +276,37 @@
    "primary_sector": "Asset Management & Wealth",
    "secondary_sectors": [],
    "note": "Investment platform"
+  },
+  "AJG": {
+   "company": "Arthur J. Gallagher & Co.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Insurance Brokers",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "AKAM": {
+   "company": "Akamai Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Internet Services & Infrastructure",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
+  "ALB": {
+   "company": "Albemarle Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Specialty Chemicals",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": [],
+   "note": "Override: lithium"
   },
   "ALFA.L": {
    "company": "Alfa Financial Software",
@@ -102,6 +316,36 @@
    "secondary_sectors": [],
    "note": "Asset finance software"
   },
+  "ALGN": {
+   "company": "Align Technology",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Supplies",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "ALL": {
+   "company": "Allstate",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "ALLE": {
+   "company": "Allegion",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Building Products",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
   "ALW.L": {
    "company": "Alliance Witan",
    "index": "FTSE 100",
@@ -109,6 +353,102 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "AMAT": {
+   "company": "Applied Materials",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductor Materials & Equipment",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "AMCR": {
+   "company": "Amcor",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Paper & Plastic Packaging Products & Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Paper & Plastic Packaging Products & Materials)"
+  },
+  "AMD": {
+   "company": "Advanced Micro Devices",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "AI Infrastructure",
+   "secondary_sectors": [
+    "Semiconductors & EDA"
+   ],
+   "note": "Override: AI accelerators and data-centre CPUs"
+  },
+  "AME": {
+   "company": "Ametek",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Electrical Components & Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "AMGN": {
+   "company": "Amgen",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "AMP": {
+   "company": "Ameriprise Financial",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "AMT": {
+   "company": "American Tower",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Telecom Tower REITs",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
+  "AMZN": {
+   "company": "Amazon",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Broadline Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Broadline Retail)"
+  },
+  "ANET": {
+   "company": "Arista Networks",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Communications Equipment",
+   "primary_sector": "AI Infrastructure",
+   "secondary_sectors": [],
+   "note": "Override: AI data-centre networking"
   },
   "ANTO.L": {
    "company": "Antofagasta plc",
@@ -127,6 +467,58 @@
    "primary_sector": "UK General Retail",
    "secondary_sectors": []
   },
+  "AON": {
+   "company": "Aon plc",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Insurance Brokers",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "AOS": {
+   "company": "A. O. Smith",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Building Products",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "APA": {
+   "company": "APA Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "APD": {
+   "company": "Air Products",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Industrial Gases",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Industrial Gases)"
+  },
+  "APH": {
+   "company": "Amphenol",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Components",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Components)"
+  },
   "APN.L": {
    "company": "Applied Nutrition",
    "index": "FTSE 250",
@@ -134,6 +526,58 @@
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": [],
    "note": "Sports nutrition"
+  },
+  "APO": {
+   "company": "Apollo Global Management",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "APP": {
+   "company": "AppLovin",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Advertising",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Advertising)"
+  },
+  "APTV": {
+   "company": "Aptiv",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Automotive Parts & Equipment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Automotive Parts & Equipment)"
+  },
+  "ARE": {
+   "company": "Alexandria Real Estate Equities",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Office REITs",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "ARES": {
+   "company": "Ares Management",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
   },
   "ASC.L": {
    "company": "ASOS",
@@ -167,6 +611,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Online auction marketplaces; no matching sector"
+  },
+  "ATO": {
+   "company": "Atmos Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Gas Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
   },
   "ATR.L": {
    "company": "Schroder Asian Total Return Investment Company",
@@ -209,6 +663,19 @@
     "Asset Management & Wealth"
    ]
   },
+  "AVGO": {
+   "company": "Broadcom",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "AI Infrastructure",
+   "secondary_sectors": [
+    "Semiconductors & EDA"
+   ],
+   "note": "Override: custom AI chips and AI networking"
+  },
   "AVON.L": {
    "company": "Avon Technologies",
    "index": "FTSE 250",
@@ -217,11 +684,73 @@
    "secondary_sectors": [],
    "note": "Protective equipment for defence and emergency services"
   },
+  "AVY": {
+   "company": "Avery Dennison",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Paper & Plastic Packaging Products & Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Paper & Plastic Packaging Products & Materials)"
+  },
+  "AWK": {
+   "company": "American Water Works",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Water Utilities",
+   "primary_sector": "Water",
+   "secondary_sectors": []
+  },
+  "AXON": {
+   "company": "Axon Enterprise",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "AXP": {
+   "company": "American Express",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Consumer Finance",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
   "AZN.L": {
    "company": "AstraZeneca",
    "index": "FTSE 100",
    "icb_sector": "Pharmaceuticals & biotechnology",
    "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "AZO": {
+   "company": "AutoZone",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Automotive Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Automotive Retail)"
+  },
+  "BA": {
+   "company": "Boeing",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
    "secondary_sectors": []
   },
   "BA.L": {
@@ -238,6 +767,16 @@
    "primary_sector": "Aerospace & Defence",
    "secondary_sectors": []
   },
+  "BAC": {
+   "company": "Bank of America",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Diversified Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
   "BAG.L": {
    "company": "A.G. Barr",
    "index": "FTSE 250",
@@ -245,6 +784,17 @@
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": [],
    "note": "Soft drinks"
+  },
+  "BALL": {
+   "company": "Ball Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Metal, Glass & Plastic Containers",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Metal, Glass & Plastic Containers)"
   },
   "BARC.L": {
    "company": "Barclays",
@@ -262,12 +812,33 @@
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": []
   },
+  "BAX": {
+   "company": "Baxter International",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "BBOX.L": {
    "company": "Tritax Big Box REIT",
    "index": "FTSE 100",
    "icb_sector": "Real Estate Investment Trusts",
    "primary_sector": "Commercial & Logistics REITs",
    "secondary_sectors": []
+  },
+  "BBY": {
+   "company": "Best Buy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Computer & Electronics Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Computer & Electronics Retail)"
   },
   "BBY.L": {
    "company": "Balfour Beatty",
@@ -284,6 +855,56 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Online classifieds in the Baltics; no matching sector"
+  },
+  "BDX": {
+   "company": "Becton Dickinson",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "BE": {
+   "company": "Bloom Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Electrical Components & Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "BEN": {
+   "company": "Franklin Resources",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "BF-B": {
+   "company": "Brown–Forman",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Distillers & Vintners",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "BG": {
+   "company": "Bunge Global",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Agricultural Products & Services",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
   },
   "BGEO.L": {
    "company": "Lion Finance Group",
@@ -309,11 +930,51 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "BIIB": {
+   "company": "Biogen",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "BKG.L": {
    "company": "Berkeley Group Holdings",
    "index": "FTSE 250",
    "icb_sector": "Household goods & home construction",
    "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "BKNG": {
+   "company": "Booking Holdings",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "BKR": {
+   "company": "Baker Hughes",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Equipment & Services",
+   "primary_sector": "Oil Field Services",
+   "secondary_sectors": []
+  },
+  "BLK": {
+   "company": "BlackRock",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
    "secondary_sectors": []
   },
   "BLND.L": {
@@ -328,6 +989,16 @@
    "index": "FTSE 250",
    "icb_sector": "Retailers",
    "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "BMY": {
+   "company": "Bristol Myers Squibb",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Pharmaceuticals",
+   "primary_sector": "Pharma & Biotech",
    "secondary_sectors": []
   },
   "BMY.L": {
@@ -345,6 +1016,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "BNY": {
+   "company": "BNY Mellon",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
   },
   "BNZL.L": {
    "company": "Bunzl",
@@ -393,6 +1074,17 @@
    "secondary_sectors": [],
    "note": "Private equity manager"
   },
+  "BR": {
+   "company": "Broadridge Financial Solutions",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Data Processing & Outsourced Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Data Processing & Outsourced Services)"
+  },
   "BRBY.L": {
    "company": "Burberry Group",
    "index": "FTSE 100",
@@ -418,6 +1110,27 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "BRK-B": {
+   "company": "Berkshire Hathaway",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Multi-Sector Holdings",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Multi-Sector Holdings)"
+  },
+  "BRO": {
+   "company": "Brown & Brown",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Insurance Brokers",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
   "BRSC.L": {
    "company": "BlackRock Smaller Companies Trust",
    "index": "FTSE 250",
@@ -433,6 +1146,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "BSX": {
+   "company": "Boston Scientific",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
   },
   "BT-A.L": {
    "company": "BT Group",
@@ -463,6 +1186,26 @@
    "primary_sector": "Housebuilders",
    "secondary_sectors": []
   },
+  "BX": {
+   "company": "Blackstone Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "BXP": {
+   "company": "BXP, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Office REITs",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
   "BYG.L": {
    "company": "Big Yellow Group",
    "index": "FTSE 250",
@@ -479,6 +1222,66 @@
    "secondary_sectors": [],
    "note": "Microsoft licensing and cloud reseller; mislabelled as Aerospace & Defence on Wikipedia"
   },
+  "C": {
+   "company": "Citigroup",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Diversified Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "CAH": {
+   "company": "Cardinal Health",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Distributors",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "CARR": {
+   "company": "Carrier Global",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Building Products",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "CASY": {
+   "company": "Casey's",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Food Retail",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
+  "CAT": {
+   "company": "Caterpillar Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction Machinery & Heavy Transportation Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "CB": {
+   "company": "Chubb Limited",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
   "CBG.L": {
    "company": "Close Brothers Group",
    "index": "FTSE 250",
@@ -486,6 +1289,27 @@
    "primary_sector": "UK Retail Banks",
    "secondary_sectors": [],
    "note": "Merchant bank and lender"
+  },
+  "CBOE": {
+   "company": "Cboe Global Markets",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "CBRE": {
+   "company": "CBRE Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Real Estate Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Real Estate Services)"
   },
   "CCC.L": {
    "company": "Computacenter",
@@ -509,6 +1333,79 @@
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": []
   },
+  "CCI": {
+   "company": "Crown Castle",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Telecom Tower REITs",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
+  "CCL": {
+   "company": "Carnival Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "CDNS": {
+   "company": "Cadence Design Systems",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": [],
+   "note": "Override: chip-design (EDA) software"
+  },
+  "CDW": {
+   "company": "CDW Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Distributors",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "CEG": {
+   "company": "Constellation Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "CF": {
+   "company": "CF Industries",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Fertilizers & Agricultural Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Fertilizers & Agricultural Chemicals)"
+  },
+  "CFG": {
+   "company": "Citizens Financial Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Regional Banks",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Regional Banks)"
+  },
   "CGT.L": {
    "company": "Capital Gearing Trust",
    "index": "FTSE 250",
@@ -517,11 +1414,73 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "CHD": {
+   "company": "Church & Dwight",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Household Products",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
   "CHG.L": {
    "company": "Chemring Group",
    "index": "FTSE 250",
    "icb_sector": "Aerospace & Defence",
    "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "CHRW": {
+   "company": "C.H. Robinson",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Air Freight & Logistics",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "CHTR": {
+   "company": "Charter Communications",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Cable & Satellite",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Cable & Satellite)"
+  },
+  "CI": {
+   "company": "Cigna",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Services",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "CIEN": {
+   "company": "Ciena",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Communications Equipment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Communications Equipment)"
+  },
+  "CINF": {
+   "company": "Cincinnati Financial",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
    "secondary_sectors": []
   },
   "CKN.L": {
@@ -532,6 +1491,16 @@
    "secondary_sectors": [],
    "note": "Shipbroking"
   },
+  "CL": {
+   "company": "Colgate-Palmolive",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Household Products",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
   "CLDN.L": {
    "company": "Caledonia Investments",
    "index": "FTSE 250",
@@ -540,6 +1509,27 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "CLX": {
+   "company": "Clorox",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Household Products",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "CMCSA": {
+   "company": "Comcast",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Cable & Satellite",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Cable & Satellite)"
+  },
   "CMCX.L": {
    "company": "CMC Markets",
    "index": "FTSE 250",
@@ -547,6 +1537,46 @@
    "primary_sector": "Investment Banks & Brokers",
    "secondary_sectors": [],
    "note": "Retail trading broker"
+  },
+  "CME": {
+   "company": "CME Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "CMG": {
+   "company": "Chipotle Mexican Grill",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Restaurants",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "CMI": {
+   "company": "Cummins",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction Machinery & Heavy Transportation Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "CMS": {
+   "company": "CMS Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
   },
   "CNA.L": {
    "company": "Centrica",
@@ -558,6 +1588,26 @@
    ],
    "note": "Energy supplier plus gas and power trading"
   },
+  "CNC": {
+   "company": "Centene Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Managed Health Care",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "CNP": {
+   "company": "CenterPoint Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "COA.L": {
    "company": "Coats Group",
    "index": "FTSE 250",
@@ -565,6 +1615,67 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Industrial and apparel thread; no matching sector"
+  },
+  "COF": {
+   "company": "Capital One",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Consumer Finance",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
+  "COHR": {
+   "company": "Coherent Corp.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Components",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Components)"
+  },
+  "COIN": {
+   "company": "Coinbase",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "COO": {
+   "company": "Cooper Companies (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Supplies",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "COP": {
+   "company": "ConocoPhillips",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "COR": {
+   "company": "Cencora",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Distributors",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
   },
   "CORD.L": {
    "company": "Cordiant Digital Infrastructure",
@@ -574,11 +1685,31 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund (digital infrastructure)"
   },
+  "COST": {
+   "company": "Costco",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Consumer Staples Merchandise Retail",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
   "COST.L": {
    "company": "Costain Group",
    "index": "FTSE 250",
    "icb_sector": "Engineering and Construction",
    "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "CPAY": {
+   "company": "Corpay",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
    "secondary_sectors": []
   },
   "CPG.L": {
@@ -589,6 +1720,27 @@
    "secondary_sectors": [],
    "note": "Contract catering; classed as hospitality under GICS"
   },
+  "CPRT": {
+   "company": "Copart",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Diversified Support Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "CPT": {
+   "company": "Camden Property Trust",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Multi-Family Residential REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Multi-Family Residential REITs)"
+  },
   "CRDA.L": {
    "company": "Croda International",
    "index": "FTSE 100",
@@ -596,6 +1748,70 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Specialty chemicals; no matching sector"
+  },
+  "CRH": {
+   "company": "CRH plc",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Construction Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Construction Materials)"
+  },
+  "CRL": {
+   "company": "Charles River Laboratories",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "CRM": {
+   "company": "Salesforce",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "CRWD": {
+   "company": "CrowdStrike",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Systems Software",
+   "primary_sector": "Cybersecurity",
+   "secondary_sectors": [],
+   "note": "Override: cybersecurity software"
+  },
+  "CSCO": {
+   "company": "Cisco",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Communications Equipment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Communications Equipment)"
+  },
+  "CSGP": {
+   "company": "CoStar Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Real Estate Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Real Estate Services)"
   },
   "CSN.L": {
    "company": "Chesnara",
@@ -605,12 +1821,53 @@
    "secondary_sectors": [],
    "note": "Closed-book life insurance consolidator"
   },
+  "CSX": {
+   "company": "CSX Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Rail Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "CTAS": {
+   "company": "Cintas",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Diversified Support Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
   "CTEC.L": {
    "company": "Convatec",
    "index": "FTSE 100",
    "icb_sector": "Health care equipment & supplies",
    "primary_sector": "Medical Devices & Services",
    "secondary_sectors": []
+  },
+  "CTSH": {
+   "company": "Cognizant",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "IT Consulting & Other Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "CTVA": {
+   "company": "Corteva",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Fertilizers & Agricultural Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Fertilizers & Agricultural Chemicals)"
   },
   "CTY.L": {
    "company": "City of London Investment Trust",
@@ -628,6 +1885,27 @@
    "secondary_sectors": [],
    "note": "Electrical retailer"
   },
+  "CVNA": {
+   "company": "Carvana",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Automotive Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Automotive Retail)"
+  },
+  "CVS": {
+   "company": "CVS Health",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Services",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "CVSG.L": {
    "company": "CVS Group",
    "index": "FTSE 250",
@@ -635,6 +1913,16 @@
    "primary_sector": "Medical Devices & Services",
    "secondary_sectors": [],
    "note": "Veterinary services"
+  },
+  "CVX": {
+   "company": "Chevron Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Integrated Oil & Gas",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
   },
   "CWK.L": {
    "company": "Cranswick",
@@ -652,6 +1940,37 @@
    "secondary_sectors": [],
    "note": "Fuel cells"
   },
+  "D": {
+   "company": "Dominion Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "DAL": {
+   "company": "Delta Air Lines",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Passenger Airlines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "DASH": {
+   "company": "DoorDash",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Specialized Consumer Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Specialized Consumer Services)"
+  },
   "DATA.L": {
    "company": "GlobalData",
    "index": "FTSE 250",
@@ -668,12 +1987,114 @@
    "secondary_sectors": [],
    "note": "Energy distribution, healthcare and technology conglomerate; no matching sector"
   },
+  "DD": {
+   "company": "DuPont",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Conglomerates",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "DDOG": {
+   "company": "Datadog",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "DE": {
+   "company": "Deere & Company",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Agricultural & Farm Machinery",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "DECK": {
+   "company": "Deckers Brands",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Footwear",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": []
+  },
+  "DELL": {
+   "company": "Dell Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": "AI Infrastructure",
+   "secondary_sectors": [],
+   "note": "Override: AI server systems"
+  },
+  "DG": {
+   "company": "Dollar General",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Consumer Staples Merchandise Retail",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
   "DGE.L": {
    "company": "Diageo",
    "index": "FTSE 100",
    "icb_sector": "Beverages",
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": []
+  },
+  "DGX": {
+   "company": "Quest Diagnostics",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Services",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "DHI": {
+   "company": "D. R. Horton",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Homebuilding",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "DHR": {
+   "company": "Danaher Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "DIS": {
+   "company": "Walt Disney Company (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Movies & Entertainment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Movies & Entertainment)"
   },
   "DLN.L": {
    "company": "Derwent London",
@@ -683,11 +2104,41 @@
    "secondary_sectors": [],
    "note": "London offices"
   },
+  "DLR": {
+   "company": "Digital Realty",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Data Center REITs",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
+  "DLTR": {
+   "company": "Dollar Tree",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Consumer Staples Merchandise Retail",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
   "DNLM.L": {
    "company": "Dunelm Group",
    "index": "FTSE 250",
    "icb_sector": "Retailers",
    "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "DOC": {
+   "company": "Healthpeak Properties",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Health Care REITs",
+   "primary_sector": "Commercial & Logistics REITs",
    "secondary_sectors": []
   },
   "DOCS.L": {
@@ -708,6 +2159,27 @@
    "secondary_sectors": [],
    "note": "Pizza franchise"
   },
+  "DOV": {
+   "company": "Dover Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "DOW": {
+   "company": "Dow Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Commodity Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Commodity Chemicals)"
+  },
   "DPLM.L": {
    "company": "Diploma",
    "index": "FTSE 100",
@@ -715,6 +2187,26 @@
    "primary_sector": "Engineering & Industrials",
    "secondary_sectors": [],
    "note": "Specialist industrial distribution"
+  },
+  "DPZ": {
+   "company": "Domino's",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Restaurants",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "DRI": {
+   "company": "Darden Restaurants",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Restaurants",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
   },
   "DRX.L": {
    "company": "Drax Group",
@@ -734,6 +2226,99 @@
    "secondary_sectors": [],
    "note": "Electronic components"
   },
+  "DTE": {
+   "company": "DTE Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "DUK": {
+   "company": "Duke Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "DVA": {
+   "company": "DaVita",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Services",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "DVN": {
+   "company": "Devon Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "DXCM": {
+   "company": "Dexcom",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "EBAY": {
+   "company": "eBay Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Broadline Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Broadline Retail)"
+  },
+  "ECHO": {
+   "company": "EchoStar",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Wireless Telecommunication Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Wireless Telecommunication Services)"
+  },
+  "ECL": {
+   "company": "Ecolab",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Specialty Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Specialty Chemicals)"
+  },
+  "ED": {
+   "company": "Consolidated Edison",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "EDIN.L": {
    "company": "Edinburgh Investment Trust",
    "index": "FTSE 250",
@@ -750,6 +2335,47 @@
    "secondary_sectors": [],
    "note": "Gold miner; the config lists gold miners under Specialty Metals"
   },
+  "EFX": {
+   "company": "Equifax",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Research & Consulting Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Research & Consulting Services)"
+  },
+  "EG": {
+   "company": "Everest Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Reinsurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "EIX": {
+   "company": "Edison International",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "EL": {
+   "company": "Estée Lauder Companies (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Personal Care Products",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
   "ELM.L": {
    "company": "Elementis",
    "index": "FTSE 250",
@@ -758,6 +2384,26 @@
    "secondary_sectors": [],
    "note": "Specialty chemicals; no matching sector"
   },
+  "ELV": {
+   "company": "Elevance Health",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Managed Health Care",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "EME": {
+   "company": "Emcor",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction & Engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
   "EMG.L": {
    "company": "Man Group",
    "index": "FTSE 250",
@@ -765,6 +2411,16 @@
    "primary_sector": "Asset Management & Wealth",
    "secondary_sectors": [],
    "note": "Hedge fund manager; mislabelled as Investment Trusts on Wikipedia"
+  },
+  "EMR": {
+   "company": "Emerson Electric",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Electrical Components & Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "ENOG.L": {
    "company": "Energean",
@@ -782,6 +2438,56 @@
    "secondary_sectors": [],
    "note": "Gambling operator"
   },
+  "EOG": {
+   "company": "EOG Resources",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "EQIX": {
+   "company": "Equinix",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Data Center REITs",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
+  "EQT": {
+   "company": "EQT Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "ERIE": {
+   "company": "Erie Indemnity",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Insurance Brokers",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "ES": {
+   "company": "Eversource Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "ESCT.L": {
    "company": "European Smaller Companies Trust",
    "index": "FTSE 250",
@@ -789,6 +2495,57 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "ESS": {
+   "company": "Essex Property Trust",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Multi-Family Residential REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Multi-Family Residential REITs)"
+  },
+  "ETN": {
+   "company": "Eaton Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Electrical Components & Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "ETR": {
+   "company": "Entergy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "EVRG": {
+   "company": "Evergy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "EW": {
+   "company": "Edwards Lifesciences",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
   },
   "EWG.L": {
    "company": "Eurowag",
@@ -806,6 +2563,46 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "EXC": {
+   "company": "Exelon",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "EXE": {
+   "company": "Expand Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "EXPD": {
+   "company": "Expeditors International",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Air Freight & Logistics",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "EXPE": {
+   "company": "Expedia Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
   "EXPN.L": {
    "company": "Experian",
    "index": "FTSE 100",
@@ -814,6 +2611,16 @@
    "secondary_sectors": [],
    "note": "Credit data and analytics; no matching sector"
   },
+  "EXR": {
+   "company": "Extra Space Storage",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Self-Storage REITs",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
   "EZJ.L": {
    "company": "EasyJet",
    "index": "FTSE 100",
@@ -821,6 +2628,17 @@
    "primary_sector": "Travel, Leisure & Hospitality",
    "secondary_sectors": [],
    "note": "Airline"
+  },
+  "F": {
+   "company": "Ford Motor Company",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Automobile Manufacturers",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Automobile Manufacturers)"
   },
   "FAN.L": {
    "company": "Volution Group",
@@ -831,6 +2649,26 @@
     "Housebuilders"
    ],
    "note": "Ventilation products"
+  },
+  "FANG": {
+   "company": "Diamondback Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "FAST": {
+   "company": "Fastenal",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Trading Companies & Distributors",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "FCH.L": {
    "company": "Funding Circle",
@@ -856,6 +2694,56 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "FCX": {
+   "company": "Freeport-McMoRan",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Copper",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": []
+  },
+  "FDS": {
+   "company": "FactSet",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "FDX": {
+   "company": "FedEx",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Air Freight & Logistics",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "FDXF": {
+   "company": "FedEx Freight",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Cargo Ground Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "FE": {
+   "company": "FirstEnergy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "FEML.L": {
    "company": "Fidelity Emerging Markets",
    "index": "FTSE 250",
@@ -864,6 +2752,16 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "FERG": {
+   "company": "Ferguson Enterprises",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Trading Companies & Distributors",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
   "FEV.L": {
    "company": "Fidelity European Trust",
    "index": "FTSE 250",
@@ -871,6 +2769,17 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "FFIV": {
+   "company": "F5, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Communications Equipment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Communications Equipment)"
   },
   "FGEN.L": {
    "company": "Foresight Environmental Infrastructure",
@@ -896,6 +2805,68 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "FICO": {
+   "company": "Fair Isaac",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "FIS": {
+   "company": "Fidelity National Information Services",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
+  "FISV": {
+   "company": "Fiserv",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
+  "FITB": {
+   "company": "Fifth Third Bancorp",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Regional Banks",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Regional Banks)"
+  },
+  "FIX": {
+   "company": "Comfort Systems USA",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction & Engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "FLEX": {
+   "company": "Flex Ltd.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Manufacturing Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Manufacturing Services)"
+  },
   "FOUR.L": {
    "company": "4imprint",
    "index": "FTSE 250",
@@ -903,6 +2874,28 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Promotional products distributor; no matching sector"
+  },
+  "FOX": {
+   "company": "Fox Corporation (Class B)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Broadcasting",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Broadcasting)"
+  },
+  "FOXA": {
+   "company": "Fox Corporation (Class A)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Broadcasting",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Broadcasting)"
   },
   "FRAS.L": {
    "company": "Frasers Group",
@@ -921,6 +2914,16 @@
    "secondary_sectors": [],
    "note": "Silver and gold miner"
   },
+  "FRT": {
+   "company": "Federal Realty Investment Trust",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Retail REITs",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
   "FSG.L": {
    "company": "Foresight Group",
    "index": "FTSE 250",
@@ -929,6 +2932,17 @@
    "secondary_sectors": [],
    "note": "Alternative asset manager"
   },
+  "FSLR": {
+   "company": "First Solar",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Renewables & Clean Energy",
+   "secondary_sectors": [],
+   "note": "Override: solar modules"
+  },
   "FSV.L": {
    "company": "Fidelity Special Values",
    "index": "FTSE 250",
@@ -936,6 +2950,27 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "FTNT": {
+   "company": "Fortinet",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Systems Software",
+   "primary_sector": "Cybersecurity",
+   "secondary_sectors": [],
+   "note": "Override: cybersecurity software"
+  },
+  "FTV": {
+   "company": "Fortive",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "GAMA.L": {
    "company": "Gamma Communications",
@@ -963,6 +2998,26 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "GD": {
+   "company": "General Dynamics",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "GDDY": {
+   "company": "GoDaddy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Internet Services & Infrastructure",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
   "GDWN.L": {
    "company": "Goodwin",
    "index": "FTSE 250",
@@ -970,6 +3025,37 @@
    "primary_sector": "Engineering & Industrials",
    "secondary_sectors": [],
    "note": "Pumps and mining equipment"
+  },
+  "GE": {
+   "company": "GE Aerospace",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "GEHC": {
+   "company": "GE HealthCare",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "GEN": {
+   "company": "Gen Digital",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Systems Software",
+   "primary_sector": "Cybersecurity",
+   "secondary_sectors": [],
+   "note": "Override: consumer cybersecurity software"
   },
   "GEN.L": {
    "company": "Genuit Group",
@@ -980,6 +3066,17 @@
     "Housebuilders"
    ],
    "note": "Building products"
+  },
+  "GEV": {
+   "company": "GE Vernova",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Heavy Electrical Equipment",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": [],
+   "note": "Override: grid and power-generation equipment"
   },
   "GFRD.L": {
    "company": "Galliford Try",
@@ -999,6 +3096,36 @@
    ],
    "note": "Builders' merchants"
   },
+  "GILD": {
+   "company": "Gilead Sciences",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "GIS": {
+   "company": "General Mills",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "GL": {
+   "company": "Globe Life",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Life & Health Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
   "GLEN.L": {
    "company": "Glencore",
    "index": "FTSE 100",
@@ -1008,6 +3135,28 @@
     "Specialty Metals & Battery Materials"
    ]
   },
+  "GLW": {
+   "company": "Corning Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Components",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Components)"
+  },
+  "GM": {
+   "company": "General Motors",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Automobile Manufacturers",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Automobile Manufacturers)"
+  },
   "GNC.L": {
    "company": "Greencore",
    "index": "FTSE 250",
@@ -1015,6 +3164,16 @@
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": [],
    "note": "Convenience food"
+  },
+  "GNRC": {
+   "company": "Generac",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Heavy Electrical Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "GNS.L": {
    "company": "Genus",
@@ -1024,6 +3183,39 @@
    "secondary_sectors": [],
    "note": "Animal genetics; classed as pharmaceuticals"
   },
+  "GOOG": {
+   "company": "Alphabet Inc. (Class C)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Interactive Media & Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Interactive Media & Services)"
+  },
+  "GOOGL": {
+   "company": "Alphabet Inc. (Class A)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Interactive Media & Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Interactive Media & Services)"
+  },
+  "GPC": {
+   "company": "Genuine Parts Company",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Distributors",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Distributors)"
+  },
   "GPE.L": {
    "company": "Great Portland Estates",
    "index": "FTSE 250",
@@ -1031,6 +3223,16 @@
    "primary_sector": "Retail & Office REITs",
    "secondary_sectors": [],
    "note": "London offices and retail"
+  },
+  "GPN": {
+   "company": "Global Payments",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
   },
   "GRG.L": {
    "company": "Greggs",
@@ -1050,6 +3252,17 @@
    "secondary_sectors": [],
    "note": "Residential rental; no matching sector"
   },
+  "GRMN": {
+   "company": "Garmin",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Consumer Electronics",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Consumer Electronics)"
+  },
   "GROW.L": {
    "company": "Molten Ventures",
    "index": "FTSE 250",
@@ -1057,6 +3270,16 @@
    "primary_sector": "Asset Management & Wealth",
    "secondary_sectors": [],
    "note": "Venture investor"
+  },
+  "GS": {
+   "company": "Goldman Sachs",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Investment Banking & Brokerage",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
   },
   "GSCT.L": {
    "company": "Global Smaller Companies Trust",
@@ -1073,6 +3296,26 @@
    "primary_sector": "Pharma & Biotech",
    "secondary_sectors": []
   },
+  "GWW": {
+   "company": "W. W. Grainger",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "HAL": {
+   "company": "Halliburton",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Equipment & Services",
+   "primary_sector": "Oil Field Services",
+   "secondary_sectors": []
+  },
   "HANA.L": {
    "company": "Hansa Investment Company",
    "index": "FTSE 250",
@@ -1080,6 +3323,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "HAS": {
+   "company": "Hasbro",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Leisure Products",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
   },
   "HAS.L": {
    "company": "Hays",
@@ -1089,6 +3342,17 @@
    "secondary_sectors": [],
    "note": "Recruitment; no matching sector"
   },
+  "HBAN": {
+   "company": "Huntington Bancshares",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Regional Banks",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Regional Banks)"
+  },
   "HBR.L": {
    "company": "Harbour Energy",
    "index": "FTSE 250",
@@ -1096,6 +3360,27 @@
    "primary_sector": "Integrated Oil & Gas",
    "secondary_sectors": [],
    "note": "Exploration and production; closest sector is oil price exposure"
+  },
+  "HCA": {
+   "company": "HCA Healthcare",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Facilities",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "HD": {
+   "company": "Home Depot (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Home Improvement Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Home Improvement Retail)"
   },
   "HFD.L": {
    "company": "Halfords",
@@ -1136,6 +3421,26 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "HIG": {
+   "company": "Hartford (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "HII": {
+   "company": "Huntington Ingalls Industries",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
   "HIK.L": {
    "company": "Hikma Pharmaceuticals",
    "index": "FTSE 250",
@@ -1167,6 +3472,16 @@
    "secondary_sectors": [],
    "note": "Consumer health"
   },
+  "HLT": {
+   "company": "Hilton Worldwide",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
   "HMSO.L": {
    "company": "Hammerson",
    "index": "FTSE 250",
@@ -1182,6 +3497,58 @@
    "secondary_sectors": [],
    "note": "Gold and silver miner"
   },
+  "HON": {
+   "company": "Honeywell Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Conglomerates",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "HONA": {
+   "company": "Honeywell Aerospace",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "HOOD": {
+   "company": "Robinhood Markets",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Investment Banking & Brokerage",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "HPE": {
+   "company": "Hewlett Packard Enterprise",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": "AI Infrastructure",
+   "secondary_sectors": [],
+   "note": "Override: AI and data-centre systems"
+  },
+  "HPQ": {
+   "company": "HP Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Technology Hardware, Storage & Peripherals)"
+  },
   "HRI.L": {
    "company": "Herald Investment Trust",
    "index": "FTSE 250",
@@ -1189,6 +3556,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "HRL": {
+   "company": "Hormel Foods",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
   },
   "HSBA.L": {
    "company": "HSBC",
@@ -1200,6 +3577,16 @@
    ],
    "note": "The config lists HSBC under Investment Banks & Brokers"
   },
+  "HSIC": {
+   "company": "Henry Schein",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Distributors",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "HSL.L": {
    "company": "Henderson Smaller Companies Investment Trust",
    "index": "FTSE 250",
@@ -1208,11 +3595,31 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "HST": {
+   "company": "Host Hotels & Resorts",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Hotel & Resort REITs",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
   "HSX.L": {
    "company": "Hiscox",
    "index": "FTSE 100",
    "icb_sector": "Non-life Insurance",
    "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "HSY": {
+   "company": "Hershey Company (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": []
   },
   "HTG.L": {
@@ -1229,6 +3636,26 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "African mobile towers; the UK Telecoms sector is UK-specific"
+  },
+  "HUBB": {
+   "company": "Hubbell Incorporated",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "HUM": {
+   "company": "Humana",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Managed Health Care",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
   },
   "HVPE.L": {
    "company": "HarbourVest Global Private Equity",
@@ -1256,6 +3683,16 @@
    "secondary_sectors": [],
    "note": "Land regeneration; no matching sector"
   },
+  "HWM": {
+   "company": "Howmet Aerospace",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
   "IAD.L": {
    "company": "Invesco Asia Dragon Trust",
    "index": "FTSE 250",
@@ -1272,6 +3709,36 @@
    "secondary_sectors": [],
    "note": "Airline group"
   },
+  "IBKR": {
+   "company": "Interactive Brokers",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Investment Banking & Brokerage",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "IBM": {
+   "company": "IBM",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "IT Consulting & Other Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "ICE": {
+   "company": "Intercontinental Exchange",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
   "ICG.L": {
    "company": "ICG",
    "index": "FTSE 100",
@@ -1286,6 +3753,37 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "IDXX": {
+   "company": "Idexx Laboratories",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "IEX": {
+   "company": "IDEX Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "IFF": {
+   "company": "International Flavors & Fragrances",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Specialty Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Specialty Chemicals)"
   },
   "IGG.L": {
    "company": "IG Group",
@@ -1318,6 +3816,16 @@
    "secondary_sectors": [],
    "note": "Private equity; largest holding is Action (discount retail)"
   },
+  "ILMN": {
+   "company": "Illumina, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "IMB.L": {
    "company": "Imperial Brands",
    "index": "FTSE 100",
@@ -1340,6 +3848,16 @@
    "secondary_sectors": [],
    "note": "Car distribution and retail"
   },
+  "INCY": {
+   "company": "Incyte",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "INF.L": {
    "company": "Informa",
    "index": "FTSE 100",
@@ -1356,6 +3874,37 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "INTC": {
+   "company": "Intel",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "INTU": {
+   "company": "Intuit",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "INVH": {
+   "company": "Invitation Homes",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Single-Family Residential REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Single-Family Residential REITs)"
+  },
   "INVP.L": {
    "company": "Investec",
    "index": "FTSE 100",
@@ -1366,6 +3915,17 @@
    ],
    "note": "Specialist bank plus wealth management"
   },
+  "IP": {
+   "company": "International Paper",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Paper & Plastic Packaging Products & Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Paper & Plastic Packaging Products & Materials)"
+  },
   "IPO.L": {
    "company": "IP Group",
    "index": "FTSE 250",
@@ -1373,6 +3933,57 @@
    "primary_sector": "Asset Management & Wealth",
    "secondary_sectors": [],
    "note": "Intellectual property commercialisation and venture investor"
+  },
+  "IQV": {
+   "company": "IQVIA",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "IR": {
+   "company": "Ingersoll Rand",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "IRM": {
+   "company": "Iron Mountain",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Other Specialized REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Other Specialized REITs)"
+  },
+  "ISRG": {
+   "company": "Intuitive Surgical",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "IT": {
+   "company": "Gartner",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "IT Consulting & Other Services",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
   },
   "ITH.L": {
    "company": "Ithaca Energy",
@@ -1398,6 +4009,26 @@
    "secondary_sectors": [],
    "note": "Broadcaster; no matching sector"
   },
+  "ITW": {
+   "company": "Illinois Tool Works",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "IVZ": {
+   "company": "Invesco",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
   "IWG.L": {
    "company": "International Workplace Group",
    "index": "FTSE 250",
@@ -1405,6 +4036,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Flexible workspace operator; no matching sector"
+  },
+  "J": {
+   "company": "Jacobs Solutions",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction & Engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "JAM.L": {
    "company": "JPMorgan American Investment Trust",
@@ -1414,6 +4055,27 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "JBHT": {
+   "company": "J.B. Hunt",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Cargo Ground Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "JBL": {
+   "company": "Jabil",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Manufacturing Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Manufacturing Services)"
+  },
   "JCH.L": {
    "company": "JPMorgan Claverhouse Investment Trust",
    "index": "FTSE 250",
@@ -1421,6 +4083,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "JCI": {
+   "company": "Johnson Controls",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Building Products",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "JD.L": {
    "company": "JD Sports",
@@ -1477,6 +4149,16 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "JKHY": {
+   "company": "Jack Henry & Associates",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
   "JMAT.L": {
    "company": "Johnson Matthey",
    "index": "FTSE 250",
@@ -1493,6 +4175,26 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "JNJ": {
+   "company": "Johnson & Johnson",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Pharmaceuticals",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "JPM": {
+   "company": "JPMorgan Chase",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Diversified Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
   "JSG.L": {
    "company": "Johnson Service Group",
    "index": "FTSE 250",
@@ -1508,6 +4210,38 @@
    "primary_sector": "Asset Management & Wealth",
    "secondary_sectors": []
   },
+  "KDP": {
+   "company": "Keurig Dr Pepper",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Soft Drinks & Non-alcoholic Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "KEY": {
+   "company": "KeyCorp",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Regional Banks",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Regional Banks)"
+  },
+  "KEYS": {
+   "company": "Keysight Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Equipment & Instruments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Equipment & Instruments)"
+  },
   "KGF.L": {
    "company": "Kingfisher plc",
    "index": "FTSE 100",
@@ -1517,6 +4251,16 @@
     "Housebuilders"
    ]
   },
+  "KHC": {
+   "company": "Kraft Heinz",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
   "KIE.L": {
    "company": "Kier Group",
    "index": "FTSE 250",
@@ -1524,6 +4268,36 @@
    "primary_sector": "Engineering & Industrials",
    "secondary_sectors": [],
    "note": "Construction"
+  },
+  "KIM": {
+   "company": "Kimco Realty",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Retail REITs",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "KKR": {
+   "company": "KKR & Co.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "KLAC": {
+   "company": "KLA Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductor Materials & Equipment",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
   },
   "KLR.L": {
    "company": "Keller Group",
@@ -1533,6 +4307,26 @@
    "secondary_sectors": [],
    "note": "Ground engineering"
   },
+  "KMB": {
+   "company": "Kimberly-Clark",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Household Products",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "KMI": {
+   "company": "Kinder Morgan",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Storage & Transportation",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
   "KNOS.L": {
    "company": "Kainos",
    "index": "FTSE 250",
@@ -1541,11 +4335,71 @@
    "secondary_sectors": [],
    "note": "Digital services and software"
   },
+  "KO": {
+   "company": "Coca-Cola Company (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Soft Drinks & Non-alcoholic Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "KR": {
+   "company": "Kroger",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Food Retail",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
+  "KVUE": {
+   "company": "Kenvue",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Personal Care Products",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "L": {
+   "company": "Loews Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Multi-line Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
   "LAND.L": {
    "company": "Land Securities",
    "index": "FTSE 100",
    "icb_sector": "Real estate investment trusts",
    "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "LDOS": {
+   "company": "Leidos",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Diversified Support Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "LEN": {
+   "company": "Lennar",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Homebuilding",
+   "primary_sector": "Housebuilders",
    "secondary_sectors": []
   },
   "LGEN.L": {
@@ -1557,6 +4411,58 @@
     "Asset Management & Wealth"
    ]
   },
+  "LH": {
+   "company": "Labcorp",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Services",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "LHX": {
+   "company": "L3Harris",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "LII": {
+   "company": "Lennox International",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Building Products",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "LIN": {
+   "company": "Linde plc",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Industrial Gases",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Industrial Gases)"
+  },
+  "LITE": {
+   "company": "Lumentum",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Communications Equipment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Communications Equipment)"
+  },
   "LLOY.L": {
    "company": "Lloyds Banking Group",
    "index": "FTSE 100",
@@ -1564,11 +4470,62 @@
    "primary_sector": "UK Retail Banks",
    "secondary_sectors": []
   },
+  "LLY": {
+   "company": "Lilly (Eli)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Pharmaceuticals",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "LMP.L": {
    "company": "LondonMetric Property",
    "index": "FTSE 100",
    "icb_sector": "Real Estate Investment Trusts",
    "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
+  "LMT": {
+   "company": "Lockheed Martin",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "LNT": {
+   "company": "Alliant Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "LOW": {
+   "company": "Lowe's",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Home Improvement Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Home Improvement Retail)"
+  },
+  "LRCX": {
+   "company": "Lam Research",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductor Materials & Equipment",
+   "primary_sector": "Semiconductors & EDA",
    "secondary_sectors": []
   },
   "LRE.L": {
@@ -1589,6 +4546,36 @@
    ],
    "note": "Exchange, clearing and data"
   },
+  "LULU": {
+   "company": "Lululemon Athletica",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Apparel, Accessories & Luxury Goods",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": []
+  },
+  "LUV": {
+   "company": "Southwest Airlines",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Passenger Airlines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "LVS": {
+   "company": "Las Vegas Sands",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Casinos & Gaming",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
   "LWDB.L": {
    "company": "Law Debenture",
    "index": "FTSE 250",
@@ -1596,6 +4583,49 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "LYB": {
+   "company": "LyondellBasell",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Specialty Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Specialty Chemicals)"
+  },
+  "LYV": {
+   "company": "Live Nation Entertainment",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Movies & Entertainment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Movies & Entertainment)"
+  },
+  "MA": {
+   "company": "Mastercard",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
+  "MAA": {
+   "company": "Mid-America Apartment Communities",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Multi-Family Residential REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Multi-Family Residential REITs)"
   },
   "MAB.L": {
    "company": "Mitchells & Butlers",
@@ -1605,6 +4635,86 @@
    "secondary_sectors": [],
    "note": "Pubs and restaurants"
   },
+  "MAR": {
+   "company": "Marriott International",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "MAS": {
+   "company": "Masco",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Building Products",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "MCD": {
+   "company": "McDonald's",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Restaurants",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "MCHP": {
+   "company": "Microchip Technology",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "MCK": {
+   "company": "McKesson Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Distributors",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "MCO": {
+   "company": "Moody's Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "MDLZ": {
+   "company": "Mondelez International",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "MDT": {
+   "company": "Medtronic",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "MEGP.L": {
    "company": "ME Group International",
    "index": "FTSE 250",
@@ -1613,11 +4723,42 @@
    "secondary_sectors": [],
    "note": "Photo booths and laundry; no matching sector"
   },
+  "MET": {
+   "company": "MetLife",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Life & Health Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "META": {
+   "company": "Meta Platforms",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Interactive Media & Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Interactive Media & Services)"
+  },
   "MGAM.L": {
    "company": "Morgan Advanced Materials",
    "index": "FTSE 250",
    "icb_sector": "Electronic & Electrical Equipment",
    "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "MGM": {
+   "company": "MGM Resorts",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Casinos & Gaming",
+   "primary_sector": "Travel, Leisure & Hospitality",
    "secondary_sectors": []
   },
   "MGNS.L": {
@@ -1628,6 +4769,16 @@
    "secondary_sectors": [],
    "note": "Construction"
   },
+  "MKC": {
+   "company": "McCormick & Company",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
   "MKS.L": {
    "company": "Marks & Spencer",
    "index": "FTSE 100",
@@ -1637,6 +4788,27 @@
     "UK General Retail"
    ],
    "note": "Food is now over half of sales"
+  },
+  "MLM": {
+   "company": "Martin Marietta Materials",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Construction Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Construction Materials)"
+  },
+  "MMM": {
+   "company": "3M",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Conglomerates",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "MNDI.L": {
    "company": "Mondi",
@@ -1671,6 +4843,16 @@
    "secondary_sectors": [],
    "note": "Mining developer (Brazil)"
   },
+  "MNST": {
+   "company": "Monster Beverage",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Soft Drinks & Non-alcoholic Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
   "MNTN.L": {
    "company": "Schiehallion Fund",
    "index": "FTSE 250",
@@ -1678,6 +4860,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "MO": {
+   "company": "Altria",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Tobacco",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
   },
   "MONY.L": {
    "company": "MONY Group",
@@ -1695,6 +4887,37 @@
    "secondary_sectors": [],
    "note": "Online cards and gifts"
   },
+  "MOS": {
+   "company": "Mosaic Company (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Fertilizers & Agricultural Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Fertilizers & Agricultural Chemicals)"
+  },
+  "MPC": {
+   "company": "Marathon Petroleum",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Refining & Marketing",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "MPWR": {
+   "company": "Monolithic Power Systems",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
   "MRC.L": {
    "company": "Mercantile Investment Trust",
    "index": "FTSE 250",
@@ -1711,6 +4934,26 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "MRK": {
+   "company": "Merck & Co.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Pharmaceuticals",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "MRNA": {
+   "company": "Moderna",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "MRO.L": {
    "company": "Melrose Industries",
    "index": "FTSE 100",
@@ -1719,6 +4962,88 @@
    "secondary_sectors": [
     "Engineering & Industrials"
    ]
+  },
+  "MRSH": {
+   "company": "Marsh McLennan",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Insurance Brokers",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "MRVL": {
+   "company": "Marvell Technology",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "MS": {
+   "company": "Morgan Stanley",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Investment Banking & Brokerage",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "MSCI": {
+   "company": "MSCI",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "MSFT": {
+   "company": "Microsoft",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Systems Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "MSI": {
+   "company": "Motorola Solutions",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Communications Equipment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Communications Equipment)"
+  },
+  "MTB": {
+   "company": "M&T Bank",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Regional Banks",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Regional Banks)"
+  },
+  "MTD": {
+   "company": "Mettler Toledo",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
   },
   "MTLN.L": {
    "company": "Metlen Energy & Metals",
@@ -1741,6 +5066,16 @@
    "index": "FTSE 250",
    "icb_sector": "Banks",
    "primary_sector": "UK Retail Banks",
+   "secondary_sectors": []
+  },
+  "MU": {
+   "company": "Micron Technology",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
    "secondary_sectors": []
   },
   "MUT.L": {
@@ -1797,11 +5132,189 @@
    "primary_sector": "Cybersecurity",
    "secondary_sectors": []
   },
+  "NCLH": {
+   "company": "Norwegian Cruise Line Holdings",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "NDAQ": {
+   "company": "Nasdaq, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
+  "NDSN": {
+   "company": "Nordson Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "NEE": {
+   "company": "NextEra Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Renewables & Clean Energy",
+   "secondary_sectors": [
+    "Electricity & Grid"
+   ],
+   "note": "Override: largest US renewables developer"
+  },
+  "NEM": {
+   "company": "Newmont",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Gold",
+   "primary_sector": "Specialty Metals & Battery Materials",
+   "secondary_sectors": []
+  },
+  "NFLX": {
+   "company": "Netflix",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Movies & Entertainment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Movies & Entertainment)"
+  },
   "NG.L": {
    "company": "National Grid plc",
    "index": "FTSE 100",
    "icb_sector": "Multiline utilities",
    "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "NI": {
+   "company": "NiSource",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "NKE": {
+   "company": "Nike, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Apparel, Accessories & Luxury Goods",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": []
+  },
+  "NOC": {
+   "company": "Northrop Grumman",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "NOW": {
+   "company": "ServiceNow",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Systems Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "NRG": {
+   "company": "NRG Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Independent Power Producers & Energy Traders",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "NSC": {
+   "company": "Norfolk Southern",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Rail Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "NTAP": {
+   "company": "NetApp",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Technology Hardware, Storage & Peripherals)"
+  },
+  "NTRS": {
+   "company": "Northern Trust",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "NUE": {
+   "company": "Nucor",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Steel",
+   "primary_sector": "Diversified Mining",
+   "secondary_sectors": []
+  },
+  "NVDA": {
+   "company": "Nvidia",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "AI Infrastructure",
+   "secondary_sectors": [
+    "Semiconductors & EDA"
+   ],
+   "note": "Override: AI accelerators and GPU clusters"
+  },
+  "NVR": {
+   "company": "NVR, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Homebuilding",
+   "primary_sector": "Housebuilders",
    "secondary_sectors": []
   },
   "NWG.L": {
@@ -1811,11 +5324,53 @@
    "primary_sector": "UK Retail Banks",
    "secondary_sectors": []
   },
+  "NWS": {
+   "company": "News Corp (Class B)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Publishing",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Publishing)"
+  },
+  "NWSA": {
+   "company": "News Corp (Class A)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Publishing",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Publishing)"
+  },
+  "NXPI": {
+   "company": "NXP Semiconductors",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
   "NXT.L": {
    "company": "Next plc",
    "index": "FTSE 100",
    "icb_sector": "General retailers",
    "primary_sector": "UK General Retail",
+   "secondary_sectors": []
+  },
+  "O": {
+   "company": "Realty Income",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Retail REITs",
+   "primary_sector": "Retail & Office REITs",
    "secondary_sectors": []
   },
   "OCDO.L": {
@@ -1834,6 +5389,47 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "ODFL": {
+   "company": "Old Dominion",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Cargo Ground Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "OKE": {
+   "company": "Oneok",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Storage & Transportation",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "OMC": {
+   "company": "Omnicom Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Advertising",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Advertising)"
+  },
+  "ON": {
+   "company": "ON Semiconductor",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
   "ONT.L": {
    "company": "Oxford Nanopore Technologies",
    "index": "FTSE 250",
@@ -1844,6 +5440,27 @@
    ],
    "note": "DNA sequencing technology"
   },
+  "ORCL": {
+   "company": "Oracle Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "ORLY": {
+   "company": "O'Reilly Automotive",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Automotive Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Automotive Retail)"
+  },
   "OSB.L": {
    "company": "OSB Group",
    "index": "FTSE 250",
@@ -1851,6 +5468,16 @@
    "primary_sector": "UK Retail Banks",
    "secondary_sectors": [],
    "note": "Specialist mortgage lender"
+  },
+  "OTIS": {
+   "company": "Otis Worldwide",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "OXB.L": {
    "company": "Oxford Biomedica",
@@ -1867,6 +5494,27 @@
    "primary_sector": "Engineering & Industrials",
    "secondary_sectors": [],
    "note": "Scientific instruments"
+  },
+  "OXY": {
+   "company": "Occidental Petroleum",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "P": {
+   "company": "Everpure",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Technology Hardware, Storage & Peripherals)"
   },
   "PAF.L": {
    "company": "Pan African Resources",
@@ -1891,6 +5539,48 @@
    "secondary_sectors": [],
    "note": "Recruitment; no matching sector"
   },
+  "PANW": {
+   "company": "Palo Alto Networks",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Systems Software",
+   "primary_sector": "Cybersecurity",
+   "secondary_sectors": [],
+   "note": "Override: cybersecurity software"
+  },
+  "PAYX": {
+   "company": "Paychex",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Human Resource & Employment Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Human Resource & Employment Services)"
+  },
+  "PCAR": {
+   "company": "Paccar",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction Machinery & Heavy Transportation Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "PCG": {
+   "company": "PG&E Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "PCGH.L": {
    "company": "Polar Capital Global Healthcare Trust",
    "index": "FTSE 250",
@@ -1906,6 +5596,26 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "PEG": {
+   "company": "Public Service Enterprise Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "PEP": {
+   "company": "PepsiCo",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Soft Drinks & Non-alcoholic Beverages",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
   },
   "PETS.L": {
    "company": "Pets at Home",
@@ -1930,6 +5640,56 @@
    "secondary_sectors": [],
    "note": "Packaged food brands"
   },
+  "PFE": {
+   "company": "Pfizer",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Pharmaceuticals",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "PFG": {
+   "company": "Principal Financial Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Life & Health Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "PG": {
+   "company": "Procter & Gamble",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Personal Care Products",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "PGR": {
+   "company": "Progressive Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "PH": {
+   "company": "Parker Hannifin",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
   "PHI.L": {
    "company": "Pacific Horizon Investment Trust",
    "index": "FTSE 250",
@@ -1937,6 +5697,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "PHM": {
+   "company": "PulteGroup",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Homebuilding",
+   "primary_sector": "Housebuilders",
+   "secondary_sectors": []
   },
   "PHP.L": {
    "company": "Primary Health Properties",
@@ -1970,6 +5740,37 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "PKG": {
+   "company": "Packaging Corporation of America",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Paper & Plastic Packaging Products & Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Paper & Plastic Packaging Products & Materials)"
+  },
+  "PLD": {
+   "company": "Prologis",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Industrial REITs",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
+  "PLTR": {
+   "company": "Palantir Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
   "PLUS.L": {
    "company": "Plus500",
    "index": "FTSE 250",
@@ -1977,6 +5778,26 @@
    "primary_sector": "Investment Banks & Brokers",
    "secondary_sectors": [],
    "note": "Retail trading broker"
+  },
+  "PM": {
+   "company": "Philip Morris International",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Tobacco",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "PNC": {
+   "company": "PNC Financial Services",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Diversified Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
   },
   "PNL.L": {
    "company": "Personal Assets Trust",
@@ -1991,6 +5812,36 @@
    "index": "FTSE 250",
    "icb_sector": "Gas, Water & Multiutilities",
    "primary_sector": "Water",
+   "secondary_sectors": []
+  },
+  "PNR": {
+   "company": "Pentair",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "PNW": {
+   "company": "Pinnacle West Capital",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "PODD": {
+   "company": "Insulet Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
    "secondary_sectors": []
   },
   "POLN.L": {
@@ -2009,6 +5860,17 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "PPG": {
+   "company": "PPG Industries",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Specialty Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Specialty Chemicals)"
+  },
   "PPH.L": {
    "company": "PPHE Hotel Group",
    "index": "FTSE 250",
@@ -2017,6 +5879,16 @@
    "secondary_sectors": [],
    "note": "Hotels"
   },
+  "PPL": {
+   "company": "PPL Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "PRN.L": {
    "company": "Princes Group",
    "index": "FTSE 250",
@@ -2024,6 +5896,16 @@
    "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": [],
    "note": "Canned food and oils"
+  },
+  "PRU": {
+   "company": "Prudential Financial",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Life & Health Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
   },
   "PRU.L": {
    "company": "Prudential plc",
@@ -2035,6 +5917,16 @@
    ],
    "note": "Asia and Africa life insurance"
   },
+  "PSA": {
+   "company": "Public Storage",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Self-Storage REITs",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
   "PSH.L": {
    "company": "Pershing Square Holdings",
    "index": "FTSE 100",
@@ -2042,6 +5934,17 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "PSKY": {
+   "company": "Paramount Skydance Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Movies & Entertainment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Movies & Entertainment)"
   },
   "PSN.L": {
    "company": "Persimmon",
@@ -2058,6 +5961,26 @@
    "secondary_sectors": [],
    "note": "Education publishing; no matching sector"
   },
+  "PSX": {
+   "company": "Phillips 66",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Refining & Marketing",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "PTC": {
+   "company": "PTC Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
   "PTEC.L": {
    "company": "Playtech",
    "index": "FTSE 250",
@@ -2065,6 +5988,46 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Gaming software; no matching sector"
+  },
+  "PWR": {
+   "company": "Quanta Services",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction & Engineering",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "PYPL": {
+   "company": "PayPal",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
+  "Q": {
+   "company": "Qnity Electronics",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductor Materials & Equipment",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "QCOM": {
+   "company": "Qualcomm",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
   },
   "QLT.L": {
    "company": "Quilter",
@@ -2087,6 +6050,16 @@
    "primary_sector": "Asset Management & Wealth",
    "secondary_sectors": []
   },
+  "RCL": {
+   "company": "Royal Caribbean Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Hotels, Resorts & Cruise Lines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
   "RCP.L": {
    "company": "RIT Capital Partners",
    "index": "FTSE 250",
@@ -2095,6 +6068,37 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "RDDT": {
+   "company": "Reddit",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Interactive Media & Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Interactive Media & Services)"
+  },
+  "REG": {
+   "company": "Regency Centers",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Retail REITs",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "REGN": {
+   "company": "Regeneron Pharmaceuticals",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "REL.L": {
    "company": "RELX",
    "index": "FTSE 100",
@@ -2102,6 +6106,17 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Information analytics; no matching sector"
+  },
+  "RF": {
+   "company": "Regions Financial Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Regional Banks",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Regional Banks)"
   },
   "RHIM.L": {
    "company": "RHI Magnesita",
@@ -2128,11 +6143,41 @@
     "Specialty Metals & Battery Materials"
    ]
   },
+  "RJF": {
+   "company": "Raymond James Financial",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Investment Banking & Brokerage",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
   "RKT.L": {
    "company": "Reckitt",
    "index": "FTSE 100",
    "icb_sector": "Household goods & home construction",
    "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "RL": {
+   "company": "Ralph Lauren Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Apparel, Accessories & Luxury Goods",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": []
+  },
+  "RMD": {
+   "company": "ResMed|",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
    "secondary_sectors": []
   },
   "RMV.L": {
@@ -2151,6 +6196,37 @@
    "secondary_sectors": [],
    "note": "Casinos and bingo"
   },
+  "ROK": {
+   "company": "Rockwell Automation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Electrical Components & Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "ROL": {
+   "company": "Rollins, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Environmental & Facilities Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "ROP": {
+   "company": "Roper Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Equipment & Instruments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Equipment & Instruments)"
+  },
   "ROR.L": {
    "company": "Rotork",
    "index": "FTSE 250",
@@ -2166,6 +6242,17 @@
    "primary_sector": "Engineering & Industrials",
    "secondary_sectors": [],
    "note": "Industrial holding company"
+  },
+  "ROST": {
+   "company": "Ross Stores",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Apparel Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Apparel Retail)"
   },
   "RPI.L": {
    "company": "Raspberry Pi Holdings",
@@ -2189,6 +6276,16 @@
    "primary_sector": "Engineering & Industrials",
    "secondary_sectors": [],
    "note": "Industrial and electronics distribution"
+  },
+  "RSG": {
+   "company": "Republic Services",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Environmental & Facilities Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
   },
   "RSW.L": {
    "company": "Renishaw",
@@ -2214,6 +6311,26 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "RTX": {
+   "company": "RTX Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "RVTY": {
+   "company": "Revvity",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "SAFE.L": {
    "company": "Safestore",
    "index": "FTSE 250",
@@ -2238,11 +6355,41 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "SBAC": {
+   "company": "SBA Communications",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Telecom Tower REITs",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
   "SBRY.L": {
    "company": "Sainsbury's",
    "index": "FTSE 100",
    "icb_sector": "Food & drug retailing",
    "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
+  "SBUX": {
+   "company": "Starbucks",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Restaurants",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "SCHW": {
+   "company": "Charles Schwab Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Investment Banking & Brokerage",
+   "primary_sector": "Investment Banks & Brokers",
    "secondary_sectors": []
   },
   "SCT.L": {
@@ -2327,6 +6474,48 @@
    "primary_sector": "Integrated Oil & Gas",
    "secondary_sectors": []
   },
+  "SHW": {
+   "company": "Sherwin-Williams",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Specialty Chemicals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Specialty Chemicals)"
+  },
+  "SJM": {
+   "company": "J.M. Smucker Company (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "SLB": {
+   "company": "Schlumberger",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Equipment & Services",
+   "primary_sector": "Oil Field Services",
+   "secondary_sectors": []
+  },
+  "SMCI": {
+   "company": "Supermicro",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": "AI Infrastructure",
+   "secondary_sectors": [],
+   "note": "Override: AI server systems"
+  },
   "SMIN.L": {
    "company": "Smiths Group",
    "index": "FTSE 100",
@@ -2356,6 +6545,38 @@
    "primary_sector": "Medical Devices & Services",
    "secondary_sectors": []
   },
+  "SNA": {
+   "company": "Snap-on",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "SNDK": {
+   "company": "Sandisk",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Technology Hardware, Storage & Peripherals)"
+  },
+  "SNPS": {
+   "company": "Synopsys",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": [],
+   "note": "Override: chip-design (EDA) software"
+  },
   "SNR.L": {
    "company": "Senior",
    "index": "FTSE 250",
@@ -2364,6 +6585,16 @@
    "secondary_sectors": [],
    "note": "Aerostructures and flexonics"
   },
+  "SO": {
+   "company": "Southern Company",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "SOI.L": {
    "company": "Schroder Oriental Income Fund",
    "index": "FTSE 250",
@@ -2371,6 +6602,36 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "SOLV": {
+   "company": "Solventum",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Technology",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "SPG": {
+   "company": "Simon Property Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Retail REITs",
+   "primary_sector": "Retail & Office REITs",
+   "secondary_sectors": []
+  },
+  "SPGI": {
+   "company": "S&P Global",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Financial Exchanges & Data",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
   },
   "SPI.L": {
    "company": "Spire Healthcare",
@@ -2385,6 +6646,16 @@
    "index": "FTSE 100",
    "icb_sector": "Industrial engineering",
    "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "SRE": {
+   "company": "Sempra",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
    "secondary_sectors": []
   },
   "SRE.L": {
@@ -2438,11 +6709,62 @@
    ],
    "note": "The config lists Standard Chartered under Investment Banks & Brokers"
   },
+  "STE": {
+   "company": "Steris",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "STJ.L": {
    "company": "St. James's Place",
    "index": "FTSE 100",
    "icb_sector": "Financial services",
    "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "STLD": {
+   "company": "Steel Dynamics",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Steel",
+   "primary_sector": "Diversified Mining",
+   "secondary_sectors": []
+  },
+  "STT": {
+   "company": "State Street Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
+  "STX": {
+   "company": "Seagate Technology",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Technology Hardware, Storage & Peripherals)"
+  },
+  "STZ": {
+   "company": "Constellation Brands",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Distillers & Vintners",
+   "primary_sector": "Consumer Staples & FMCG",
    "secondary_sectors": []
   },
   "SUPR.L": {
@@ -2468,6 +6790,57 @@
    "primary_sector": "Water",
    "secondary_sectors": []
   },
+  "SW": {
+   "company": "Smurfit Westrock",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Paper & Plastic Packaging Products & Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Paper & Plastic Packaging Products & Materials)"
+  },
+  "SWK": {
+   "company": "Stanley Black & Decker",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "SWKS": {
+   "company": "Skyworks Solutions",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "SYF": {
+   "company": "Synchrony Financial",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Consumer Finance",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
+  "SYK": {
+   "company": "Stryker Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "SYNC.L": {
    "company": "Syncona",
    "index": "FTSE 250",
@@ -2475,6 +6848,27 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund (life sciences)"
+  },
+  "SYY": {
+   "company": "Sysco",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Food Distributors",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
+  "T": {
+   "company": "AT&T",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Integrated Telecommunication Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Integrated Telecommunication Services)"
   },
   "TATE.L": {
    "company": "Tate & Lyle",
@@ -2500,6 +6894,48 @@
    "secondary_sectors": [],
    "note": "Inter-dealer broker"
   },
+  "TDG": {
+   "company": "TransDigm Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "TDY": {
+   "company": "Teledyne Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Equipment & Instruments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Equipment & Instruments)"
+  },
+  "TECH": {
+   "company": "Bio-Techne",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "TEL": {
+   "company": "TE Connectivity",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Manufacturing Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Manufacturing Services)"
+  },
   "TEM.L": {
    "company": "Templeton Emerging Markets Investment Trust",
    "index": "FTSE 250",
@@ -2518,6 +6954,26 @@
    ],
    "note": "Utility Warehouse: energy, broadband, mobile bundle"
   },
+  "TER": {
+   "company": "Teradyne",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductor Materials & Equipment",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "TFC": {
+   "company": "Truist Financial",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Diversified Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
+  },
   "TFIF.L": {
    "company": "Twentyfour Income Fund",
    "index": "FTSE 250",
@@ -2525,6 +6981,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "TGT": {
+   "company": "Target Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Consumer Staples Merchandise Retail",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
   },
   "THG.L": {
    "company": "THG",
@@ -2544,6 +7010,38 @@
    "secondary_sectors": [],
    "note": "Healthcare property"
   },
+  "TJX": {
+   "company": "TJX Companies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Apparel Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Apparel Retail)"
+  },
+  "TKO": {
+   "company": "TKO Group Holdings",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Movies & Entertainment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Movies & Entertainment)"
+  },
+  "TMO": {
+   "company": "Thermo Fisher Scientific",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "TMPL.L": {
    "company": "Temple Bar Investment Trust",
    "index": "FTSE 250",
@@ -2551,6 +7049,17 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "TMUS": {
+   "company": "T-Mobile US",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Wireless Telecommunication Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Wireless Telecommunication Services)"
   },
   "TPK.L": {
    "company": "Travis Perkins",
@@ -2562,6 +7071,36 @@
    ],
    "note": "Builders' merchants"
   },
+  "TPL": {
+   "company": "Texas Pacific Land Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Exploration & Production",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "TPR": {
+   "company": "Tapestry, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Apparel, Accessories & Luxury Goods",
+   "primary_sector": "Luxury & Lifestyle",
+   "secondary_sectors": []
+  },
+  "TRGP": {
+   "company": "Targa Resources",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Storage & Transportation",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
   "TRIG.L": {
    "company": "The Renewables Infrastructure Group",
    "index": "FTSE 250",
@@ -2569,6 +7108,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund (renewables)"
+  },
+  "TRMB": {
+   "company": "Trimble Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
   },
   "TRN.L": {
    "company": "Trainline",
@@ -2580,6 +7129,16 @@
    ],
    "note": "Rail ticketing platform"
   },
+  "TROW": {
+   "company": "T. Rowe Price",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Asset Management & Custody Banks",
+   "primary_sector": "Asset Management & Wealth",
+   "secondary_sectors": []
+  },
   "TRST.L": {
    "company": "Trustpilot",
    "index": "FTSE 250",
@@ -2587,6 +7146,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Online reviews platform; no matching sector"
+  },
+  "TRV": {
+   "company": "Travelers Companies (The)",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
   },
   "TRY.L": {
    "company": "TR Property Investment Trust",
@@ -2596,6 +7165,17 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "TSCO": {
+   "company": "Tractor Supply",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Other Specialty Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Other Specialty Retail)"
+  },
   "TSCO.L": {
    "company": "Tesco",
    "index": "FTSE 100",
@@ -2603,12 +7183,116 @@
    "primary_sector": "Grocery & Food Retail",
    "secondary_sectors": []
   },
+  "TSLA": {
+   "company": "Tesla, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Automobile Manufacturers",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Automobile Manufacturers)"
+  },
+  "TSN": {
+   "company": "Tyson Foods",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Packaged Foods & Meats",
+   "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "TT": {
+   "company": "Trane Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Building Products",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "TTWO": {
+   "company": "Take-Two Interactive",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Interactive Home Entertainment",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Interactive Home Entertainment)"
+  },
   "TW.L": {
    "company": "Taylor Wimpey",
    "index": "FTSE 250",
    "icb_sector": "Household goods & home construction",
    "primary_sector": "Housebuilders",
    "secondary_sectors": []
+  },
+  "TXN": {
+   "company": "Texas Instruments",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Semiconductors",
+   "primary_sector": "Semiconductors & EDA",
+   "secondary_sectors": []
+  },
+  "TXT": {
+   "company": "Textron",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Aerospace & Defense",
+   "primary_sector": "Aerospace & Defence",
+   "secondary_sectors": []
+  },
+  "TYL": {
+   "company": "Tyler Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "UAL": {
+   "company": "United Airlines Holdings",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Passenger Airlines",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "UBER": {
+   "company": "Uber",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Passenger Ground Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": [],
+   "note": "Override: mobility and delivery"
+  },
+  "UDR": {
+   "company": "UDR, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Multi-Family Residential REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Multi-Family Residential REITs)"
   },
   "UEM.L": {
    "company": "Utilico Emerging Markets",
@@ -2618,6 +7302,16 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "UHS": {
+   "company": "Universal Health Services",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Facilities",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "UKW.L": {
    "company": "Greencoat UK Wind",
    "index": "FTSE 250",
@@ -2626,11 +7320,62 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund (renewables)"
   },
+  "ULTA": {
+   "company": "Ulta Beauty",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Other Specialty Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Other Specialty Retail)"
+  },
   "ULVR.L": {
    "company": "Unilever",
    "index": "FTSE 100",
    "icb_sector": "Personal goods",
    "primary_sector": "Consumer Staples & FMCG",
+   "secondary_sectors": []
+  },
+  "UNH": {
+   "company": "UnitedHealth Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Managed Health Care",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "UNP": {
+   "company": "Union Pacific Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Rail Transportation",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "UPS": {
+   "company": "United Parcel Service",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Air Freight & Logistics",
+   "primary_sector": "Logistics & Transport",
+   "secondary_sectors": []
+  },
+  "URI": {
+   "company": "United Rentals",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Trading Companies & Distributors",
+   "primary_sector": "Engineering & Industrials",
    "secondary_sectors": []
   },
   "USA.L": {
@@ -2640,6 +7385,16 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "USB": {
+   "company": "U.S. Bancorp",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Diversified Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
   },
   "UTG.L": {
    "company": "Unite Group",
@@ -2656,6 +7411,16 @@
    "primary_sector": "Water",
    "secondary_sectors": []
   },
+  "V": {
+   "company": "Visa Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
   "VCT.L": {
    "company": "Victrex",
    "index": "FTSE 250",
@@ -2666,6 +7431,16 @@
    ],
    "note": "High-performance polymers"
   },
+  "VEEV": {
+   "company": "Veeva Systems",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Technology",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "VEIL.L": {
    "company": "Vietnam Enterprise Investments",
    "index": "FTSE 250",
@@ -2674,6 +7449,36 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "VICI": {
+   "company": "Vici Properties",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Hotel & Resort REITs",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
+  "VLO": {
+   "company": "Valero Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Refining & Marketing",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "VLTO": {
+   "company": "Veralto",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Environmental & Facilities Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
   "VLX.L": {
    "company": "Volex",
    "index": "FTSE 250",
@@ -2681,6 +7486,28 @@
    "primary_sector": "Engineering & Industrials",
    "secondary_sectors": [],
    "note": "Cable assemblies"
+  },
+  "VMC": {
+   "company": "Vulcan Materials Company",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Materials",
+   "gics_sub_industry": "Construction Materials",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Construction Materials)"
+  },
+  "VMRK": {
+   "company": "Vivmark Residential",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Multi-Family Residential REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Multi-Family Residential REITs)"
   },
   "VOD.L": {
    "company": "Vodafone Group",
@@ -2698,6 +7525,58 @@
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
   },
+  "VRSK": {
+   "company": "Verisk Analytics",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Research & Consulting Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Research & Consulting Services)"
+  },
+  "VRSN": {
+   "company": "Verisign",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Internet Services & Infrastructure",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": []
+  },
+  "VRT": {
+   "company": "Vertiv",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Electrical Components & Equipment",
+   "primary_sector": "Data Centres & Digital Infrastructure",
+   "secondary_sectors": [],
+   "note": "Override: data-centre power and cooling"
+  },
+  "VRTX": {
+   "company": "Vertex Pharmaceuticals",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Biotechnology",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "VST": {
+   "company": "Vistra Corp.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
   "VSVS.L": {
    "company": "Vesuvius",
    "index": "FTSE 250",
@@ -2706,11 +7585,104 @@
    "secondary_sectors": [],
    "note": "Steel industry consumables"
   },
+  "VTR": {
+   "company": "Ventas",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Health Care REITs",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
+  "VTRS": {
+   "company": "Viatris",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Pharmaceuticals",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
   "VTY.L": {
    "company": "Vistry Group",
    "index": "FTSE 250",
    "icb_sector": "Home Construction",
    "primary_sector": "Housebuilders",
+   "secondary_sectors": []
+  },
+  "VZ": {
+   "company": "Verizon",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Integrated Telecommunication Services",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Integrated Telecommunication Services)"
+  },
+  "WAB": {
+   "company": "Wabtec",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Construction Machinery & Heavy Transportation Equipment",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "WAT": {
+   "company": "Waters Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Life Sciences Tools & Services",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
+  },
+  "WBD": {
+   "company": "Warner Bros. Discovery",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Communication Services",
+   "gics_sub_industry": "Broadcasting",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Broadcasting)"
+  },
+  "WDAY": {
+   "company": "Workday, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Application Software",
+   "primary_sector": "Cloud & SaaS",
+   "secondary_sectors": []
+  },
+  "WDC": {
+   "company": "Western Digital",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Technology Hardware, Storage & Peripherals",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Technology Hardware, Storage & Peripherals)"
+  },
+  "WEC": {
+   "company": "WEC Energy Group",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Electric Utilities",
+   "primary_sector": "Electricity & Grid",
    "secondary_sectors": []
   },
   "WEIR.L": {
@@ -2722,6 +7694,26 @@
     "Diversified Mining"
    ],
    "note": "Mining equipment"
+  },
+  "WELL": {
+   "company": "Welltower",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Health Care REITs",
+   "primary_sector": "Commercial & Logistics REITs",
+   "secondary_sectors": []
+  },
+  "WFC": {
+   "company": "Wells Fargo",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Diversified Banks",
+   "primary_sector": "Investment Banks & Brokers",
+   "secondary_sectors": []
   },
   "WIX.L": {
    "company": "Wickes",
@@ -2749,6 +7741,36 @@
    "secondary_sectors": [],
    "note": "London flexible offices"
   },
+  "WM": {
+   "company": "Waste Management",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Environmental & Facilities Services",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "WMB": {
+   "company": "Williams Companies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Oil & Gas Storage & Transportation",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
+  },
+  "WMT": {
+   "company": "Walmart",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Staples",
+   "gics_sub_industry": "Consumer Staples Merchandise Retail",
+   "primary_sector": "Grocery & Food Retail",
+   "secondary_sectors": []
+  },
   "WOSG.L": {
    "company": "Watches of Switzerland",
    "index": "FTSE 250",
@@ -2767,11 +7789,52 @@
    "secondary_sectors": [],
    "note": "Advertising; no matching sector"
   },
+  "WRB": {
+   "company": "W. R. Berkley Corporation",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Property & Casualty Insurance",
+   "primary_sector": "Insurance",
+   "secondary_sectors": []
+  },
+  "WSM": {
+   "company": "Williams-Sonoma, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Homefurnishing Retail",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Homefurnishing Retail)"
+  },
+  "WST": {
+   "company": "West Pharmaceutical Services",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Supplies",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
   "WTB.L": {
    "company": "Whitbread",
    "index": "FTSE 100",
    "icb_sector": "Retail hospitality",
    "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "WTW": {
+   "company": "Willis Towers Watson",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Insurance Brokers",
+   "primary_sector": "Insurance",
    "secondary_sectors": []
   },
   "WWH.L": {
@@ -2781,6 +7844,47 @@
    "primary_sector": null,
    "secondary_sectors": [],
    "note": "Investment trust / closed-end fund"
+  },
+  "WY": {
+   "company": "Weyerhaeuser",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Real Estate",
+   "gics_sub_industry": "Timber REITs",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Timber REITs)"
+  },
+  "WYNN": {
+   "company": "Wynn Resorts",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Casinos & Gaming",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "XEL": {
+   "company": "Xcel Energy",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Utilities",
+   "gics_sub_industry": "Multi-Utilities",
+   "primary_sector": "Electricity & Grid",
+   "secondary_sectors": []
+  },
+  "XOM": {
+   "company": "ExxonMobil",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Energy",
+   "gics_sub_industry": "Integrated Oil & Gas",
+   "primary_sector": "Integrated Oil & Gas",
+   "secondary_sectors": []
   },
   "XPP.L": {
    "company": "XP Power",
@@ -2798,6 +7902,57 @@
    "secondary_sectors": [],
    "note": "Pensions consulting; no matching sector"
   },
+  "XYL": {
+   "company": "Xylem Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Industrials",
+   "gics_sub_industry": "Industrial Machinery & Supplies & Components",
+   "primary_sector": "Engineering & Industrials",
+   "secondary_sectors": []
+  },
+  "XYZ": {
+   "company": "Block, Inc.",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Financials",
+   "gics_sub_industry": "Transaction & Payment Processing Services",
+   "primary_sector": "Fintech & Payments",
+   "secondary_sectors": []
+  },
+  "YUM": {
+   "company": "Yum! Brands",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Consumer Discretionary",
+   "gics_sub_industry": "Restaurants",
+   "primary_sector": "Travel, Leisure & Hospitality",
+   "secondary_sectors": []
+  },
+  "ZBH": {
+   "company": "Zimmer Biomet",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Health Care Equipment",
+   "primary_sector": "Medical Devices & Services",
+   "secondary_sectors": []
+  },
+  "ZBRA": {
+   "company": "Zebra Technologies",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Information Technology",
+   "gics_sub_industry": "Electronic Equipment & Instruments",
+   "primary_sector": null,
+   "secondary_sectors": [],
+   "note": "No global-theme Sector fits (Electronic Equipment & Instruments)"
+  },
   "ZIG.L": {
    "company": "Zigup",
    "index": "FTSE 250",
@@ -2805,6 +7960,16 @@
    "primary_sector": "Logistics & Transport",
    "secondary_sectors": [],
    "note": "Vehicle leasing and fleet services"
+  },
+  "ZTS": {
+   "company": "Zoetis",
+   "index": "S&P 500",
+   "market": "US",
+   "currency": "USD",
+   "gics_sector": "Health Care",
+   "gics_sub_industry": "Pharmaceuticals",
+   "primary_sector": "Pharma & Biotech",
+   "secondary_sectors": []
   }
  }
 }

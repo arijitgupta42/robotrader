@@ -2,6 +2,10 @@
 
 One entry per methodology review (`docs/methodology-review.md`), newest first. Each says which versions were in force, what changed and why, and what the next review should look at.
 
+## 2026-10-03: the Universe gains the S&P 500 (`METHODOLOGY_VERSION` 2026-10-03.2, `PROMPT_VERSION` unchanged)
+
+A scope change, not a result-driven tuning (see `docs/adr/0002-universe-includes-the-sp500.md`): 503 US stocks added, never mapped into the UK-specific Sectors; one combined pick ranking; per-market cutoffs; the backtest benchmark becomes per market (a hit beats its own market's average). The 22 historical snapshots are rebuilt with the larger Universe. Weeks before this entry were FTSE-only, so compare `methodology_version` 2026-10-03.1 against 2026-10-03.2 only with that in mind. Watch: whether Picks per week rise, which market the Picks come from, and the per-market hit rates.
+
 ## 2026-10-03: baseline (`METHODOLOGY_VERSION` 2026-10-03.1, `PROMPT_VERSION` 2026-10-03.1)
 
 No change. First report over 21 weeks (2026-W20 to W40; W19 excluded as keyword-fallback):

@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _INDEX_TICKERS = {
-    'FTSE 350': universe_tickers(),
+    'FTSE 350': universe_tickers(market='LSE'),
+    'S&P 500': universe_tickers('S&P 500'),
     'FTSE 250': universe_tickers('FTSE 250'),
     'FTSE 100': universe_tickers('FTSE 100'),
 }

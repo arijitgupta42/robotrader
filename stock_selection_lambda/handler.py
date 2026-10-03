@@ -58,7 +58,7 @@ FETCH_ATTEMPTS = 3
 FETCH_BACKOFF_SECONDS = (20, 60)    # waits before attempt 2 and 3
 MIN_TIME_FOR_RETRY_MS = 120_000     # don't start another download with less than this left
 RESERVE_SECONDS = 90                # kept back after a download for the analysis, the snapshot and the email
-MAX_ATTEMPT_SECONDS = 180           # one download attempt (normally about 45 s) is abandoned after this long
+MAX_ATTEMPT_SECONDS = 240           # one download attempt (normally 1-2 minutes for ~850 stocks) is abandoned after this long
 MIN_ATTEMPT_SECONDS = 20            # ...but is always given at least this long
 
 

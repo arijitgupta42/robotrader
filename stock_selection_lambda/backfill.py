@@ -39,7 +39,7 @@ from lse_stock_analysis.prices import LOOKBACK_DAYS, cutoff_date, download_batch
 from lse_stock_analysis.selection import (  # noqa: E402
     analyse_universe, build_snapshot, select_stocks, snapshot_to_csv, week_label,
 )
-from lse_stock_analysis.universe import universe_tickers  # noqa: E402
+from lse_stock_analysis.universe import MARKETS, universe_tickers  # noqa: E402
 
 logger = logging.getLogger("backfill")
 
@@ -129,7 +129,7 @@ class SlicingDownloader:
 
 def download_span(plans: list[WeekPlan]) -> tuple[date, date]:
     """Enough history to cover the lookback before the earliest week, through the latest cutoff."""
-    cutoffs = [cutoff_date(p.signal_ts) for p in plans]
+    cutoffs = [cutoff_date(p.signal_ts, m) for p in plans for m in MARKETS]
     return min(cutoffs) - timedelta(days=LOOKBACK_DAYS), max(cutoffs) + timedelta(days=1)
 
 

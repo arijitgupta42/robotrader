@@ -66,7 +66,7 @@ class Context:
 def payload(signals=None, **kw):
     sigs = signals if signals is not None else [
         {"sector": HOUSE, "confidence": 0.7, "convergence_type": "News-Led", "timestamp": SIGNAL_TS.isoformat()},
-        {"sector": "AI Infrastructure", "confidence": 0.75, "convergence_type": "News-Led", "timestamp": SIGNAL_TS.isoformat()},
+        {"sector": "Quantum Computing", "confidence": 0.75, "convergence_type": "News-Led", "timestamp": SIGNAL_TS.isoformat()},
         {"sector": "Water", "confidence": 0.6, "convergence_type": "Divergent", "timestamp": SIGNAL_TS.isoformat()},
     ]
     return {"timestamp": "20261004T060000Z", "success": True, "signals": sigs, "macro": "m", **kw}
@@ -141,26 +141,26 @@ def test_success_writes_snapshot_and_sends_one_email(monkeypatch):
                         "snapshot_key": "snapshots/2026-W40/universe.csv", "picks": results[0]["picks"]}]
     assert results[0]["picks"] == 2 + 1                          # Housebuilders 0.70 -> 2; Water Divergent -> 1; AI none
     snap = pd.read_csv(io.BytesIO(s3.objects["snapshots/2026-W40/universe.csv"]))
-    assert len(snap) == 350 and snap["is_pick"].sum() == 3 and set(snap["week"]) == {"2026-W40"}
+    assert len(snap) == len(universe_tickers()) and snap["is_pick"].sum() == 3 and set(snap["week"]) == {"2026-W40"}
     assert set(snap["price_cutoff"]) == {"2026-10-03"}
     assert len(ses.sent) == 1
     mail = ses.sent[0]
     assert mail["Source"] == "from@example.com" and mail["Destination"] == {"ToAddresses": ["to@example.com"]}
     assert mail["Message"]["Subject"]["Data"] == "LSE Sector Scout — 3 signals · 3 picks · 2026-W40"
     html_body, text_body = mail["Message"]["Body"]["Html"]["Data"], mail["Message"]["Body"]["Text"]["Data"]
-    for needle in (HOUSE, "AI Infrastructure", "Water", "MACRO REGIME", "STOCK PICKS"):
+    for needle in (HOUSE, "Quantum Computing", "Water", "MACRO REGIME", "STOCK PICKS"):
         assert needle in html_body
-    for needle in (HOUSE, "AI Infrastructure", "Water", "Divergent", "MACRO REGIME", "PICK "):
+    for needle in (HOUSE, "Quantum Computing", "Water", "Divergent", "MACRO REGIME", "PICK "):
         assert needle in text_body
     assert f"s3://bkt/{KEY}" in html_body                              # where the full data is
-    assert "no stock in the Sector Map has this as its Primary Sector" in text_body       # AI Infrastructure
+    assert "no stock in the Sector Map has this as its Primary Sector" in text_body       # Quantum Computing
     assert not any(k.startswith("failed/") for k in s3.objects)
 
 
 def test_real_agents_smoke_over_synthetic_prices():
     results, s3, ses = run()
     assert results[0]["status"] == "ok"
-    assert len(pd.read_csv(io.BytesIO(s3.objects["snapshots/2026-W40/universe.csv"]))) == 350
+    assert len(pd.read_csv(io.BytesIO(s3.objects["snapshots/2026-W40/universe.csv"]))) == len(universe_tickers())
     assert len(ses.sent) == 1
 
 
@@ -193,7 +193,7 @@ def failure_checks(results, s3, ses, reason_part, report=True):
     html_body = ses.sent[0]["Message"]["Body"]["Html"]["Data"]
     if report:                                                                 # the sector report still goes out, without picks
         assert subject == "LSE Sector Scout — 3 signals · stock picks FAILED · 2026-W40"
-        assert HOUSE in html_body and "AI Infrastructure" in html_body and "MACRO REGIME" in html_body
+        assert HOUSE in html_body and "Quantum Computing" in html_body and "MACRO REGIME" in html_body
         assert "STOCK PICKS FAILED" in html_body and reason_part in html_body
         assert "Stock picks unavailable this week" in html_body
     else:                                                                      # nothing to build a sector report from
@@ -231,7 +231,7 @@ def test_a_transient_download_failure_is_retried_to_success():
 def test_thin_coverage_counts_as_a_failed_download():
     some = universe_tickers()[:100]                                             # 29% coverage
     results, s3, ses = run(fetch=make_fetch(coverage_tickers=some), sleeps=[])
-    failure_checks(results, s3, ses, "100 of 350 stocks returned prices")
+    failure_checks(results, s3, ses, f"100 of {len(universe_tickers())} stocks returned prices")
 
 
 def test_no_time_left_stops_retrying():
@@ -362,15 +362,15 @@ def test_email_escapes_html_in_scout_text_and_company_names():
 
 def test_email_messages_for_each_kind_of_sector_strongest_first():
     signals = [{**SCOUT_SIGNAL, "sector": "Water", "confidence": 0.6}, SCOUT_SIGNAL,
-               {**SCOUT_SIGNAL, "sector": "AI Infrastructure", "confidence": 0.8}]
+               {**SCOUT_SIGNAL, "sector": "Quantum Computing", "confidence": 0.8}]
     sels = [selection(picks=[PICK], runners_up=[{"ticker": "BKG.L", "company": "Berkeley", "reason": "no swing setup"}]),
             selection(sector="Water", confidence=0.6, picks=[]),
-            selection(sector="AI Infrastructure", confidence=0.8, investable=False, candidate_count=0)]
+            selection(sector="Quantum Computing", confidence=0.8, investable=False, candidate_count=0)]
     subject, html_body, text_body = report(sels, signals)
     assert subject == "LSE Sector Scout — 3 signals · 1 pick · 2026-W40"
     assert "No eligible stock this week" in html_body and "no swing setup" in html_body
     assert "nothing to pick" in html_body
-    assert html_body.index("AI Infrastructure") < html_body.index(HOUSE) < html_body.index("Water")   # strongest first
+    assert html_body.index("Quantum Computing") < html_body.index(HOUSE) < html_body.index("Water")   # strongest first
     assert "no eligible stock this week" in text_body
 
 
