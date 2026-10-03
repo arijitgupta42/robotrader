@@ -240,18 +240,25 @@ def _load_api_key() -> str:
             type(exc).__name__, exc,
         )
 
+    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if key:
+        logger.info("Using OpenRouter API key from the OPENROUTER_API_KEY environment variable.")
+        _cached_api_key = key
+        return _cached_api_key
+
     raise EnvironmentError(
         "OpenRouter API key not found. Tried:\n"
         "  - SSM parameter: /sector-scout/openrouter-api-key (SecureString)\n"
-        "Set this before running."
+        "  - OPENROUTER_API_KEY environment variable\n"
+        "Set one of these before running."
     )
 def _get_headers() -> dict:
     api_key = _load_api_key()
     if not api_key:
         raise EnvironmentError(
-            "OPENROUTER_API_KEY environment variable is not set. "
-            "Create a free account at https://openrouter.ai, generate an API key, "
-            "and set it in SSM before running"
+            "OpenRouter API key is empty. "
+            "Create an account at https://openrouter.ai, generate an API key, "
+            "and set it in SSM or the OPENROUTER_API_KEY environment variable before running"
         )
     return {
         "Authorization": f"Bearer {api_key}",
