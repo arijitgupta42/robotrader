@@ -18,6 +18,7 @@ Every three months the `backtest-report` Lambda emails a Backtest Report (see `C
 | Sector keywords and the models | `financial_market_news_analyzer/config.py` (`LSE_SECTORS`, `OPENROUTER_MODELS`) | No |
 | Pick rules: confidence bands, how many Picks, capped convergence types, eligibility, ranking, runners-up | `lse_stock_analysis/selection.py` (`MID_CONFIDENCE`, `HIGH_CONFIDENCE`, `CAPPED_CONVERGENCE`, `GRADE_RANK`, `_ineligible_reason`, `_rank_key`) | Yes: selection is deterministic, so past snapshots can be re-selected |
 | Indicator and risk numbers | `lse_stock_analysis/selection.py` (`TREND_PARAMS`, `RISK_PARAMS`) and the two agents in `lse_stock_analysis/agents/` | Yes, by re-running the analysis on the stored prices (`stock_selection_lambda/backfill.py`) |
+| Which stocks belong to which Sector (the Sector Map; for the S&P 500 the GICS mapping and overrides) | `lse_stock_analysis/sector_map.json`, `lse_stock_analysis/sp500_map.py` | Yes: re-select past snapshots with the changed map |
 | Data-quality thresholds | `lse_stock_analysis/prices.py` (`PRICE_ANOMALY_MOVE`, `MIN_BARS`, `STALE_DAYS`) | Yes |
 
 ## Rules for proposing a change
@@ -34,7 +35,7 @@ The data is thin (about 20 weeks at first, a handful of Picks), so the risk is f
 
 ## What a review produces
 
-1. A short written summary: the headline comparison (Picks vs Candidates vs Universe at 2/4/6 weeks), the breakdowns that clear the bar, the ones that do not, with sample sizes.
+1. A short written summary: the headline comparison (Picks vs Candidates vs Universe at 2/4/6 weeks, overall and for each market), the breakdowns that clear the bar, the ones that do not, with sample sizes.
 2. For each proposed change: the evidence table, the out-of-sample check, the mechanism, and what the next review should see if it worked.
 3. A pull request with the changes, which also:
    - bumps `METHODOLOGY_VERSION` in `lse_stock_analysis/selection.py` and/or `PROMPT_VERSION` in `financial_market_news_analyzer/config.py`;
@@ -46,4 +47,4 @@ If nothing clears the bar: no code change, but still add the changelog entry wit
 
 ## Known limits of the data
 
-Survivorship bias (the Universe is the current index); overlapping windows between consecutive weeks; stocks in a sector move together, so stock-weeks are not independent; a few Picks per week; returns across a backfilled and a live snapshot can differ by about a dividend yield; weeks before the scout recorded `convergence_type` are excluded automatically.
+Survivorship bias (the Universe is today's FTSE 350 and S&P 500); returns are in each stock's own currency, with no FX conversion; overlapping windows between consecutive weeks; stocks in a sector move together, so stock-weeks are not independent; a few Picks per week; returns across a backfilled and a live snapshot can differ by about a dividend yield; weeks before the scout recorded `convergence_type` are excluded automatically.
