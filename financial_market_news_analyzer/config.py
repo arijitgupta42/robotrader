@@ -358,44 +358,26 @@ REDDIT_CFG = RedditConfig()
 # ---------------------------------------------------------------------------
 # OpenRouter Model Config
 #
-# OPENROUTER_MODELS is the local fallback used when SSM is unreachable.
-# To change models without redeploying the Lambda, edit the SSM parameter:
-#   /sector-scout/openrouter-models  (comma-separated, same order)
+# Every LLM call in this project goes through OpenRouter to one of these
+# models, with reasoning disabled (the request payloads set it): with
+# reasoning on, both models intermittently spent the whole max_tokens budget
+# thinking and returned empty or truncated JSON.  Live comparison on the
+# real news + Reddit pipeline (see the PR that introduced this list):
+# openai/gpt-6-luna-pro with reasoning off was the most reliable and gave
+# the most stable, highest-confidence signals; deepseek/deepseek-v4.1-flash
+# works but its reasoning-off signals were noisier.
+# Both are fixed model IDs (no "-latest" alias) so each week's signals can be
+# traced to one model version for backtesting.  The list lives only here, so
+# git history records which models produced which weeks' signals.
 # ---------------------------------------------------------------------------
 
 OPENROUTER_MODELS: List[str] = [
-    "google/gemma-4-31b-it:free",
-    "google/gemma-4-26b-a4b-it:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemma-3-27b-it:free",
-    "openrouter/owl-alpha",
+    "openai/gpt-6-luna-pro",
+    "deepseek/deepseek-v4.1-flash",
 ]
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
 OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
-
-
-def load_openrouter_models() -> List[str]:
-    """
-    Load the OpenRouter model list from SSM Parameter Store at runtime.
-    This allows updating the model list without redeploying the Lambda —
-    just edit /sector-scout/openrouter-models in the AWS console.
-
-    Falls back to OPENROUTER_MODELS (defined above) if SSM is unreachable
-    or the parameter is missing/empty.
-    """
-    try:
-        import boto3
-        ssm = boto3.client("ssm", region_name=os.environ.get("AWS_REGION", "eu-west-1"))
-        resp = ssm.get_parameter(Name="/sector-scout/openrouter-models")
-        models = [m.strip() for m in resp["Parameter"]["Value"].split(",") if m.strip()]
-        if models:
-            return models
-        logger.warning("SSM: openrouter-models is empty — using config fallback.")
-    except Exception as exc:
-        logger.warning("SSM: could not load openrouter-models (%s: %s) — using config fallback.",
-                       type(exc).__name__, exc)
-    return OPENROUTER_MODELS
 
 
 # ---------------------------------------------------------------------------

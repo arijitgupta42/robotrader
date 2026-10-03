@@ -34,7 +34,7 @@ CACHE_FILE    = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data_c
 # ---------------------------------------------------------------------------
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")   # ← paste key here if not using env var
-OPENROUTER_MODEL   = "google/gemma-2-9b-it"                 # any model on openrouter.ai/models
+OPENROUTER_MODEL   = "openai/gpt-6-luna-pro"                  # same primary model as the sector scout
 
 # ---------------------------------------------------------------------------
 # Pipeline

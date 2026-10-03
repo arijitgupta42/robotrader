@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 _OPENROUTER_BASE = "https://openrouter.ai/api/v1/chat/completions"
-_DEFAULT_MODEL   = "google/gemma-2-9b-it"   # closest freely-available Gemma on OpenRouter
+_DEFAULT_MODEL   = "openai/gpt-6-luna-pro"   # same primary model as the sector scout
 
 
 class ModelLoader:
@@ -18,7 +18,7 @@ class ModelLoader:
     Attributes
     ----------
     model_id : str
-        OpenRouter model string, e.g. "google/gemma-2-9b-it".
+        OpenRouter model string, e.g. "openai/gpt-6-luna-pro".
     api_key : str
         OpenRouter API key (Bearer token).
     timeout : float
@@ -39,7 +39,7 @@ class ModelLoader:
         api_key : str
             Your OpenRouter API key. Required.
         model_id : str, optional
-            OpenRouter model identifier. Defaults to 'google/gemma-2-9b-it'.
+            OpenRouter model identifier. Defaults to 'openai/gpt-6-luna-pro'.
             See https://openrouter.ai/models for the full list.
         timeout : float, optional
             HTTP timeout per request in seconds. Default 60.
@@ -122,6 +122,7 @@ class ModelLoader:
             "messages"   : normalised,
             "max_tokens" : max_new_tokens,
             "temperature": 0.0,   # deterministic — mirrors do_sample=False
+            "reasoning"  : {"enabled": False},   # reasoning would exhaust the small max_new_tokens
         }
 
         headers = {

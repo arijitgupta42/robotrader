@@ -29,7 +29,7 @@ from config import (
     DISRUPTION_CATEGORIES,
     LSE_SECTORS,
     OPENROUTER_RETRY_DELAYS,
-    load_openrouter_models,
+    OPENROUTER_MODELS,
 )
 from reddit_fetcher import RedditPost
 from llm_analyzer import _load_api_key, _extract_and_decode   # reuse helpers
@@ -135,7 +135,7 @@ def _call_openrouter(messages: list, model_chunk: list) -> tuple:
         "messages":    messages,
         "temperature": 0.25,          # lower temp — we want consistent extraction
         "max_tokens":  2048,
-        "reasoning":   {"effort": "high", "exclude": True},
+        "reasoning":   {"enabled": False},   # reasoning on can exhaust max_tokens (finish=length, empty/truncated JSON)
         "response_format": {"type": "json_object"},
         "models": model_chunk,
         "route":  "fallback",
@@ -149,7 +149,7 @@ def _call_openrouter(messages: list, model_chunk: list) -> tuple:
 
 
 def _invoke_with_fallback(messages: list) -> tuple[Optional[dict], Optional[str]]:
-    models = load_openrouter_models()
+    models = OPENROUTER_MODELS
     chunks = [models[i:i+3] for i in range(0, len(models), 3)]
 
     for chunk_idx, chunk in enumerate(chunks, start=1):
