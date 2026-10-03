@@ -1,0 +1,19 @@
+# Exact third-party packages of the deployed sector-scout Lambda (Python 3.11, Linux x86_64 wheels),
+# every one pinned and installed with --no-deps by build_zip.py.  Not listed on purpose:
+# sgmllib3k (source-only, no wheel; the repo's sgmllib.py shim provides the module feedparser imports).
+beautifulsoup4==4.14.3
+boto3==1.43.3
+botocore==1.43.3
+certifi==2026.4.22
+charset-normalizer==3.4.7
+feedparser==6.0.12
+idna==3.13
+jmespath==1.1.0
+lxml==6.1.0
+python-dateutil==2.9.0.post0
+requests==2.33.1
+s3transfer==0.17.0
+six==1.17.0
+soupsieve==2.8.3
+typing-extensions==4.15.0
+urllib3==2.6.3

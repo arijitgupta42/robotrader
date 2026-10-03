@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "backtest_permissions" {
   statement {
     sid       = "ListSnapshots"
     actions   = ["s3:ListBucket"]
-    resources = [data.aws_s3_bucket.data.arn]
+    resources = [aws_s3_bucket.data.arn]
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
@@ -26,22 +26,19 @@ data "aws_iam_policy_document" "backtest_permissions" {
   statement {
     sid       = "ReadSnapshots"
     actions   = ["s3:GetObject"]
-    resources = ["${data.aws_s3_bucket.data.arn}/snapshots/*"]
+    resources = ["${aws_s3_bucket.data.arn}/snapshots/*"]
   }
 
   statement {
     sid       = "WriteReports"
     actions   = ["s3:PutObject"]
-    resources = ["${data.aws_s3_bucket.data.arn}/reports/*"]
+    resources = ["${aws_s3_bucket.data.arn}/reports/*"]
   }
 
   statement {
-    sid     = "SendReportEmail"
-    actions = ["ses:SendEmail"]
-    resources = [
-      "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:identity/${var.ses_sender}",
-      "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:configuration-set/*",
-    ]
+    sid       = "SendReportEmail"
+    actions   = ["ses:SendEmail"]
+    resources = [aws_sesv2_email_identity.sender.arn]
   }
 
   statement {
