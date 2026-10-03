@@ -1,0 +1,410 @@
+import io
+import json
+import sys
+import zipfile
+import zlib
+from datetime import date, datetime, timezone
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "stock_selection_lambda"))
+
+import build_zip  # noqa: E402
+import email_report  # noqa: E402
+import handler  # noqa: E402
+from lse_stock_analysis.prices import PriceFetchResult, clean_prices, cutoff_date  # noqa: E402
+from lse_stock_analysis.selection import RISK_METRICS, TREND_METRICS, SectorSelection  # noqa: E402
+from lse_stock_analysis.universe import load_sector_map, universe_tickers  # noqa: E402
+
+SIGNAL_TS = datetime(2026, 10, 4, 6, 0, 3, tzinfo=timezone.utc)      # a Sunday, like the scout's run
+KEY = "successful/2026-W40/response_20261004T060000Z.json"
+SECTOR_MAP = load_sector_map()
+HOUSE = "Housebuilders"
+
+
+# ---------------------------------------------------------------------------
+# Fakes and builders
+# ---------------------------------------------------------------------------
+
+class FakeS3:
+    def __init__(self):
+        self.objects: dict[str, bytes] = {}
+        self.fail_put_for: tuple = ()
+
+    def get_object(self, Bucket, Key):
+        return {"Body": io.BytesIO(self.objects[Key])}
+
+    def put_object(self, Bucket, Key, Body, ContentType=None):
+        if any(Key.startswith(p) for p in self.fail_put_for):
+            raise OSError("S3 down")
+        self.objects[Key] = Body if isinstance(Body, bytes) else Body.encode()
+
+
+class FakeSES:
+    def __init__(self, fail=False):
+        self.sent, self.fail = [], fail
+
+    def send_email(self, **kwargs):
+        if self.fail:
+            raise RuntimeError("SES down")
+        self.sent.append(kwargs)
+
+
+class Context:
+    def __init__(self, ms):
+        self.ms = ms
+
+    def get_remaining_time_in_millis(self):
+        return self.ms
+
+
+def payload(signals=None, **kw):
+    sigs = signals if signals is not None else [
+        {"sector": HOUSE, "confidence": 0.7, "convergence_type": "News-Led", "timestamp": SIGNAL_TS.isoformat()},
+        {"sector": "AI Infrastructure", "confidence": 0.75, "convergence_type": "News-Led", "timestamp": SIGNAL_TS.isoformat()},
+        {"sector": "Water", "confidence": 0.6, "convergence_type": "Divergent", "timestamp": SIGNAL_TS.isoformat()},
+    ]
+    return {"timestamp": "20261004T060000Z", "success": True, "signals": sigs, "macro": "m", **kw}
+
+
+def event(key=KEY):
+    return {"Records": [{"s3": {"bucket": {"name": "bkt"}, "object": {"key": key}}}]}
+
+
+def synthetic_raw(tickers):
+    """Seeded random-walk OHLCV for each ticker, ending Friday 2026-10-02."""
+    index = pd.bdate_range(end="2026-10-02", periods=130)
+    raw = {}
+    for t in tickers:
+        rng = np.random.default_rng(zlib.crc32(t.encode()))
+        close = 100 * np.exp(np.cumsum(rng.normal(0.001, 0.015, len(index))))
+        raw[t] = pd.DataFrame({"Open": close, "High": close * 1.01, "Low": close * 0.99, "Close": close,
+                               "Volume": rng.integers(100_000, 2_000_000, len(index))}, index=index)
+    return raw
+
+
+def make_fetch(coverage_tickers=None, calls=None):
+    tickers = universe_tickers()
+    raw = synthetic_raw(coverage_tickers if coverage_tickers is not None else tickers)
+
+    def fetch(ts):
+        if calls is not None:
+            calls.append(ts)
+        return clean_prices(raw, cutoff_date(ts), tickers)
+    return fetch
+
+
+def good_analysis(data):
+    """Every stock analysed as an A-grade momentum setup, risk score by ticker order (deterministic)."""
+    out = {}
+    for i, t in enumerate(sorted(data)):
+        tr = {k: 1.0 for k in TREND_METRICS}
+        tr.update(trend="uptrend", rsi=55.0, atr_pct=3.0, swing_setup="momentum", price_vs_bb="inside", volume_surge=False)
+        rk = {k: 1.0 for k in RISK_METRICS}
+        rk.update(risk_score=1 + i % 9, risk_level="low", setup_quality="A", tradeable=True, atr_stop_pct=4.5,
+                  max_position_size_pct=10.0, vol_signal="medium", rsi_signal="neutral", momentum_signal="strong",
+                  swing_setup="momentum", trend_signal="uptrend", status="ok")
+        out[t] = {"trend": tr, "risk": rk}
+    return out
+
+
+@pytest.fixture(autouse=True)
+def env(monkeypatch):
+    monkeypatch.setenv("SES_SENDER", "from@example.com")
+    monkeypatch.setenv("SES_RECIPIENT", "to@example.com")
+
+
+def run(s3=None, ses=None, fetch=None, ev=None, context=None, sleeps=None, scout=None):
+    s3 = s3 if s3 is not None else FakeS3()
+    ses = ses if ses is not None else FakeSES()
+    if KEY not in s3.objects:
+        s3.objects[KEY] = json.dumps(scout if scout is not None else payload()).encode()
+    out = handler.run(ev or event(), context, s3, ses, fetch=fetch or make_fetch(),
+                      sleep=(sleeps.append if sleeps is not None else lambda s: None),
+                      now=lambda: datetime(2026, 10, 4, 6, 1, tzinfo=timezone.utc))
+    return out["processed"], s3, ses
+
+
+# ---------------------------------------------------------------------------
+# Happy path
+# ---------------------------------------------------------------------------
+
+def test_success_writes_snapshot_and_sends_one_email(monkeypatch):
+    monkeypatch.setattr(handler, "analyse_universe", good_analysis)
+    results, s3, ses = run()
+    assert results == [{"status": "ok", "week": "2026-W40", "source_key": KEY,
+                        "snapshot_key": "snapshots/2026-W40/universe.csv", "picks": results[0]["picks"]}]
+    assert results[0]["picks"] == 2 + 1                          # Housebuilders 0.70 -> 2; Water Divergent -> 1; AI none
+    snap = pd.read_csv(io.BytesIO(s3.objects["snapshots/2026-W40/universe.csv"]))
+    assert len(snap) == 350 and snap["is_pick"].sum() == 3 and set(snap["week"]) == {"2026-W40"}
+    assert set(snap["price_cutoff"]) == {"2026-10-03"}
+    assert len(ses.sent) == 1
+    mail = ses.sent[0]
+    assert mail["Source"] == "from@example.com" and mail["Destination"] == {"ToAddresses": ["to@example.com"]}
+    assert "2026-W40" in mail["Message"]["Subject"]["Data"] and "3 picks" in mail["Message"]["Subject"]["Data"]
+    html_body, text_body = mail["Message"]["Body"]["Html"]["Data"], mail["Message"]["Body"]["Text"]["Data"]
+    for needle in (HOUSE, "AI Infrastructure", "Water", "Divergent"):
+        assert needle in html_body and needle in text_body
+    assert "No stock in the Sector Map has this as its Primary Sector" in text_body       # AI Infrastructure
+    assert not any(k.startswith("failed/") for k in s3.objects)
+
+
+def test_real_agents_smoke_over_synthetic_prices():
+    results, s3, ses = run()
+    assert results[0]["status"] == "ok"
+    assert len(pd.read_csv(io.BytesIO(s3.objects["snapshots/2026-W40/universe.csv"]))) == 350
+    assert len(ses.sent) == 1
+
+
+def test_non_scout_keys_are_ignored():
+    for key in ["failed/2026-W40/attempt_x.json", "snapshots/2026-W40/universe.csv", "outcomes/2026-W40/stubs_x.json",
+                "successful/2026-W40/", "successful/notaweek/response_x.json"]:
+        results, s3, ses = run(ev=event(key))
+        assert results == [] and ses.sent == []
+
+
+def test_url_encoded_key_is_decoded():
+    s3 = FakeS3()
+    s3.objects[KEY] = json.dumps(payload()).encode()
+    results, _, _ = run(s3=s3, ev=event(KEY.replace("/", "%2F")))
+    assert results[0]["status"] == "ok"
+
+
+# ---------------------------------------------------------------------------
+# Failure handling
+# ---------------------------------------------------------------------------
+
+def failure_checks(results, s3, ses, reason_part):
+    assert results[0]["status"] == "failed" and reason_part in results[0]["error"]
+    failed = [k for k in s3.objects if k.startswith("failed/2026-W40/stock_selection_")]
+    assert len(failed) == 1 and results[0]["failed_key"] == failed[0]
+    record = json.loads(s3.objects[failed[0]])
+    assert record["source_key"] == KEY and reason_part in record["error"]
+    assert len(ses.sent) == 1                                                  # exactly one failure email
+    assert ses.sent[0]["Message"]["Subject"]["Data"].startswith("LSE Stock Picks FAILED")
+    assert "snapshots/2026-W40/universe.csv" not in s3.objects
+
+
+def test_download_failure_retries_then_records_and_emails_once():
+    calls, sleeps = [], []
+
+    def broken(ts):
+        calls.append(ts)
+        raise RuntimeError("Yahoo blocked this IP")
+
+    results, s3, ses = run(fetch=broken, sleeps=sleeps)                        # does not raise
+    failure_checks(results, s3, ses, "Yahoo blocked this IP")
+    assert len(calls) == handler.FETCH_ATTEMPTS == 3 and sleeps == [20, 60]
+
+
+def test_a_transient_download_failure_is_retried_to_success():
+    sleeps, state = [], {"n": 0}
+    inner = make_fetch()
+
+    def flaky(ts):
+        state["n"] += 1
+        if state["n"] == 1:
+            raise TimeoutError("timed out")
+        return inner(ts)
+
+    results, s3, ses = run(fetch=flaky, sleeps=sleeps)
+    assert results[0]["status"] == "ok" and sleeps == [20] and len(ses.sent) == 1
+    assert not any(k.startswith("failed/") for k in s3.objects)
+
+
+def test_thin_coverage_counts_as_a_failed_download():
+    some = universe_tickers()[:100]                                             # 29% coverage
+    results, s3, ses = run(fetch=make_fetch(coverage_tickers=some), sleeps=[])
+    failure_checks(results, s3, ses, "100 of 350 stocks returned prices")
+
+
+def test_no_time_left_stops_retrying():
+    calls, sleeps = [], []
+
+    def broken(ts):
+        calls.append(ts)
+        raise RuntimeError("down")
+
+    results, s3, ses = run(fetch=broken, context=Context(1000), sleeps=sleeps)
+    failure_checks(results, s3, ses, "out of time to retry")
+    assert len(calls) == 1 and sleeps == []
+
+
+def test_scout_result_without_signals_fails_before_downloading():
+    calls = []
+    results, s3, ses = run(fetch=make_fetch(calls=calls), scout=payload(signals=[]))
+    failure_checks(results, s3, ses, "no signals")
+    assert calls == []
+
+
+def test_unreadable_scout_result_is_a_recorded_failure():
+    s3 = FakeS3()
+    s3.objects[KEY] = b"not json"
+    results, s3, ses = run(s3=s3)
+    assert results[0]["status"] == "failed" and len(ses.sent) == 1
+
+
+def test_snapshot_write_failure_is_a_recorded_failure(monkeypatch):
+    monkeypatch.setattr(handler, "analyse_universe", good_analysis)
+    s3 = FakeS3()
+    s3.fail_put_for = ("snapshots/",)
+    results, s3, ses = run(s3=s3)
+    failure_checks(results, s3, ses, "S3 down")
+
+
+def test_a_broken_failure_email_does_not_raise():
+    results, s3, ses = run(fetch=lambda ts: (_ for _ in ()).throw(RuntimeError("x")), ses=FakeSES(fail=True), sleeps=[])
+    assert results[0]["status"] == "failed" and ses.sent == []
+
+
+def test_a_broken_failure_record_does_not_raise():
+    s3 = FakeS3()
+    s3.fail_put_for = ("failed/",)
+    results, s3, ses = run(s3=s3, fetch=lambda ts: (_ for _ in ()).throw(RuntimeError("x")), sleeps=[])
+    assert results[0]["status"] == "failed" and results[0]["failed_key"] is None and len(ses.sent) == 1
+
+
+@pytest.mark.parametrize("scout, expected", [
+    ({"signals": [{"timestamp": "2026-10-04T06:00:03+00:00"}, {"timestamp": "2026-10-04T06:00:01+00:00"}]},
+     datetime(2026, 10, 4, 6, 0, 1, tzinfo=timezone.utc)),                         # earliest signal
+    ({"signals": [{"timestamp": "2026-10-04T06:00:03Z"}]}, datetime(2026, 10, 4, 6, 0, 3, tzinfo=timezone.utc)),
+    ({"signals": [{"timestamp": "2026-10-04T06:00:03"}]}, datetime(2026, 10, 4, 6, 0, 3, tzinfo=timezone.utc)),
+    ({"signals": [{}], "timestamp": "20261004T060000Z"}, datetime(2026, 10, 4, 6, 0, 0, tzinfo=timezone.utc)),
+])
+def test_signal_time(scout, expected):
+    assert handler.signal_time(scout) == expected
+
+
+def test_signal_time_without_any_timestamp_raises():
+    with pytest.raises(handler.StockSelectionError):
+        handler.signal_time({"signals": [{}]})
+
+
+# ---------------------------------------------------------------------------
+# Email rendering
+# ---------------------------------------------------------------------------
+
+def selection(**kw):
+    base = dict(sector=HOUSE, confidence=0.7, convergence_type="News-Led", picks_allowed=2, investable=True,
+                candidate_count=6, picks=[], runners_up=[])
+    base.update(kw)
+    return SectorSelection(**base)
+
+
+PICK = {"ticker": "PSN.L", "company": "Persimmon", "swing_setup": "momentum", "setup_grade": "B", "risk_score": 3,
+        "stop_loss_pct": 4.3, "max_position_pct": 20.0, "close": 1234.5}
+
+
+def prices_result(**kw):
+    p = PriceFetchResult(cutoff_date=date(2026, 10, 2), requested=["A.L", "B.L"])
+    p.data = {"A.L": pd.DataFrame()}
+    p.last_bar = {"A.L": date(2026, 10, 2)}
+    for k, v in kw.items():
+        setattr(p, k, v)
+    return p
+
+
+def test_email_escapes_html_in_company_names():
+    sel = selection(picks=[{**PICK, "company": "AT&T <script>alert(1)</script>"}])
+    _, html_body, text_body = email_report.build_picks_email("2026-W40", SIGNAL_TS, [sel], prices_result())
+    assert "<script>alert(1)</script>" not in html_body and "AT&amp;T &lt;script&gt;" in html_body
+    assert "AT&T <script>" in text_body
+
+
+def test_email_messages_for_each_kind_of_sector():
+    sels = [selection(picks=[PICK], runners_up=[{"ticker": "BKG.L", "company": "Berkeley", "reason": "no swing setup"}]),
+            selection(sector="Water", confidence=0.6, picks=[]),
+            selection(sector="AI Infrastructure", confidence=0.8, investable=False, candidate_count=0)]
+    subject, html_body, text_body = email_report.build_picks_email("2026-W40", SIGNAL_TS, sels, prices_result())
+    assert subject == "LSE Stock Picks — 1 pick in 1 of 3 sectors · 2026-W40"
+    assert "No eligible stock this week" in html_body and "no swing setup" in html_body
+    assert "Nothing to pick" not in html_body and "nothing to pick" in html_body
+    assert html_body.index("AI Infrastructure") < html_body.index(HOUSE) < html_body.index("Water")   # strongest first
+    assert "PICK PSN.L (Persimmon): momentum, grade B, risk 3/10, stop-loss 4.3%, max position 20.0%" in text_body
+
+
+def test_email_with_no_signals_and_singular_subject():
+    subject, html_body, _ = email_report.build_picks_email("2026-W40", SIGNAL_TS, [], prices_result())
+    assert subject == "LSE Stock Picks — 0 picks in 0 of 0 sectors · 2026-W40" and "no signals" in html_body
+    one, *_ = email_report.build_picks_email("2026-W40", SIGNAL_TS, [selection(picks=[PICK])], prices_result())
+    assert one == "LSE Stock Picks — 1 pick in 1 of 1 sector · 2026-W40"
+
+
+def test_warnings_cover_every_data_problem():
+    p = prices_result(no_data=["GONE.L"], short_history={"NEW.L": 40}, stale={"OLD.L": date(2026, 9, 1)},
+                      price_anomalies={"ROR.L": 0.67}, unit_fixed={"BCG.L": 1})
+    p.last_bar = {f"T{i}.L": date(2026, 10, 1) for i in range(5)}
+    warnings = " | ".join(email_report.build_warnings(p, map_age_days=120))
+    for needle in ("1 of 2 stocks", "GONE.L", "NEW.L (40 bars)", "OLD.L (last bar 2026-09-01)", "ROR.L (67%)",
+                   "BCG.L", "2026-10-01, behind the 2026-10-02 cutoff", "120 days ago"):
+        assert needle in warnings, needle
+
+
+def test_a_clean_run_has_no_warnings():
+    p = prices_result(requested=["A.L"])
+    assert email_report.build_warnings(p, map_age_days=10) == []
+    assert "DATA WARNINGS" not in email_report.build_picks_email("2026-W40", SIGNAL_TS, [selection()], p, map_age_days=10)[1]
+
+
+def test_long_warning_lists_are_truncated():
+    p = prices_result(no_data=[f"X{i:02d}.L" for i in range(30)])
+    warning = next(w for w in email_report.build_warnings(p) if w.startswith("No price data"))
+    assert "and 18 more" in warning and "X29.L" not in warning
+
+
+def test_sector_map_age_is_read_from_the_map():
+    age = email_report.sector_map_age_days(date(2026, 10, 12))
+    assert age == 10                                                           # map built from the 2026-10-02 constituents
+
+
+def test_failure_email():
+    subject, html_body, text = email_report.build_failure_email("2026-W40", KEY, "boom <b>", "failed/x.json")
+    assert subject == "LSE Stock Picks FAILED — 2026-W40"
+    assert "boom <b>" in text and "failed/x.json" in text and "boom &lt;b&gt;" in html_body
+
+
+# ---------------------------------------------------------------------------
+# Build script
+# ---------------------------------------------------------------------------
+
+def test_assemble_lays_out_the_zip_root(tmp_path):
+    build_zip.assemble(tmp_path)
+    files = {p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*") if p.is_file()}
+    assert {"handler.py", "email_report.py", "lse_stock_analysis/__init__.py", "lse_stock_analysis/sector_map.json",
+            "lse_stock_analysis/prices.py", "lse_stock_analysis/selection.py", "lse_stock_analysis/universe.py",
+            "lse_stock_analysis/agents/trend_analysis_agent.py", "lse_stock_analysis/agents/risk_scoring_agent.py"} <= files
+    for excluded in ("main.py", "model_loader.py", "get_stock_data.py", "data_cache.csv", "universe_check.py",
+                     "agents/return_projection_agent.py"):
+        assert f"lse_stock_analysis/{excluded}" not in files
+    assert not any("__pycache__" in f or f.endswith(".pyc") for f in files)
+
+
+def test_prune_removes_tests_bytecode_and_scripts(tmp_path):
+    for d in ["pandas/tests/frame", "numpy/_core/tests", "pkg/__pycache__", "bin", "pandas/core"]:
+        (tmp_path / d).mkdir(parents=True)
+        (tmp_path / d / "f.py").write_text("x")
+    build_zip.prune(tmp_path)
+    left = {p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("f.py")}
+    assert left == {"pandas/core/f.py"}
+
+
+def test_write_zip_round_trip(tmp_path):
+    build = tmp_path / "b"
+    (build / "lse_stock_analysis").mkdir(parents=True)
+    (build / "handler.py").write_text("print(1)")
+    (build / "lse_stock_analysis" / "sector_map.json").write_text("{}")
+    out = tmp_path / "out" / "x.zip"
+    build_zip.write_zip(build, out)
+    assert sorted(zipfile.ZipFile(out).namelist()) == ["handler.py", "lse_stock_analysis/sector_map.json"]
+
+
+def test_zip_size_guard(tmp_path, monkeypatch):
+    monkeypatch.setattr(build_zip, "directory_mb", lambda p: 245.0)
+    monkeypatch.setattr(build_zip, "install_dependencies", lambda t: None)
+    with pytest.raises(SystemExit, match="too close"):
+        build_zip.build(tmp_path / "x.zip")
