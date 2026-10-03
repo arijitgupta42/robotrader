@@ -491,7 +491,8 @@ def test_a_slow_but_successful_download_is_not_cut_off():
 def test_assemble_lays_out_the_zip_root(tmp_path):
     build_zip.assemble(tmp_path)
     files = {p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*") if p.is_file()}
-    assert {"handler.py", "email_report.py", "lse_stock_analysis/__init__.py", "lse_stock_analysis/sector_map.json",
+    assert {"handler.py", "email_report.py", "backtest_handler.py", "backtest_report.py", "lse_stock_analysis/backtest.py",
+            "lse_stock_analysis/__init__.py", "lse_stock_analysis/sector_map.json",
             "lse_stock_analysis/prices.py", "lse_stock_analysis/selection.py", "lse_stock_analysis/universe.py",
             "lse_stock_analysis/agents/trend_analysis_agent.py", "lse_stock_analysis/agents/risk_scoring_agent.py"} <= files
     for excluded in ("main.py", "model_loader.py", "get_stock_data.py", "data_cache.csv", "universe_check.py",
