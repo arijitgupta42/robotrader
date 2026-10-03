@@ -8,3 +8,10 @@ financial_market_news_analyzer/lambda_handler.py
 CLAUDE.md
 docs/agents/
 backfill_out/
+dist/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+backend.hcl
+.terraform.lock.hcl.bak

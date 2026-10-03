@@ -1,4 +1,4 @@
-# Dependencies for the stock-selection Lambda (Python 3.11, Linux x86_64 wheels).
+# Dependencies for the stock-selection Lambda (Python 3.12, Linux x86_64 wheels).
 # NOT listed on purpose: boto3 (the Lambda runtime provides it) and scipy
 # (only needed by yfinance's repair option, and it would push the package past
 # Lambda's 250 MB unzipped limit).  Pinned to the versions the tests ran against.
