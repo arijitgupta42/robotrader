@@ -32,3 +32,8 @@ variable "function_name" {
   type    = string
   default = "stock-selection"
 }
+
+variable "backtest_function_name" {
+  type    = string
+  default = "backtest-report"
+}
