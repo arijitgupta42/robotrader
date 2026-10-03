@@ -15,7 +15,7 @@ Every three months the `backtest-report` Lambda emails a Backtest Report (see `C
 | Lever | Where | Replayable on past weeks? |
 |---|---|---|
 | Prompts | `financial_market_news_analyzer/llm_analyzer.py`, `reddit_analyzer.py`, `consolidator.py` | No (an LLM, so compare by `prompt_version` in later reports) |
-| Sector keywords and the models | `financial_market_news_analyzer/config.py` (`LSE_SECTORS`, `OPENROUTER_MODELS`) | No |
+| Sector keywords and the models | `financial_market_news_analyzer/config.py` (`SECTORS`, `OPENROUTER_MODELS`) | No |
 | Pick rules: confidence bands, how many Picks, capped convergence types, eligibility, ranking, runners-up | `lse_stock_analysis/selection.py` (`MID_CONFIDENCE`, `HIGH_CONFIDENCE`, `CAPPED_CONVERGENCE`, `GRADE_RANK`, `_ineligible_reason`, `_rank_key`) | Yes: selection is deterministic, so past snapshots can be re-selected |
 | Indicator and risk numbers | `lse_stock_analysis/selection.py` (`TREND_PARAMS`, `RISK_PARAMS`) and the two agents in `lse_stock_analysis/agents/` | Yes, by re-running the analysis on the stored prices (`stock_selection_lambda/backfill.py`) |
 | Which stocks belong to which Sector (the Sector Map; for the S&P 500 the GICS mapping and overrides) | `lse_stock_analysis/sector_map.json`, `lse_stock_analysis/sp500_map.py` | Yes: re-select past snapshots with the changed map |

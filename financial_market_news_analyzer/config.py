@@ -20,39 +20,60 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # ---------------------------------------------------------------------------
-# LSE / FTSE ICB Sector Taxonomy + Sector-Specific Keywords
+# Sector Taxonomy + Sector-Specific Keywords
 #
-# Granular sub-sectors rather than broad ICB buckets, so signals name
-# specific stock clusters the LLM (and the trader) can act on.
+# The scout's 31 Sectors, used for both markets in the Universe (the FTSE 350
+# and the S&P 500).  Granular sub-sectors rather than broad index buckets, so
+# signals name specific stock clusters the LLM (and the trader) can act on.
+# Three Sectors are UK-specific (their signals are driven by UK news, so they
+# only ever pick FTSE 350 stocks): UK Retail Banks, UK General Retail and
+# UK Telecoms & Broadband.  Every other Sector is global.
+#
+# The keywords are matched case-insensitively as substrings of headline and
+# post text, for the per-Sector source-diversity score, the keyword fallback
+# when the news LLM fails, and the evidence attached to each signal.  They mix
+# UK and US company names with the sector's themes; avoid short or common
+# strings that match inside other words (e.g. "UPS", "RTX", "KLA").
 # ---------------------------------------------------------------------------
 
-LSE_SECTORS: Dict[str, List[str]] = {
+SECTORS: Dict[str, List[str]] = {
 
     # ---- Technology --------------------------------------------------------
     "Semiconductors & EDA": [
         "semiconductor", "chip", "wafer", "foundry", "fabless", "EDA",
         "ARM Holdings", "TSMC", "Nvidia", "Intel", "ASML", "export controls",
         "chip shortage", "advanced packaging", "HBM", "CoWoS",
+        "Broadcom", "Micron Technology", "Qualcomm", "Applied Materials",
+        "Lam Research", "KLA Corp", "Synopsys", "Cadence Design",
+        "CHIPS Act", "chip tariffs",
     ],
     "Cloud & SaaS": [
         "cloud", "SaaS", "software-as-a-service", "Sage Group", "Aveva",
         "Micro Focus", "Azure", "AWS", "GCP", "enterprise software",
         "subscription revenue", "ARR", "churn",
+        "Microsoft", "Salesforce", "Oracle", "ServiceNow", "Adobe",
+        "Workday", "Intuit", "cloud backlog", "remaining performance obligation",
     ],
     "Cybersecurity": [
         "cybersecurity", "cyber attack", "ransomware", "data breach",
         "NCC Group", "Darktrace", "zero-trust", "NCSC", "vulnerability",
         "critical infrastructure attack",
+        "CrowdStrike", "Palo Alto Networks", "Fortinet", "CISA",
+        "state-sponsored hack", "SEC cyber disclosure",
     ],
     "AI Infrastructure": [
         "artificial intelligence", "AI", "large language model", "LLM",
         "GPU cluster", "data centre AI", "inference", "training compute",
         "AI chips", "AI regulation", "foundation model",
+        "OpenAI", "Anthropic", "AI capex", "AI spending", "Blackwell",
+        "AI data center", "AI power demand",
     ],
     "Data Centres & Digital Infrastructure": [
         "data centre", "colocation", "hyperscaler", "Digital 9 Infrastructure",
         "Segro tech", "power demand data centre", "cooling", "rack density",
         "network capacity",
+        "data center", "Equinix", "Digital Realty", "American Tower",
+        "Vertiv", "hyperscaler capex", "fibre backbone",
     ],
 
     # ---- Financials --------------------------------------------------------
@@ -66,21 +87,30 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "Barclays investment bank", "HSBC", "Standard Chartered",
         "investment banking", "M&A advisory", "ECM", "DCM", "trading revenue",
         "capital markets", "IPO pipeline",
+        "Goldman Sachs", "Morgan Stanley", "JPMorgan", "Citigroup",
+        "Charles Schwab", "Interactive Brokers", "bank stress test",
+        "Basel III endgame", "Federal Reserve rate",
     ],
     "Insurance": [
         "Aviva", "Legal & General", "Prudential", "Admiral",
         "Direct Line", "Beazley", "Lloyd's of London", "reinsurance",
         "combined ratio", "catastrophe loss", "premium rate",
+        "Progressive Corp", "Chubb", "Allstate", "Travelers Companies", "MetLife",
+        "hurricane losses", "P&C pricing", "reinsurance renewal",
     ],
     "Asset Management & Wealth": [
         "asset management", "fund manager", "abrdn", "Schroders",
         "Man Group", "Intermediate Capital", "AUM", "flows",
         "passive vs active", "fee compression",
+        "BlackRock", "Blackstone", "KKR", "Apollo Global", "T. Rowe Price",
+        "Franklin Templeton", "private credit", "private equity fundraising",
     ],
     "Fintech & Payments": [
         "fintech", "payments", "Wise", "Network International",
         "open banking", "buy now pay later", "BNPL", "digital wallet",
         "interchange", "PSR",
+        "Visa Inc", "Mastercard", "PayPal", "Fiserv", "Global Payments",
+        "stablecoin", "CFPB", "swipe fees",
     ],
 
     # ---- Energy ------------------------------------------------------------
@@ -88,16 +118,22 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "BP", "Shell", "TotalEnergies", "oil price", "brent crude",
         "upstream", "downstream", "refining margin", "OPEC", "LNG",
         "North Sea", "windfall tax", "energy profits levy",
+        "Exxon", "Chevron", "ConocoPhillips", "WTI", "Permian", "shale",
+        "Strategic Petroleum Reserve", "EIA crude inventory", "natural gas price",
     ],
     "Renewables & Clean Energy": [
         "wind farm", "solar", "offshore wind", "Orsted", "SSE renewables",
         "green hydrogen", "CfD auction", "capacity market", "Vattenfall",
         "energy transition", "net zero", "National Grid ESO",
+        "NextEra", "First Solar", "Enphase", "Inflation Reduction Act",
+        "clean energy tax credit", "solar tariffs",
     ],
     "Oil Field Services": [
         "Petrofac", "John Wood Group", "Hunting", "Expro",
         "oilfield services", "drilling rig", "subsea", "well completion",
         "capex upstream",
+        "Schlumberger", "Halliburton", "Baker Hughes", "rig count",
+        "shale capex",
     ],
 
     # ---- Healthcare --------------------------------------------------------
@@ -105,11 +141,17 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "AstraZeneca", "GSK", "Hikma", "Indivior",
         "drug approval", "FDA", "MHRA", "clinical trial phase",
         "patent cliff", "biosimilar", "GLP-1", "oncology",
+        "Eli Lilly", "Pfizer", "Merck", "AbbVie", "Amgen", "Gilead",
+        "Regeneron", "Novo Nordisk", "drug pricing", "pharmaceutical tariffs",
+        "Medicare drug price negotiation",
     ],
     "Medical Devices & Services": [
         "Smith+Nephew", "ConvaTec", "Spectranetics", "Electrocomponents health",
         "NHS contract", "surgical robot", "orthopaedic", "wound care",
         "diagnostics", "point-of-care",
+        "Medtronic", "Intuitive Surgical", "Boston Scientific", "Stryker",
+        "UnitedHealth", "Medicare Advantage", "Medicare reimbursement",
+        "hospital volumes",
     ],
 
     # ---- Consumer ----------------------------------------------------------
@@ -122,21 +164,30 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "Burberry", "Watches of Switzerland", "Mulberry",
         "luxury goods", "China consumption", "aspirational spending",
         "duty free", "tourism spend",
+        "LVMH", "Kering", "Ralph Lauren", "Tapestry", "Nike",
+        "luxury demand", "tariffs on apparel",
     ],
     "Travel, Leisure & Hospitality": [
         "easyJet", "IAG", "Jet2", "TUI", "Whitbread",
         "hotel occupancy", "yield management", "load factor",
         "holiday booking", "staycation", "cruise",
+        "Delta Air Lines", "United Airlines", "Marriott", "Hilton",
+        "Booking Holdings", "Royal Caribbean", "Carnival", "Las Vegas Sands",
+        "TSA throughput", "RevPAR",
     ],
     "Grocery & Food Retail": [
         "Tesco", "J Sainsbury", "Ocado", "Marks & Spencer food",
         "grocery inflation", "own-label", "shrinkflation",
         "food price index", "discounters", "Aldi", "Lidl pressure",
+        "Walmart", "Kroger", "Costco", "Sysco", "grocery prices",
+        "SNAP benefits",
     ],
     "Consumer Staples & FMCG": [
         "Unilever", "Reckitt", "Diageo", "British American Tobacco",
         "Imperial Brands", "pricing power", "volume growth",
         "input cost", "commodity inflation FMCG", "emerging markets FMCG",
+        "Procter & Gamble", "Coca-Cola", "PepsiCo", "Colgate-Palmolive",
+        "Mondelez", "Philip Morris", "Kimberly-Clark", "Kraft Heinz",
     ],
 
     # ---- Industrials -------------------------------------------------------
@@ -144,16 +195,24 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "BAE Systems", "Rolls-Royce", "Babcock", "QinetiQ", "Ultra Electronics",
         "defence budget", "NATO spending", "Eurofighter", "Type 26 frigate",
         "government defence contract", "geopolitical rearmament",
+        "Lockheed Martin", "Raytheon", "Northrop Grumman", "General Dynamics",
+        "Boeing", "L3Harris", "Pentagon budget", "defense budget", "NDAA",
+        "Golden Dome",
     ],
     "Engineering & Industrials": [
         "Weir Group", "IMI", "Melrose Industries", "GKN",
         "industrial automation", "reshoring manufacturing",
         "capex cycle", "order book", "book-to-bill", "supply chain nearshoring",
+        "Caterpillar", "Deere", "Honeywell", "Emerson Electric",
+        "Parker Hannifin", "ISM manufacturing", "durable goods orders",
+        "infrastructure spending",
     ],
     "Logistics & Transport": [
         "Royal Mail", "International Distributions Services", "DHL UK",
         "parcel volumes", "last-mile delivery", "freight rates",
         "rail freight", "port throughput", "haulage", "e-commerce logistics",
+        "United Parcel Service", "FedEx", "Union Pacific", "CSX",
+        "Norfolk Southern", "trucking", "freight recession", "port congestion",
     ],
 
     # ---- Materials ---------------------------------------------------------
@@ -161,11 +220,15 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "Rio Tinto", "Anglo American", "Glencore", "BHP",
         "iron ore", "copper price", "thermal coal", "metallurgical coal",
         "China steel demand", "mining capex",
+        "Nucor", "Steel Dynamics", "Cleveland-Cliffs", "steel tariffs",
+        "steel prices", "Section 232",
     ],
     "Specialty Metals & Battery Materials": [
         "Antofagasta", "Centamin", "Hochschild", "Polymetal",
         "lithium", "cobalt", "nickel", "rare earth", "EV battery supply",
         "critical minerals", "CBAM", "battery gigafactory",
+        "Freeport-McMoRan", "Newmont", "Albemarle", "MP Materials",
+        "gold price", "copper tariffs", "record gold",
     ],
 
     # ---- Real Estate -------------------------------------------------------
@@ -173,16 +236,22 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "Segro", "Tritax Big Box", "LondonMetric", "Warehouse REIT",
         "logistics property", "last-mile warehouse", "rent indexation",
         "vacancy rate industrial",
+        "Prologis", "Public Storage", "Extra Space Storage", "Welltower",
+        "industrial REIT", "self-storage",
     ],
     "Retail & Office REITs": [
         "Land Securities", "British Land", "Hammerson", "Derwent London",
         "office vacancy", "hybrid working", "retail park",
         "footfall retail property", "yield expansion commercial",
+        "Simon Property", "Kimco", "Realty Income", "Boston Properties",
+        "office REIT", "mall traffic", "CMBS delinquency",
     ],
     "Housebuilders": [
         "Taylor Wimpey", "Persimmon", "Barratt Developments", "Bellway",
         "Berkeley Group", "Help to Buy", "planning reform",
         "mortgage approval", "house price index", "build cost inflation",
+        "D.R. Horton", "Lennar", "PulteGroup", "NVR", "mortgage rates",
+        "housing starts", "existing home sales", "homebuilder sentiment",
     ],
 
     # ---- Utilities ---------------------------------------------------------
@@ -190,11 +259,16 @@ LSE_SECTORS: Dict[str, List[str]] = {
         "National Grid", "SSE", "Drax", "Centrica",
         "electricity price", "grid investment", "transmission", "ofgem",
         "capacity market", "power purchase agreement", "battery storage grid",
+        "Constellation Energy", "Vistra", "Duke Energy", "Southern Company",
+        "Dominion Energy", "PJM", "FERC", "utility rate case",
+        "nuclear power deal",
     ],
     "Water": [
         "Severn Trent", "United Utilities", "Pennon", "South West Water",
         "ofwat", "price review PR24", "leakage target", "wastewater",
         "regulatory settlement water",
+        "American Water Works", "Essential Utilities", "PFAS rule",
+        "water utility rate case", "EPA drinking water",
     ],
 
     # ---- Telecoms ----------------------------------------------------------
@@ -215,19 +289,20 @@ DISRUPTION_CATEGORIES: Dict[str, str] = {
         "structurally change input costs or revenue routes for an entire sector."
     ),
     "Regulatory / Policy Shift": (
-        "New legislation, central bank guidance, Ofgem/Ofwat decisions, "
-        "MHRA approvals, or government spending pledges that change the "
-        "competitive or cost landscape for a sector over the coming months."
+        "New legislation, central bank guidance, regulator decisions (Ofgem, "
+        "Ofwat, FDA, FERC, SEC), drug approvals, tariffs, or government "
+        "spending pledges that change the competitive or cost landscape for "
+        "a sector over the coming months."
     ),
     "Macro Regime Change": (
-        "Shifts in BoE rate expectations, UK inflation surprises, gilt "
-        "yield moves, or sterling devaluations that systematically reprice "
-        "rate-sensitive or commodity-priced sectors."
+        "Shifts in Fed, BoE or ECB rate expectations, inflation surprises, "
+        "bond yield moves, or dollar and sterling swings that systematically "
+        "reprice rate-sensitive or commodity-priced sectors."
     ),
     "Geopolitical Shock": (
         "Conflict escalation, trade bloc fragmentation, sanctions, or "
-        "diplomatic ruptures with material trade consequences for UK-listed "
-        "companies exposed to that region or supply chain."
+        "diplomatic ruptures with material trade consequences for listed "
+        "companies (UK or US) exposed to that region or supply chain."
     ),
     "Technology / Adoption Inflection": (
         "A product launch, platform shift, or new AI/semiconductor "
@@ -242,7 +317,7 @@ DISRUPTION_CATEGORIES: Dict[str, str] = {
     "Commodity Price Inflection": (
         "A sustained move in oil, gas, copper, lithium, or agricultural "
         "commodities that has not yet fully fed through to the equity "
-        "valuations of exposed LSE-listed companies."
+        "valuations of exposed listed companies."
     ),
     "M&A / Consolidation Wave": (
         "A deal or rumoured bid that signals sector-wide consolidation "
@@ -380,7 +455,7 @@ OPENROUTER_MODELS: List[str] = [
 # threshold in this file that shapes the signals) changes.  It is saved with every scout
 # result and copied into the Universe Snapshot, so the methodology review can compare
 # the weeks before and after a change.
-PROMPT_VERSION: str = "2026-10-03.1"
+PROMPT_VERSION: str = "2026-10-03.2"
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
 OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]

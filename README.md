@@ -28,7 +28,7 @@ Saturday 06:00 UTC (EventBridge Scheduler)
 | Part | Where | What it does |
 |---|---|---|
 | Sector scout | `financial_market_news_analyzer/` | News and Reddit in, Sector Signals out (saved to S3; sends no email) |
-| Stock selection | `lse_stock_analysis/`, `stock_selection_lambda/` | Prices, analysis, rule-based Picks, the weekly Universe Snapshot, and the one email |
+| Stock selection | `lse_stock_analysis/` (named from when the Universe was the FTSE 350 only; it now covers both markets), `stock_selection_lambda/` | Prices, analysis, rule-based Picks, the weekly Universe Snapshot, and the one email |
 | Backtest and review | `lse_stock_analysis/backtest.py`, `stock_selection_lambda/backtest_*.py`, `docs/methodology-review.md` | Compares Picks and Candidates with the market, quarterly |
 | Infrastructure | `infra/` | Terraform for everything in AWS (see [`infra/README.md`](infra/README.md)) |
 
@@ -54,7 +54,7 @@ RSS feeds + HL scrape ──► LLM Pass 1 (news)   ─┐
 Reddit RSS             ──► LLM Pass 2 (reddit) ─┘
 ```
 
-**Pass 1: news analysis** (`llm_analyzer.py`). Scrapes RSS feeds and the HL Weekly Outlook, then sends headlines to an LLM instructed to act as a senior portfolio manager. Returns structured signals with sector, confidence, disruption type, propagation mechanism and conviction drivers.
+**Pass 1: news analysis** (`llm_analyzer.py`). Scrapes RSS feeds and the HL Weekly Outlook, then sends headlines to an LLM instructed to act as a senior global equity portfolio manager covering both markets in the Universe (the FTSE 350 and the S&P 500). Returns structured signals with sector, confidence, disruption type, propagation mechanism and conviction drivers.
 
 **Pass 2: Reddit sentiment** (`reddit_analyzer.py`). Pulls posts from finance and trading subreddits via RSS (no API key). A separate LLM pass extracts genuine bullish retail conviction, graded by quality (DD, Discussion, News, Meme, Mixed).
 
@@ -70,7 +70,7 @@ Every LLM call goes through OpenRouter. The model list lives only in `config.py`
 
 ### Sectors and disruption types
 
-The 31 sectors the scout uses (`LSE_SECTORS` in `config.py`) span Technology, Financials, Energy, Healthcare, Consumer, Industrials, Materials, Real Estate, Utilities and Telecoms. Three are UK-specific (UK Retail Banks, UK General Retail, UK Telecoms & Broadband). The eight disruption types are Supply Chain Dislocation, Regulatory / Policy Shift, Macro Regime Change, Geopolitical Shock, Technology / Adoption Inflection, Earnings / Guidance Divergence, Commodity Price Inflection, and M&A / Consolidation Wave.
+The 31 sectors the scout uses (`SECTORS` in `config.py`) span Technology, Financials, Energy, Healthcare, Consumer, Industrials, Materials, Real Estate, Utilities and Telecoms. They are not tied to one exchange: all three prompts frame the task as covering the FTSE 350 and the S&P 500, a signal on a global sector can pick stocks in either market, and each sector's keyword list mixes UK and US company names and themes (used for source diversity, the keyword fallback and signal evidence). Three sectors are UK-specific (UK Retail Banks, UK General Retail, UK Telecoms & Broadband): their signals are driven by UK news, the prompts tell the LLM to use them only for UK-driven evidence, and US stocks are never mapped into them. The eight disruption types are Supply Chain Dislocation, Regulatory / Policy Shift, Macro Regime Change, Geopolitical Shock, Technology / Adoption Inflection, Earnings / Guidance Divergence, Commodity Price Inflection, and M&A / Consolidation Wave.
 
 ### Signal fields
 

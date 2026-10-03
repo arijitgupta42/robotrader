@@ -71,7 +71,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Callable, List, Optional
 
-from config import LSE_SECTORS, SCHEDULER_CFG, REDDIT_CFG
+from config import SECTORS, SCHEDULER_CFG, REDDIT_CFG
 from llm_analyzer import analyse_headlines
 from news_fetcher import Headline, collect_headlines
 from reddit_fetcher import RedditPost, collect_reddit_posts
@@ -248,7 +248,7 @@ class SectorScout:
         # Attach headline objects to news signals (for audit / S3 storage)
         news_signal_objects: List[SectorSignal] = []
         for raw in filtered_news:
-            kws = [kw.lower() for kw in LSE_SECTORS.get(raw["sector"], [])]
+            kws = [kw.lower() for kw in SECTORS.get(raw["sector"], [])]
             relevant = [
                 h for h in headlines
                 if any(kw in h.title.lower() or kw in h.summary.lower() for kw in kws)
@@ -380,7 +380,7 @@ class SectorScout:
         ]
         news_objs: List[SectorSignal] = []
         for raw in filtered_news:
-            kws = [kw.lower() for kw in LSE_SECTORS.get(raw["sector"], [])]
+            kws = [kw.lower() for kw in SECTORS.get(raw["sector"], [])]
             relevant = [
                 h for h in headlines
                 if any(kw in h.title.lower() or kw in h.summary.lower() for kw in kws)

@@ -36,7 +36,7 @@ from typing import List, Optional
 import requests
 
 from config import (
-    LSE_SECTORS,
+    SECTORS,
     DISRUPTION_CATEGORIES,
     OPENROUTER_RETRY_DELAYS,
     OPENROUTER_MODELS,
@@ -46,7 +46,7 @@ from reddit_analyzer import RedditSentimentSignal
 
 logger = logging.getLogger(__name__)
 
-_SECTOR_NAMES     = list(LSE_SECTORS.keys())
+_SECTOR_NAMES     = list(SECTORS.keys())
 _DISRUPTION_NAMES = list(DISRUPTION_CATEGORIES.keys())
 
 # ---------------------------------------------------------------------------
@@ -78,13 +78,15 @@ _CONSOLIDATED_SCHEMA = """\
 }"""
 
 _SYSTEM_PROMPT = f"""\
-You are a senior LSE portfolio manager reviewing two independently scored
-intelligence feeds: (A) a structured news analysis and (B) retail trader
+You are a senior global equity portfolio manager (FTSE 350 and S&P 500)
+reviewing two independently scored intelligence feeds: (A) a structured news analysis and (B) retail trader
 sentiment from Reddit.
 
 ## ROLE
 Produce a CONSOLIDATED set of swing trading signals (2-6 week horizon) for
-LSE-listed sectors by merging both feeds and labelling the degree of agreement.
+sectors of UK and US listed stocks by merging both feeds and labelling the
+degree of agreement. Three Sectors are UK-specific (UK Retail Banks, UK General
+Retail, UK Telecoms & Broadband): use them only for UK-driven evidence.
 
 ## STEP 1 — CONVERGENCE CLASSIFICATION
 Apply exactly one label per signal:
