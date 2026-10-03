@@ -30,6 +30,11 @@ from .universe import load_sector_map
 
 logger = logging.getLogger(__name__)
 
+# Bump whenever a number or rule in this module changes (TREND_PARAMS, RISK_PARAMS, the pick-count
+# thresholds, the eligibility rules, the ranking) or in the agents it calls.  It is stored on every
+# Universe Snapshot row, so the methodology review can compare the weeks before and after a change.
+METHODOLOGY_VERSION = "2026-10-03.1"
+
 # Same parameters as lse_stock_analysis/main.py — keep the two in sync.
 TREND_PARAMS = dict(
     sma_short=20, sma_long=50, rsi_period=14, atr_period=14, bb_period=20,
@@ -238,6 +243,7 @@ def build_snapshot(
         selections:  list[SectorSelection],
         sector_map:  Optional[dict[str, dict]] = None,
         backfilled:  bool = False,
+        prompt_version: str = "unversioned",
         ) -> pd.DataFrame:
     """
     One row per Universe stock for the weekly snapshot (snapshots/YYYY-Www/universe.csv).
@@ -272,6 +278,8 @@ def build_snapshot(
             "signal_ts": signal_ts.isoformat(),
             "price_cutoff": prices.cutoff_date.isoformat(),
             "backfilled": backfilled,
+            "methodology_version": METHODOLOGY_VERSION,
+            "prompt_version": prompt_version,
             "ticker": ticker,
             "company": entry["company"],
             "index": entry["index"],

@@ -148,10 +148,13 @@ def _run_pipeline() -> dict:
     Returns a result dict with keys: success, signals, macro, error, raw_output.
     """
     # Import here so Lambda only loads heavy deps when actually running
+    from config import OPENROUTER_MODELS, PROMPT_VERSION  # noqa: PLC0415
     from sector_scout import SectorScout  # noqa: PLC0415
 
     result: Dict[str, Any] = {
         "timestamp": _iso_ts(),
+        "prompt_version": PROMPT_VERSION,
+        "models":    list(OPENROUTER_MODELS),
         "success":   False,
         "signals":   [],
         "macro":     "",

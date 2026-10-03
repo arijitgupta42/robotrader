@@ -61,6 +61,7 @@ class WeekPlan:
     signal_ts: datetime
     signals: list[dict]
     keyword_fallback: bool    # signals came from the scout's keyword heuristic, not the LLM
+    prompt_version: str = "unversioned"
 
 
 def signal_time(payload: dict) -> datetime:
@@ -101,7 +102,8 @@ def plan_weeks(keys: list[str], load: Callable[[str], dict]) -> list[WeekPlan]:
             continue
         week = week_label(ts)
         if week not in plans:
-            plans[week] = WeekPlan(week, key, ts, normalise_signals(signals), is_keyword_fallback(signals))
+            plans[week] = WeekPlan(week, key, ts, normalise_signals(signals), is_keyword_fallback(signals),
+                                   payload.get("prompt_version") or "unversioned")
     return [plans[w] for w in sorted(plans)]
 
 
@@ -140,7 +142,8 @@ def build_week(plan: WeekPlan, downloader: Callable, tickers: Optional[list[str]
         return None
     analysis = analyse_universe(prices.data)
     selections = select_stocks(plan.signals, analysis, prices)
-    return build_snapshot(plan.signal_ts, plan.signals, analysis, prices, selections, backfilled=True)
+    return build_snapshot(plan.signal_ts, plan.signals, analysis, prices, selections, backfilled=True,
+                          prompt_version=plan.prompt_version)
 
 
 def backfill(plans: list[WeekPlan], write: Callable[[str, str], None], exists: Callable[[str], bool],
