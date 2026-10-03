@@ -305,73 +305,6 @@ def _build_email(signals: list, macro: str, cycle_ts: str, s3_key: str) -> tuple
 
 
 # ---------------------------------------------------------------------------
-# Signal outcome tracking
-# ---------------------------------------------------------------------------
-
-def _save_outcome_stubs(signals: list, cycle_ts: str, s3_key: str) -> None:
-    """
-    Write one outcome-stub record per signal to S3 immediately after a
-    successful cycle.  Each stub captures the signal as emitted and
-    reserves slots for realised price data to be filled in later
-    (manually or by a separate outcome-checker Lambda).
-
-    Layout:
-      outcomes/YYYY-WW/stubs_<ISO8601>.json
-
-    Stub schema:
-      {
-        "signal_ts":          ISO8601 string — when the signal was emitted
-        "sector":             str
-        "confidence":         float
-        "disruption_type":    str
-        "convergence_type":   str
-        "time_to_impact_weeks": int
-        "source_s3_key":      str — the successful run that produced it
-        "outcome_2w":         null  ← to be filled: % price change at 2 weeks
-        "outcome_4w":         null  ← to be filled: % price change at 4 weeks
-        "outcome_6w":         null  ← to be filled: % price change at 6 weeks
-        "hit":                null  ← to be filled: bool, true if positive return
-        "notes":              ""    ← free-text for manual annotation
-      }
-
-    These stubs are intentionally simple so they can be read and updated
-    by a lightweight outcome-checker without a database dependency.
-    """
-    week    = _week_prefix()
-    ts      = _iso_ts()
-    stubs   = [
-        {
-            "signal_ts":            cycle_ts,
-            "sector":               s.get("sector", ""),
-            "confidence":           s.get("confidence", 0.0),
-            "disruption_type":      s.get("disruption_type", ""),
-            "convergence_type":     s.get("convergence_type", ""),
-            "source_diversity":     s.get("source_diversity", 0.0),
-            "time_to_impact_weeks": s.get("time_to_impact_weeks", 0),
-            "source_s3_key":        s3_key,
-            "outcome_2w":           None,
-            "outcome_4w":           None,
-            "outcome_6w":           None,
-            "hit":                  None,
-            "notes":                "",
-        }
-        for s in signals
-    ]
-    key = f"outcomes/{week}/stubs_{ts}.json"
-    try:
-        s3.put_object(
-            Bucket      = BUCKET_NAME,
-            Key         = key,
-            Body        = json.dumps(stubs, indent=2, default=str),
-            ContentType = "application/json",
-        )
-        logger.info("Outcome stubs saved → s3://%s/%s (%d stubs)", BUCKET_NAME, key, len(stubs))
-    except Exception as exc:
-        # Non-fatal — outcome tracking failure must not block the email send
-        logger.error("Could not save outcome stubs (non-fatal): %s", exc)
-
-
-# ---------------------------------------------------------------------------
 # Core pipeline runner
 # ---------------------------------------------------------------------------
 
@@ -466,9 +399,6 @@ def handler(event: dict, context) -> dict:
     if result["success"]:
         s3_key = _save_success(result)
         _close_window()
-
-        # Save outcome stubs for later hit-rate tracking
-        _save_outcome_stubs(result["signals"], cycle_ts, s3_key)
 
         # Send email
         subject, html_body = _build_email(
