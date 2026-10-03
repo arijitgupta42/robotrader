@@ -376,6 +376,12 @@ OPENROUTER_MODELS: List[str] = [
     "deepseek/deepseek-v4.1-flash",
 ]
 
+# Bump whenever a prompt in llm_analyzer.py, reddit_analyzer.py or consolidator.py (or a
+# threshold in this file that shapes the signals) changes.  It is saved with every scout
+# result and copied into the Universe Snapshot, so the methodology review can compare
+# the weeks before and after a change.
+PROMPT_VERSION: str = "2026-10-03.1"
+
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
 OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
 

@@ -169,7 +169,8 @@ def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sle
         prices = fetch_with_retries(signal_ts, context, fetch, sleep)
         analysis = analyse_universe(prices.data)
         selections = select_stocks(signals, analysis, prices)
-        snapshot = build_snapshot(signal_ts, signals, analysis, prices, selections)
+        snapshot = build_snapshot(signal_ts, signals, analysis, prices, selections,
+                                  prompt_version=payload.get("prompt_version") or "unversioned")
 
         snapshot_key = f"snapshots/{week}/universe.csv"
         s3.put_object(Bucket=bucket, Key=snapshot_key, Body=snapshot_to_csv(snapshot).encode("utf-8"), ContentType="text/csv")

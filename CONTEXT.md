@@ -59,6 +59,17 @@ _Avoid_: cache, outcome stub
 A stock's price change over 2, 4 or 6 weeks after a Universe Snapshot, read from later snapshots.
 _Avoid_: outcome, realised return
 
+**Hit**:
+A stock whose Forward Return beats the equal-weight average Forward Return of the whole Universe over the same window.
+_Avoid_: win, correct call
+
+**Backtest Report**:
+The comparison of Picks, Candidates and the whole Universe by Forward Return and hit rate, broken down by confidence band, convergence type, Setup Grade, Swing Setup and methodology and prompt version. Every figure carries its sample size; small samples are marked indicative.
+
+**Methodology Version**:
+A label (`METHODOLOGY_VERSION` in `selection.py`, `PROMPT_VERSION` in the scout's `config.py`) bumped whenever a selection rule, numeric threshold or prompt changes, and stored with every week's results so the weeks before and after a change can be compared.
+_Avoid_: model version
+
 ## Stock analysis
 
 **Swing Setup**:
