@@ -176,3 +176,42 @@ def test_loader_reads_only_snapshot_csvs_keyed_by_week():
                  "snapshots/notes.txt": b"x", "snapshots/2026-W10/other.csv": b"x", "successful/2026-W10/response_x.json": b"{}"})
     loaded = backtest_report.load_snapshots(s3, "bkt")
     assert list(loaded) == ["2026-W10", "2026-W11"] and list(loaded["2026-W10"]["ticker"]) == ["A"]
+
+
+# ---------------------------------------------------------------------------
+# Two markets: hits are measured against each stock's own market
+# ---------------------------------------------------------------------------
+
+def test_a_hit_beats_the_average_of_the_stocks_own_market_not_the_whole_universe():
+    first = snap({"U1": 100, "U2": 100, "L1.L": 100, "L2.L": 100}, cands=("U1", "U2", "L1.L", "L2.L"))
+    later = snap({"U1": 112, "U2": 108, "L1.L": 101, "L2.L": 99})          # US mean +10%, LSE mean 0%, combined mean +5%
+    fr = backtest.forward_returns({"2026-W10": first, "2026-W12": later}).set_index("ticker")
+    assert set(fr["market"]) == {"US", "LSE"}
+    assert fr.loc["U1", "universe_mean"] == pytest.approx(0.10) and fr.loc["L1.L", "universe_mean"] == pytest.approx(0.0)
+    assert [bool(fr.loc[t, "hit"]) for t in ("U1", "U2", "L1.L", "L2.L")] == [True, False, True, False]
+    # against the combined +5% benchmark U2 (+8%) would have been a hit and L1.L (+1%) would not
+
+
+def test_snapshots_from_before_the_sp500_still_count_as_lse():
+    legacy = snap({"BP.L": 100, "SHEL.L": 100})
+    assert "market" not in legacy.columns
+    fr = backtest.forward_returns({"2026-W10": legacy, "2026-W12": snap({"BP.L": 110, "SHEL.L": 90})})
+    assert set(fr["market"]) == {"LSE"}
+
+
+def test_report_has_per_market_tables_and_a_market_breakdown():
+    snaps = {}
+    label = "2026-W10"
+    for i in range(6):
+        snaps[label] = snap({"U1": 100 * 1.02 ** i, "U2": 100, "L1.L": 100 * 0.99 ** i, "L2.L": 100}, picks=("U1",),
+                            cands=("U1", "L1.L"))
+        label = backtest.week_offset(label, 1)
+    report = backtest.build_report(snaps)
+    assert set(report["by_market"]) == {"LSE", "US"}
+    us2 = report["by_market"]["US"]["Candidates"][2]
+    lse2 = report["by_market"]["LSE"]["Candidates"][2]
+    assert us2["n"] > 0 and lse2["n"] > 0 and us2["hit_rate"] == 1.0 and lse2["hit_rate"] == 0.0     # U1 rises, L1.L falls
+    assert set(report["breakdowns"]["market"]) == {"LSE", "US"}
+    text = backtest.render_text(report)
+    assert "2-week Forward Return, LSE only" in text and "2-week Forward Return, US only" in text
+    assert "Candidates by market" in text and "own market" in " ".join(report["notes"])

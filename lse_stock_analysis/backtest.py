@@ -3,13 +3,14 @@ Backtest report: how did the Picks, the Candidates and the whole Universe do aft
 
 Input is the stored weekly Universe Snapshots (one DataFrame per ISO week, as built by
 selection.build_snapshot).  A Forward Return is a stock's close in a later snapshot over its close in
-the snapshot, 2, 4 and 6 weeks on.  A **hit** is a stock whose Forward Return beats the equal-weight
-average Forward Return of the whole Universe over the same window, so a rising or falling market does
-not by itself make a week look good or bad.
+the snapshot, 2, 4 and 6 weeks on, in the stock's own currency (no FX conversion).  A **hit** is a stock
+whose Forward Return beats the equal-weight average Forward Return of **its own market** (FTSE 350 stocks
+against the FTSE 350 average, S&P 500 stocks against the S&P 500 average) over the same window, so neither a
+rising or falling market nor a currency move by itself makes a week look good or bad.
 
-The report compares Picks vs Candidates vs the Universe, and breaks Candidates down by Sector Signal
-confidence band, convergence type, Setup Grade, Swing Setup, methodology version and prompt version, so
-a change to the rules or prompts can be judged before and after.
+The report compares Picks vs Candidates vs the Universe, overall and for each market, and breaks Candidates
+down by market, Sector Signal confidence band, convergence type, Setup Grade, Swing Setup, methodology
+version and prompt version, so a change to the rules or prompts can be judged before and after.
 
 Every figure carries its sample size, and anything under MIN_OBS stock-weeks or MIN_WEEKS weeks is marked
 "indicative": consecutive weeks overlap (a 6-week return shares five weeks with the next week's), stocks in
@@ -27,13 +28,15 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+from .universe import MARKETS, market_of
+
 HORIZONS = (2, 4, 6)
 MIN_OBS = 30                  # stock-weeks below which a figure is "indicative"
 MIN_WEEKS = 8                 # distinct weeks below which a figure is "indicative"
 UNKNOWN_CONVERGENCE = "Unknown"   # backfilled weeks from before the scout recorded convergence_type
 
 GROUPS = ("Picks", "Candidates", "Universe")
-BREAKDOWNS = ("confidence_band", "signal_convergence_type", "setup_grade", "swing_setup",
+BREAKDOWNS = ("market", "confidence_band", "signal_convergence_type", "setup_grade", "swing_setup",
               "methodology_version", "prompt_version")
 
 
@@ -69,8 +72,9 @@ def excluded_weeks(snapshots: dict[str, pd.DataFrame]) -> dict[str, str]:
 def forward_returns(snapshots: dict[str, pd.DataFrame], horizons=HORIZONS) -> pd.DataFrame:
     """
     One row per stock, week and horizon that has a later snapshot: `ret`, the Universe's equal-weight
-    mean `universe_mean` for that week and horizon, `excess` = ret - universe_mean, `hit` = excess > 0,
-    plus the snapshot's flags (is_candidate, is_pick, signal confidence, convergence, grade, setup, versions).
+    mean `universe_mean` of the stock's market for that week and horizon, `excess` = ret - universe_mean,
+    `hit` = excess > 0, plus the stock's `market` (from its ticker, so snapshots from before the S&P 500 was
+    added count as LSE) and the snapshot's flags (is_candidate, is_pick, signal confidence, convergence, grade, setup, versions).
     """
     keep = ["is_candidate", "is_pick", "signal_confidence", "signal_convergence_type", "setup_grade", "swing_setup",
             "primary_sector", "methodology_version", "prompt_version"]
@@ -88,7 +92,8 @@ def forward_returns(snapshots: dict[str, pd.DataFrame], horizons=HORIZONS) -> pd
                 continue
             ret = joined["c1"] / joined["c0"] - 1
             frame = pd.DataFrame({"week": week, "horizon": h, "ticker": ret.index, "ret": ret.to_numpy()})
-            frame["universe_mean"] = float(ret.mean())
+            frame["market"] = [market_of(t) for t in frame["ticker"]]
+            frame["universe_mean"] = frame.groupby("market")["ret"].transform("mean")
             frame["excess"] = frame["ret"] - frame["universe_mean"]
             frame["hit"] = frame["excess"] > 0
             flags = base.reindex(frame["ticker"])
@@ -96,7 +101,7 @@ def forward_returns(snapshots: dict[str, pd.DataFrame], horizons=HORIZONS) -> pd
                 frame[col] = flags[col].to_numpy() if col in flags else None
             frames.append(frame)
     if not frames:
-        return pd.DataFrame(columns=["week", "horizon", "ticker", "ret", "universe_mean", "excess", "hit"] + keep)
+        return pd.DataFrame(columns=["week", "horizon", "ticker", "market", "ret", "universe_mean", "excess", "hit"] + keep)
     out = pd.concat(frames, ignore_index=True)
     out["is_candidate"] = out["is_candidate"].astype(bool)
     out["is_pick"] = out["is_pick"].astype(bool)
@@ -129,7 +134,8 @@ def build_report(snapshots: dict[str, pd.DataFrame], horizons=HORIZONS, exclude:
     """
     The whole report as plain data:
       weeks_used, weeks_excluded {week: reason}, horizons,
-      headline    {group: {horizon: summary}}   Picks vs Candidates vs Universe,
+      headline    {group: {horizon: summary}}   Picks vs Candidates vs Universe (hits against each stock's own market),
+      by_market   {market: {group: {horizon: summary}}}   the same, one market at a time,
       breakdowns  {dimension: {bucket: {horizon: summary}}}   for the Candidates,
       pick_count  Picks per week (the rules often pick nothing),
       notes       things to keep in mind when reading it.
@@ -138,6 +144,8 @@ def build_report(snapshots: dict[str, pd.DataFrame], horizons=HORIZONS, exclude:
     used = {w: s for w, s in snapshots.items() if w not in exclude}
     fr = forward_returns(used, horizons)
     headline = {g: {h: summarise(_group(fr[fr["horizon"] == h], g)) for h in horizons} for g in GROUPS}
+    by_market = {m: {g: {h: summarise(_group(fr[(fr["horizon"] == h) & (fr["market"] == m)], g)) for h in horizons} for g in GROUPS}
+                 for m in MARKETS if (fr["market"] == m).any()}
 
     cands = fr[fr["is_candidate"]]
     breakdowns: dict = {}
@@ -152,7 +160,8 @@ def build_report(snapshots: dict[str, pd.DataFrame], horizons=HORIZONS, exclude:
 
     picks_per_week = {w: int(s["is_pick"].astype(bool).sum()) for w, s in sorted(used.items())}
     notes = [
-        "A hit means beating the equal-weight average of the whole Universe over the same window.",
+        "A hit means beating the equal-weight average of the stock's own market (FTSE 350 or S&P 500) over the same window; "
+        "returns are in each stock's own currency, with no FX conversion.",
         "Consecutive weeks overlap and stocks in a sector move together, so treat figures marked "
         f"'indicative' (under {MIN_OBS} stock-weeks or {MIN_WEEKS} weeks) as hints only.",
         "Survivorship bias: the Universe is today's FTSE 350. Dividend adjustment: closes in snapshots taken at different "
@@ -162,7 +171,7 @@ def build_report(snapshots: dict[str, pd.DataFrame], horizons=HORIZONS, exclude:
         "the Candidate breakdowns have far more.",
     ]
     return {"weeks_used": sorted(used), "weeks_excluded": dict(exclude), "horizons": list(horizons),
-            "headline": headline, "breakdowns": breakdowns, "pick_count": picks_per_week, "notes": notes}
+            "headline": headline, "by_market": by_market, "breakdowns": breakdowns, "pick_count": picks_per_week, "notes": notes}
 
 
 # ---------------------------------------------------------------------------
@@ -189,6 +198,9 @@ def _tables(report: dict):
     for h in report["horizons"]:
         blocks.append((f"{h}-week Forward Return: Picks vs Candidates vs Universe",
                        [_row(g, report["headline"][g][h]) for g in GROUPS]))
+    for market, groups in report.get("by_market", {}).items():
+        for h in report["horizons"]:
+            blocks.append((f"{h}-week Forward Return, {market} only", [_row(g, groups[g][h]) for g in GROUPS]))
     for dim, buckets in report["breakdowns"].items():
         for h in report["horizons"]:
             rows = [_row(b, hs[h]) for b, hs in sorted(buckets.items()) if hs[h]["n"]]
