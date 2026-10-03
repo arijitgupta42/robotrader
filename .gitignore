@@ -7,6 +7,7 @@ financial_market_news_analyzer/*/
 financial_market_news_analyzer/lambda_handler.py
 CLAUDE.md
 docs/agents/
+backfill_out/
 dist/
 .terraform/
 *.tfstate
