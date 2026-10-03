@@ -1,8 +1,8 @@
 import json
 import logging
 import re
-from agents.base_agent import BaseAgent
-from model_loader import ModelLoader
+from .base_agent import BaseAgent
+from ..model_loader import ModelLoader
 
 logger = logging.getLogger(__name__)
 
