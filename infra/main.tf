@@ -43,6 +43,8 @@ data "aws_iam_policy_document" "permissions" {
     actions = ["ses:SendEmail"]
     resources = [
       "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:identity/${var.ses_sender}",
+      # the account's default configuration set is applied to every send and is authorised separately
+      "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:configuration-set/*",
     ]
   }
 
