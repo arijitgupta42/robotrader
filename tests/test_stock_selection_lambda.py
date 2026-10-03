@@ -525,3 +525,13 @@ def test_zip_size_guard(tmp_path, monkeypatch):
     monkeypatch.setattr(build_zip, "install_dependencies", lambda t: None)
     with pytest.raises(SystemExit, match="too close"):
         build_zip.build(tmp_path / "x.zip")
+
+
+def test_repo_text_files_are_copied_with_lf_line_endings(tmp_path):
+    src = tmp_path / "a.py"
+    src.write_bytes(b"x = 1\r\ny = 2\r\n")
+    build_zip.copy_normalised(src, tmp_path / "out" / "a.py")
+    assert (tmp_path / "out" / "a.py").read_bytes() == b"x = 1\ny = 2\n"
+    (tmp_path / "b.bin").write_bytes(b"\x00\r\n")
+    build_zip.copy_normalised(tmp_path / "b.bin", tmp_path / "out" / "b.bin")
+    assert (tmp_path / "out" / "b.bin").read_bytes() == b"\x00\r\n"

@@ -53,12 +53,26 @@ def prune(build: Path) -> None:
         record.unlink()
 
 
+TEXT_SUFFIXES = {".py", ".json", ".txt"}
+
+
+def copy_normalised(src: Path, dest: Path) -> None:
+    """Copy a repo file into the build, with CRLF line endings turned into LF.  Git on Windows checks files out with
+    CRLF (or a mix, depending on how each was last written), which would otherwise change the zip's hash with no change
+    to the code."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if src.suffix in TEXT_SUFFIXES:
+        dest.write_bytes(src.read_bytes().replace(b"\r\n", b"\n"))
+    else:
+        shutil.copy2(src, dest)
+
+
 def assemble(build: Path) -> None:
     """Add the scout's modules to `build`; shims only where pip did not provide the module."""
     for src in sorted(HERE.glob("*.py")):
         if src.name in NOT_SHIPPED or (src.name in SHIMS and (build / src.name).exists()):
             continue
-        shutil.copy2(src, build / src.name)
+        copy_normalised(src, build / src.name)
 
 
 def directory_mb(path: Path) -> float:

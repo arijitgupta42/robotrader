@@ -50,3 +50,27 @@ def test_zip_size_guard(tmp_path, monkeypatch):
     monkeypatch.setattr(scout_build, "install_dependencies", lambda t: None)
     with pytest.raises(SystemExit, match="too close"):
         scout_build.build(tmp_path / "x.zip")
+
+
+def test_crlf_and_lf_checkouts_build_identical_files(tmp_path, monkeypatch):
+    """git on Windows leaves a mix of CRLF and LF files; the zip must not depend on it."""
+    lf, crlf = tmp_path / "lf", tmp_path / "crlf"
+    for d, text in ((lf, b"a = 1\nb = 2\n"), (crlf, b"a = 1\r\nb = 2\r\n")):
+        d.mkdir()
+        (d / "lambda_handler.py").write_bytes(text)
+    outputs = []
+    for name, src in (("out_lf", lf), ("out_crlf", crlf)):
+        monkeypatch.setattr(scout_build, "HERE", src)
+        out = tmp_path / name
+        out.mkdir()
+        scout_build.assemble(out)
+        outputs.append((out / "lambda_handler.py").read_bytes())
+    assert outputs[0] == outputs[1] == b"a = 1\nb = 2\n"
+
+
+def test_binary_files_are_copied_untouched(tmp_path):
+    src = tmp_path / "blob.bin"
+    src.write_bytes(b"\x00\r\n\xff")
+    dest = tmp_path / "out" / "blob.bin"
+    scout_build.copy_normalised(src, dest)
+    assert dest.read_bytes() == b"\x00\r\n\xff"

@@ -65,18 +65,30 @@ def prune(build: Path) -> None:
         record.unlink()
 
 
+TEXT_SUFFIXES = {".py", ".json", ".txt"}
+
+
+def copy_normalised(src: Path, dest: Path) -> None:
+    """Copy a repo file into the build, with CRLF line endings turned into LF.  Git on Windows checks files out with
+    CRLF (or a mix, depending on how each was last written), which would otherwise change the zip's hash with no change
+    to the code."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if src.suffix in TEXT_SUFFIXES:
+        dest.write_bytes(src.read_bytes().replace(b"\r\n", b"\n"))
+    else:
+        shutil.copy2(src, dest)
+
+
 def assemble(build: Path) -> None:
     """Add the handler modules and the lse_stock_analysis package to `build`."""
     for f in ROOT_FILES:
-        shutil.copy2(f, build / f.name)
+        copy_normalised(f, build / f.name)
     for src in PACKAGE.rglob("*"):
         rel = src.relative_to(PACKAGE)
         if (not src.is_file() or "__pycache__" in rel.parts or rel.as_posix() in PACKAGE_EXCLUDE
                 or src.suffix == ".pyc"):
             continue
-        dest = build / "lse_stock_analysis" / rel
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dest)
+        copy_normalised(src, build / "lse_stock_analysis" / rel)
 
 
 def directory_mb(path: Path) -> float:
