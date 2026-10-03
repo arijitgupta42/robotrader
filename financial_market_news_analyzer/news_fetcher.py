@@ -365,6 +365,32 @@ def fetch_html_headlines(target: dict, timeout: int = 12) -> List[Headline]:
 # Aggregator
 # ---------------------------------------------------------------------------
 
+def _cap_balanced(headlines: List[Headline], max_total: int) -> List[Headline]:
+    """
+    Keep at most ``max_total`` headlines with every source getting a fair share:
+    sources take turns contributing their newest remaining headline, so a busy
+    feed (80 items a week) cannot crowd out a quiet one (5 items), and the HL
+    Weekly Outlook is kept like any other source.  The result is newest-first.
+    """
+    if len(headlines) <= max_total:
+        return headlines
+
+    queues: Dict[str, List[Headline]] = {}
+    for h in sorted(headlines, key=lambda h: h.published, reverse=True):
+        queues.setdefault(h.source, []).append(h)
+
+    kept: List[Headline] = []
+    turn = 0
+    while len(kept) < max_total:
+        for queue in queues.values():
+            if turn < len(queue) and len(kept) < max_total:
+                kept.append(queue[turn])
+        turn += 1
+
+    kept.sort(key=lambda h: h.published, reverse=True)
+    return kept
+
+
 def collect_headlines(max_total: Optional[int] = None, max_age_days: int = 7) -> List[Headline]:
     """
     Pulls from all configured RSS feeds and scrape targets.
@@ -419,4 +445,4 @@ def collect_headlines(max_total: Optional[int] = None, max_age_days: int = 7) ->
             seen_uids.add(h.uid)
             all_headlines.append(h)
 
-    return all_headlines[:max_total]
+    return _cap_balanced(all_headlines, max_total)

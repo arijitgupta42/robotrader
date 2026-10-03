@@ -328,38 +328,61 @@ DISRUPTION_CATEGORIES: Dict[str, str] = {
 
 # ---------------------------------------------------------------------------
 # News Sources
+#
+# Every feed here was checked to return current items from a plain HTTP GET.
+# Dropped because they failed from AWS and from a laptop: AP (DNS does not resolve),
+# Independent (405), Investegate (empty), the three Bank of England feeds (403),
+# and the Yahoo Finance index feed (newest item ten days old).  Re-test a feed
+# before adding it back: `collect_headlines` skips failures silently.
+# When more than max_headlines_per_cycle arrive, each source keeps a fair share
+# (see news_fetcher._cap_balanced), so adding a busy feed does not crowd out the rest.
 # ---------------------------------------------------------------------------
 
 RSS_FEEDS: List[Dict[str, str]] = [
-    # --- UK Financial / Markets ---
+    # --- UK financial / markets ---
     {"name": "BBC Business",             "url": "https://feeds.bbci.co.uk/news/business/rss.xml"},
     {"name": "BBC UK Politics",          "url": "https://feeds.bbci.co.uk/news/politics/rss.xml"},
     {"name": "Guardian Business",        "url": "https://www.theguardian.com/uk/business/rss"},
     {"name": "Guardian Economics",       "url": "https://www.theguardian.com/business/economics/rss"},
     {"name": "City A.M.",                "url": "https://www.cityam.com/feed/"},
     {"name": "Sky News Business",        "url": "https://feeds.skynews.com/feeds/rss/business.xml"},
-    {"name": "Independent Business",     "url": "https://www.independent.co.uk/news/business/rss"},
     {"name": "Telegraph Business",       "url": "https://www.telegraph.co.uk/business/rss.xml"},
-
-    # --- Market Data / RNS ---
     {"name": "Proactive Investors UK",   "url": "https://www.proactiveinvestors.co.uk/feed"},
-    {"name": "Investegate RNS",          "url": "https://www.investegate.co.uk/rss.aspx"},
-
-    # --- Global Macro ---
-    {"name": "AP Business",             "url": "https://feeds.apnews.com/apnews/business"},
-    {"name": "AP Top News",             "url": "https://feeds.apnews.com/apnews/topnews"},
-    {"name": "Yahoo Finance",           "url": "https://finance.yahoo.com/news/rssindex"},
-    {"name": "Thomson Reuters IR",      "url": "https://ir.thomsonreuters.com/rss/news-releases.xml"},
-
-    # --- BoE ---
-    {"name": "Bank of England News",        "url": "https://www.bankofengland.co.uk/rss/news"},
-    {"name": "Bank of England Publications","url": "https://www.bankofengland.co.uk/rss/publications"},
-    {"name": "Bank of England Speeches",    "url": "https://www.bankofengland.co.uk/rss/speeches"},
-
-    # --- Investing.com UK ---
     {"name": "Investing.com UK Stock News", "url": "https://uk.investing.com/rss/news_25.rss"},
     {"name": "Investing.com UK Economy",    "url": "https://uk.investing.com/rss/news_14.rss"},
     {"name": "Investing.com UK Commodities","url": "https://uk.investing.com/rss/news_11.rss"},
+
+    # --- US financial / markets ---
+    {"name": "CNBC Top News",            "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114"},
+    {"name": "CNBC Finance",             "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664"},
+    {"name": "CNBC Earnings",            "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839135"},
+    {"name": "MarketWatch Top Stories",  "url": "https://feeds.content.dowjones.io/public/rss/mw_topstories"},
+    {"name": "WSJ Markets",              "url": "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain"},
+    {"name": "WSJ US Business",          "url": "https://feeds.content.dowjones.io/public/rss/WSJcomUSBusiness"},
+    {"name": "NYT Business",             "url": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"},
+    {"name": "Benzinga",                 "url": "https://www.benzinga.com/feed"},
+    {"name": "Seeking Alpha Market Currents", "url": "https://seekingalpha.com/market_currents.xml"},
+    {"name": "Investing.com US Stock News",   "url": "https://www.investing.com/rss/news_25.rss"},
+
+    # --- US sector news (one or two feeds for the sectors the Universe's US stocks now fill) ---
+    {"name": "CNBC Technology",          "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910"},
+    {"name": "CNBC Energy",              "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19836768"},
+    {"name": "CNBC Health",              "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000108"},
+    {"name": "OilPrice.com",             "url": "https://oilprice.com/rss/main"},
+    {"name": "EIA Today in Energy",      "url": "https://www.eia.gov/rss/todayinenergy.xml"},
+    {"name": "Utility Dive",             "url": "https://www.utilitydive.com/feeds/news/"},
+    {"name": "FDA Press Releases",       "url": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml"},
+    {"name": "Defense News",             "url": "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml"},
+    {"name": "BleepingComputer",         "url": "https://www.bleepingcomputer.com/feed/"},
+
+    # --- Global macro / central banks ---
+    {"name": "Financial Times",          "url": "https://www.ft.com/rss/home"},
+    {"name": "NYT Economy",              "url": "https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml"},
+    {"name": "Investing.com US Economy",      "url": "https://www.investing.com/rss/news_14.rss"},
+    {"name": "Investing.com US Commodities",  "url": "https://www.investing.com/rss/news_11.rss"},
+    {"name": "Federal Reserve Press",    "url": "https://www.federalreserve.gov/feeds/press_all.xml"},
+    {"name": "Federal Reserve Speeches", "url": "https://www.federalreserve.gov/feeds/speeches.xml"},
+    {"name": "Thomson Reuters IR",       "url": "https://ir.thomsonreuters.com/rss/news-releases.xml"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -376,38 +399,52 @@ RSS_FEEDS: List[Dict[str, str]] = [
 #                Lower for niche UK subs (less traffic), higher for WSB-scale.
 #
 # Subreddit selection rationale:
-#   UKInvesting / UKPersonalFinance — retail LSE-focused discussion
-#   investing / stocks              — global but high DD quality; catches
-#                                     macro/sector moves before UK press does
-#   wallstreetbets                  — useful as a CONTRARIAN signal when
-#                                     crowded; also surfaces momentum names
-#                                     that often have LSE-dual-listed exposure
+#   stocks / investing / StockMarket / ValueInvesting
+#                                   — global but US-weighted, with the best DD;
+#                                     catch macro and sector moves before the UK
+#                                     press does and cover the S&P 500 directly
+#   UKInvesting / UKPersonalFinance — retail FTSE 350 discussion; the only source
+#                                     for the three UK-specific sectors
 #   SecurityAnalysis                — institutional-quality long-form DD
 #   Economics                       — macro regime commentary
 #   Commodities / energy            — commodity price thesis; maps to Mining,
 #                                     Oil & Gas, Renewables sectors directly
+#   Semiconductors / biotech        — sector subs for the two themes where the
+#                                     S&P 500 is most of the Universe
+#   wallstreetbets                  — useful as a CONTRARIAN signal when
+#                                     crowded; also surfaces momentum names
 #   options / thetagang             — options flow can lead equity moves by
 #                                     days; surfaces near-term catalyst plays
+#
+# ORDER MATTERS.  Reddit's public RSS allows roughly one request per 20-30
+# seconds per IP, and the fetcher spaces requests 1.5 s apart, so most requests
+# in a cycle get HTTP 429 and return nothing (the first live run on AWS got posts
+# from 2 of 17 requests).  The first requests in the list are the ones that get
+# through, so keep the highest-value subreddits first.
 # ---------------------------------------------------------------------------
 
 REDDIT_SUBREDDITS: List[Dict] = [
+    # --- Global / high-quality DD (highest value first) ---
+    {"subreddit": "stocks",              "sorts": ["hot", "top"], "limit": 35, "min_score": 150},
+    {"subreddit": "investing",           "sorts": ["hot", "top"], "limit": 35, "min_score": 200},
+    {"subreddit": "StockMarket",         "sorts": ["hot"],        "limit": 25, "min_score": 150},
+    {"subreddit": "SecurityAnalysis",    "sorts": ["hot", "top"], "limit": 25, "min_score": 50},
+    {"subreddit": "ValueInvesting",      "sorts": ["hot"],        "limit": 25, "min_score": 50},
+
     # --- UK-focused ---
-    # Both "hot" and "top" sorts are used now that OAuth bypasses the Lambda
-    # IP blocks that caused 403s on /top with the unauthenticated API.
-    # "hot"       → current buzz and active discussions this week
-    # "top" t=week → the week's highest-conviction posts by community vote
+    # "hot"       -> current buzz and active discussions this week
+    # "top" t=week -> the week's highest-conviction posts by community vote
     {"subreddit": "UKInvesting",         "sorts": ["hot", "top"], "limit": 30, "min_score": 20},
     {"subreddit": "UKPersonalFinance",   "sorts": ["hot"],        "limit": 20, "min_score": 50},
-
-    # --- Global / high-quality DD ---
-    {"subreddit": "investing",           "sorts": ["hot", "top"], "limit": 35, "min_score": 200},
-    {"subreddit": "stocks",              "sorts": ["hot", "top"], "limit": 35, "min_score": 150},
-    {"subreddit": "SecurityAnalysis",    "sorts": ["hot", "top"], "limit": 25, "min_score": 50},
 
     # --- Macro / commodities ---
     {"subreddit": "Economics",           "sorts": ["hot"],        "limit": 20, "min_score": 100},
     {"subreddit": "Commodities",         "sorts": ["hot", "top"], "limit": 20, "min_score": 30},
     {"subreddit": "energy",              "sorts": ["hot"],        "limit": 15, "min_score": 30},
+
+    # --- Sector subreddits ---
+    {"subreddit": "Semiconductors",      "sorts": ["hot"],        "limit": 20, "min_score": 20},
+    {"subreddit": "biotech",             "sorts": ["hot"],        "limit": 20, "min_score": 20},
 
     # --- Sentiment / momentum (contrarian + momentum signals) ---
     {"subreddit": "wallstreetbets",      "sorts": ["hot"],        "limit": 25, "min_score": 500},
@@ -455,7 +492,7 @@ OPENROUTER_MODELS: List[str] = [
 # threshold in this file that shapes the signals) changes.  It is saved with every scout
 # result and copied into the Universe Snapshot, so the methodology review can compare
 # the weeks before and after a change.
-PROMPT_VERSION: str = "2026-10-03.2"
+PROMPT_VERSION: str = "2026-10-03.3"
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
 OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
