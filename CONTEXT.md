@@ -1,6 +1,6 @@
 # Robotrader
 
-A weekly pipeline that finds LSE sectors with bullish swing-trading conviction from news and Reddit, then analyses the stocks inside those sectors to choose which to trade over a 2–6 week horizon.
+A weekly pipeline that finds sectors with bullish swing-trading conviction from news and Reddit, then analyses the stocks inside those sectors to choose which to trade over a 2–6 week horizon.
 
 ## Sectors and signals
 

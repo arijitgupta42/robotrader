@@ -73,7 +73,7 @@ def run(event: dict, context, s3, ses, now: Callable = lambda: datetime.now(time
         intro = (f"Quarterly methodology review input for {period}. Saved to s3://{bucket}/{prefix}/. To act on it, ask Claude to run "
                  f"the methodology review (docs/methodology-review.md) against this report; it proposes changes as a pull request "
                  f"and nothing changes until you merge it.")
-        _send(ses, sender, recipient, f"LSE methodology review: backtest report {period}",
+        _send(ses, sender, recipient, f"Methodology review: backtest report {period}",
               body_html.replace("</h2>", f"</h2><p style='font-size:12px;'>{html.escape(intro)}</p>", 1), intro + "\n\n" + body_text)
         logger.info("Backtest report %s sent (%d weeks used)", period, len(report["weeks_used"]))
         return {"status": "ok", "period": period, "weeks": len(report["weeks_used"]), "report_key": f"{prefix}/backtest.html"}
@@ -90,7 +90,7 @@ def run(event: dict, context, s3, ses, now: Callable = lambda: datetime.now(time
             failed_key = None
         try:
             text = f"The quarterly backtest report for {period} failed.\n\nReason: {error}\n" + (f"Details: {failed_key}\n" if failed_key else "")
-            _send(ses, sender, recipient, f"LSE methodology review FAILED: {period}",
+            _send(ses, sender, recipient, f"Methodology review FAILED: {period}",
                   "".join(f"<p style='font-family:Arial,sans-serif;font-size:13px;'>{html.escape(line)}</p>" for line in text.split("\n") if line), text)
         except Exception:
             logger.exception("Could not send the failure email")

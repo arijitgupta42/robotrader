@@ -140,7 +140,7 @@ Shape:
 
 def _compute_source_diversity(headlines: List[Headline]) -> Dict[str, float]:
     """
-    For each LSE sector, compute a source diversity score (0-1) based on
+    For each sector, compute a source diversity score (0-1) based on
     how many distinct outlet names cover it relative to the maximum seen
     across all sectors.
 
@@ -264,7 +264,7 @@ def _get_headers() -> dict:
         "Authorization": f"Bearer {api_key}",
         "Content-Type":  "application/json",
         "HTTP-Referer":  "https://github.com/your-org/sector-scout",
-        "X-Title":       "LSE Sector Scout",
+        "X-Title":       "Sector Scout",
     }
 
 

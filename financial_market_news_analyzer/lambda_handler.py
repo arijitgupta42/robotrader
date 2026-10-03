@@ -1,5 +1,5 @@
 """
-lambda_handler.py — AWS Lambda entry point for LSE Sector Scout.
+lambda_handler.py — AWS Lambda entry point for Sector Scout.
 
 Execution model
 ---------------

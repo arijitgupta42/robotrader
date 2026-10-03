@@ -1,7 +1,7 @@
 """
 reddit_analyzer.py — LLM pass over Reddit posts.
 
-Maps bullish retail sentiment in finance/trading subreddits to LSE sectors,
+Maps bullish retail sentiment in finance/trading subreddits to sectors,
 producing RedditSentimentSignal objects that are consumed by consolidator.py.
 
 Architecture mirrors llm_analyzer.py: OpenRouter call with model fallback,
@@ -125,7 +125,7 @@ def _get_headers() -> dict:
         "Authorization": f"Bearer {_load_api_key()}",
         "Content-Type":  "application/json",
         "HTTP-Referer":  "https://github.com/your-org/sector-scout",
-        "X-Title":       "LSE Sector Scout - Reddit Analyzer",
+        "X-Title":       "Sector Scout - Reddit Analyzer",
     }
 
 

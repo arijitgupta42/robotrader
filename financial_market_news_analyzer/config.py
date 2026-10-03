@@ -1,5 +1,5 @@
 """
-config.py — Central configuration for the LSE Sector Scout.
+config.py — Central configuration for the Sector Scout.
 
 Rewritten for MEDIUM-TERM SWING detection (2–6 week horizon).
 The philosophy: we are not reacting to today's price action.

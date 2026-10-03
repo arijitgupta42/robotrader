@@ -33,7 +33,7 @@ Embedded in your robotrader:
 
 ConsolidatedSignal fields
 --------------------------
-    sector               : str    - LSE sub-sector name
+    sector               : str    - sub-sector name
     confidence           : float  - 0-1, consolidated LLM conviction
     disruption_type      : str    - taxonomy category
     disruption_strength  : float  - 0-1, magnitude of structural break
@@ -444,7 +444,7 @@ class SectorScout:
         }
 
         print("\n" + "=" * 72)
-        print(f"  LSE SWING SIGNALS  ·  {ts}")
+        print(f"  SWING SIGNALS  ·  {ts}")
         print("=" * 72)
 
         if macro:
@@ -486,7 +486,7 @@ class SectorScout:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="LSE Sector Scout — one-shot pipeline run")
+    parser = argparse.ArgumentParser(description="Sector Scout — one-shot pipeline run")
     parser.add_argument(
         "--skip-reddit", action="store_true",
         help="Skip Reddit collection and analysis (faster; news-only mode)",

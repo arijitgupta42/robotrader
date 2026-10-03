@@ -86,7 +86,7 @@ def test_report_is_saved_and_emailed_once():
     assert len(ses.sent) == 1
     mail = ses.sent[0]
     assert mail["Source"] == "from@example.com" and mail["Destination"] == {"ToAddresses": ["to@example.com"]}
-    assert mail["Message"]["Subject"]["Data"] == "LSE methodology review: backtest report 2026-Q4"
+    assert mail["Message"]["Subject"]["Data"] == "Methodology review: backtest report 2026-Q4"
     assert "methodology-review.md" in mail["Message"]["Body"]["Html"]["Data"]
     assert "Picks vs Candidates vs Universe" in mail["Message"]["Body"]["Text"]["Data"]
 
@@ -101,7 +101,7 @@ def test_too_few_snapshots_is_a_recorded_and_emailed_failure_not_an_exception():
     out = backtest_handler.run({}, None, s3, ses, now=lambda: NOW)
     assert out["status"] == "failed" and "nothing to measure" in out["error"]
     assert out["failed_key"].startswith("reports/2026-Q4/failed_") and out["failed_key"] in s3.objects
-    assert len(ses.sent) == 1 and ses.sent[0]["Message"]["Subject"]["Data"] == "LSE methodology review FAILED: 2026-Q4"
+    assert len(ses.sent) == 1 and ses.sent[0]["Message"]["Subject"]["Data"] == "Methodology review FAILED: 2026-Q4"
 
 
 def test_failures_in_saving_or_emailing_never_raise():
