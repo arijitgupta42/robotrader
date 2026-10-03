@@ -1,4 +1,4 @@
-# LSE Sector Scout
+# Sector Scout
 
 A three-pass LLM pipeline that identifies LSE sub-sectors likely to show positive price movement over a **2–6 week swing horizon**, driven by structural disruptions rather than daily noise.
 

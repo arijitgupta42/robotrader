@@ -215,7 +215,7 @@ def _get_headers() -> dict:
         "Authorization": f"Bearer {_load_api_key()}",
         "Content-Type":  "application/json",
         "HTTP-Referer":  "https://github.com/your-org/sector-scout",
-        "X-Title":       "LSE Sector Scout - Consolidator",
+        "X-Title":       "Sector Scout - Consolidator",
     }
 
 

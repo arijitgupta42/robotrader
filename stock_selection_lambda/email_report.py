@@ -271,7 +271,7 @@ def build_report_email(
     failure_note = f"Stock picks unavailable this week: {error}" if failed else None
 
     status = "stock picks FAILED" if failed else plural(n_picks, "pick")
-    subject = f"LSE Sector Scout — {plural(len(signals), 'signal')} · {status} · {week}"
+    subject = f"Sector Scout — {plural(len(signals), 'signal')} · {status} · {week}"
     warnings = [] if failed else build_warnings(prices, map_age_days)
 
     facts = [esc(signal_ts.strftime("%d %b %Y %H:%M UTC")), plural(len(signals), "swing signal") + " detected"]
@@ -298,7 +298,7 @@ def build_report_email(
 <html><head><meta charset="UTF-8"></head>
 <body style="font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:0 auto;padding:20px;color:#222;background:#fff;">
   <div style="background:#1a5276;padding:18px 22px;border-radius:6px 6px 0 0;">
-    <h1 style="margin:0;font-size:20px;color:#fff;letter-spacing:0.5px;">📈 LSE Sector Scout</h1>
+    <h1 style="margin:0;font-size:20px;color:#fff;letter-spacing:0.5px;">📈 Sector Scout</h1>
     <p style="margin:4px 0 0;font-size:12px;color:#aed6f1;">{' &nbsp;·&nbsp; '.join(facts)}</p>
   </div>
   <div style="border:1px solid #e0e0e0;border-top:none;padding:20px 22px;border-radius:0 0 6px 6px;">
@@ -307,13 +307,13 @@ def build_report_email(
     {cards}
     {warn_html}
     <hr style="border:none;border-top:1px solid #eee;margin:18px 0;">
-    <p style="font-size:11px;color:#aaa;margin:0;">Sector signals from the LSE Sector Scout (OpenRouter LLM pipeline); stock picks are rule-based
+    <p style="font-size:11px;color:#aaa;margin:0;">Sector signals from the Sector Scout (OpenRouter LLM pipeline); stock picks are rule-based
       from daily-bar trend and risk analysis within the signalled sectors. Position sizes follow a 2% risk rule.
       Not investment advice. Always validate independently.</p>
   </div>
 </body></html>"""
 
-    lines = [f"LSE Sector Scout — {week}", " · ".join([signal_ts.strftime("%d %b %Y %H:%M UTC"), plural(len(signals), "signal")]
+    lines = [f"Sector Scout — {week}", " · ".join([signal_ts.strftime("%d %b %Y %H:%M UTC"), plural(len(signals), "signal")]
                                                      + ([cutoff_text(prices),
                                                          f"{len(prices.data)} of {len(prices.requested)} stocks analysed"] if not failed else []))]
     if failed:
@@ -336,13 +336,13 @@ def build_failure_email(week: str, source_key: str, error: str, failed_key: Opti
     Short (subject, html, text) email for a week where not even the sector report can be shown
     (the scout's result could not be read, or has no signals).
     """
-    subject = f"LSE Sector Scout FAILED — {week}"
+    subject = f"Sector Scout FAILED — {week}"
     text = (f"The stock-selection step failed for {week} and the scout's result could not be turned into a report.\n\n"
             f"Reason: {error}\nSector scout result: {source_key}\n"
             + (f"Details saved to: {failed_key}\n" if failed_key else ""))
     body = "".join(f"<p style='font-size:13px;margin:6px 0;'>{esc(line)}</p>" for line in text.split("\n") if line)
     html_body = (f"<!DOCTYPE html><html><head><meta charset='UTF-8'></head><body style='font-family:Arial,sans-serif;max-width:640px;"
                  f"margin:0 auto;padding:20px;'><div style='background:#922b21;padding:14px 20px;border-radius:6px 6px 0 0;'>"
-                 f"<h1 style='margin:0;font-size:18px;color:#fff;'>⚠ LSE Sector Scout failed</h1></div>"
+                 f"<h1 style='margin:0;font-size:18px;color:#fff;'>⚠ Sector Scout failed</h1></div>"
                  f"<div style='border:1px solid #e0e0e0;border-top:none;padding:16px 20px;'>{body}</div></body></html>")
     return subject, html_body, text
