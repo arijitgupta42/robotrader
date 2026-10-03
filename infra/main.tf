@@ -1,11 +1,5 @@
 data "aws_caller_identity" "current" {}
 
-# The scout's bucket was created by hand (see the import issue); it is only
-# referenced here, never managed.
-data "aws_s3_bucket" "data" {
-  bucket = var.data_bucket
-}
-
 # ---------------------------------------------------------------------------
 # IAM: read successful/, write snapshots/ and failed/, send mail, write logs
 # ---------------------------------------------------------------------------
@@ -29,23 +23,19 @@ data "aws_iam_policy_document" "permissions" {
   statement {
     sid       = "ReadScoutResults"
     actions   = ["s3:GetObject"]
-    resources = ["${data.aws_s3_bucket.data.arn}/successful/*"]
+    resources = ["${aws_s3_bucket.data.arn}/successful/*"]
   }
 
   statement {
     sid       = "WriteSnapshotsAndFailures"
     actions   = ["s3:PutObject"]
-    resources = ["${data.aws_s3_bucket.data.arn}/snapshots/*", "${data.aws_s3_bucket.data.arn}/failed/*"]
+    resources = ["${aws_s3_bucket.data.arn}/snapshots/*", "${aws_s3_bucket.data.arn}/failed/*"]
   }
 
   statement {
-    sid     = "SendPicksEmail"
-    actions = ["ses:SendEmail"]
-    resources = [
-      "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:identity/${var.ses_sender}",
-      # the account's default configuration set is applied to every send and is authorised separately
-      "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:configuration-set/*",
-    ]
+    sid       = "SendPicksEmail"
+    actions   = ["ses:SendEmail"]
+    resources = [aws_sesv2_email_identity.sender.arn]
   }
 
   statement {
@@ -109,7 +99,7 @@ resource "aws_lambda_permission" "from_s3" {
   action         = "lambda:InvokeFunction"
   function_name  = aws_lambda_function.stock_selection.function_name
   principal      = "s3.amazonaws.com"
-  source_arn     = data.aws_s3_bucket.data.arn
+  source_arn     = aws_s3_bucket.data.arn
   source_account = data.aws_caller_identity.current.account_id
 }
 
@@ -119,7 +109,7 @@ resource "aws_lambda_permission" "from_s3" {
 #   aws s3api get-bucket-notification-configuration --bucket <bucket>
 # before every apply that touches it.
 resource "aws_s3_bucket_notification" "successful_results" {
-  bucket = data.aws_s3_bucket.data.id
+  bucket = aws_s3_bucket.data.id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.stock_selection.arn
