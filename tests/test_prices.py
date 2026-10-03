@@ -9,6 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from lse_stock_analysis import prices
+from lse_stock_analysis.universe import universe_tickers
 from lse_stock_analysis.prices import (
     MIN_BARS,
     PRICE_ANOMALY_MOVE,
@@ -248,5 +249,5 @@ def test_fetch_defaults_to_the_whole_universe():
         return {}
 
     result = fetch_universe_prices(utc(2026, 10, 4, 6, 0), downloader=downloader)
-    assert seen["n"] == 350
-    assert result.coverage == 0.0 and len(result.no_data) == 350
+    assert seen["n"] == len(universe_tickers()) == 853
+    assert result.coverage == 0.0 and len(result.no_data) == 853

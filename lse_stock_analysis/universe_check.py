@@ -1,15 +1,19 @@
 """
 Quarterly Universe check.
 
-Compares the Sector Map (sector_map.json) with the current FTSE 100 and
-FTSE 250 constituents on Wikipedia, and validates the map's contents.
-Run it after each FTSE Russell review (March, June, September, December):
+Compares the Sector Map (sector_map.json) with the current FTSE 100, FTSE 250
+and S&P 500 constituents on Wikipedia, and validates the map's contents.
+Run it after each FTSE Russell review (March, June, September, December) and
+now and then for the S&P 500, which changes more often:
 
     python -m lse_stock_analysis.universe_check
 
 It only reports.  To apply the changes, edit sector_map.json by hand:
 add an entry (with a Primary Sector from config.LSE_SECTORS, or null if the
 stock fits none) for each stock that joined, and delete each stock that left.
+For S&P 500 joiners the report prints a suggested entry (GICS sub-industry
+mapping from sp500_map.py) that can be pasted in; add a sub-industry to
+GICS_TO_SECTOR if the report says one is missing.
 
 Needs requests, pandas and lxml (not required by the weekly pipeline).
 """
@@ -18,12 +22,14 @@ import io
 import sys
 from pathlib import Path
 
+from .sp500_map import UK_ONLY_SECTORS, entry_for, yahoo_symbol
 from .universe import load_sector_map
 
 _WIKI_PAGES = {
     "FTSE 100": "https://en.wikipedia.org/wiki/FTSE_100_Index",
     "FTSE 250": "https://en.wikipedia.org/wiki/FTSE_250_Index",
 }
+_SP500_PAGE = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 _CONFIG_PATH = Path(__file__).resolve().parents[1] / "financial_market_news_analyzer" / "config.py"
 
 
@@ -59,6 +65,17 @@ def fetch_constituents() -> dict[str, dict]:
             break
         else:
             raise RuntimeError(f"No constituents table found at {url}")
+
+    resp = requests.get(_SP500_PAGE, headers={"User-Agent": "robotrader universe check"}, timeout=30)
+    resp.raise_for_status()
+    sp500 = next((t for t in pd.read_html(io.StringIO(resp.text)) if {"Symbol", "Security", "GICS Sub-Industry"} <= set(t.columns)), None)
+    if sp500 is None or len(sp500) < 400:
+        raise RuntimeError(f"No S&P 500 constituents table found at {_SP500_PAGE}")
+    for _, row in sp500.iterrows():
+        out[yahoo_symbol(row["Symbol"])] = {
+            "company": str(row["Security"]).strip(), "index": "S&P 500",
+            "gics_sector": str(row["GICS Sector"]), "gics_sub_industry": str(row["GICS Sub-Industry"]),
+        }
     return out
 
 
@@ -96,10 +113,17 @@ def validate_sector_map(sector_map: dict[str, dict], sector_names: set[str]) -> 
     """Return a list of problems with the Sector Map (empty if it is valid)."""
     problems = []
     for ticker, entry in sector_map.items():
-        if not ticker.endswith(".L"):
-            problems.append(f"{ticker}: not a Yahoo LSE ticker")
-        if entry.get("index") not in _WIKI_PAGES:
-            problems.append(f"{ticker}: unknown index {entry.get('index')!r}")
+        index = entry.get("index")
+        if index in _WIKI_PAGES:
+            if not ticker.endswith(".L"):
+                problems.append(f"{ticker}: not a Yahoo LSE ticker")
+        elif index == "S&P 500":
+            if ticker.endswith(".L"):
+                problems.append(f"{ticker}: an S&P 500 stock cannot have an LSE ticker")
+            if entry.get("primary_sector") in UK_ONLY_SECTORS or set(entry.get("secondary_sectors", [])) & UK_ONLY_SECTORS:
+                problems.append(f"{ticker}: US stocks are not mapped into the UK-specific Sectors")
+        else:
+            problems.append(f"{ticker}: unknown index {index!r}")
         primary = entry.get("primary_sector")
         secondary = entry.get("secondary_sectors", [])
         if primary is not None and primary not in sector_names:
@@ -131,11 +155,18 @@ def main() -> int:
     for p in problems:
         print(f"  PROBLEM  {p}")
 
-    changes = diff_universe(fetch_constituents(), sector_map)
+    current = fetch_constituents()
+    changes = diff_universe(current, sector_map)
     for label, rows in changes.items():
         print(f"\n{label.upper()} ({len(rows)})")
         for ticker, company, detail in rows:
             print(f"  {ticker:<9} {company}  [{detail}]")
+            if label == "joined" and detail == "S&P 500":
+                e = current[ticker]
+                try:
+                    print("    suggested entry:", entry_for(ticker, company, e["gics_sector"], e["gics_sub_industry"]))
+                except KeyError as exc:
+                    print(f"    cannot suggest an entry: {exc}")
 
     return 1 if problems or any(changes.values()) else 0
 

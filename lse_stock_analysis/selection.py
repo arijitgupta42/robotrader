@@ -26,14 +26,14 @@ import pandas as pd
 from .agents.risk_scoring_agent import RiskScoringAgent
 from .agents.trend_analysis_agent import TrendAnalysisAgent
 from .prices import PriceFetchResult
-from .universe import load_sector_map
+from .universe import currency_of, load_sector_map, market_of
 
 logger = logging.getLogger(__name__)
 
 # Bump whenever a number or rule in this module changes (TREND_PARAMS, RISK_PARAMS, the pick-count
 # thresholds, the eligibility rules, the ranking) or in the agents it calls.  It is stored on every
 # Universe Snapshot row, so the methodology review can compare the weeks before and after a change.
-METHODOLOGY_VERSION = "2026-10-03.1"
+METHODOLOGY_VERSION = "2026-10-03.2"
 
 # Same parameters as lse_stock_analysis/main.py — keep the two in sync.
 TREND_PARAMS = dict(
@@ -131,7 +131,7 @@ def _ineligible_reason(ticker: str, analysis: Optional[dict], prices: PriceFetch
 
 def _row(ticker: str, entry: dict, analysis: Optional[dict], prices: PriceFetchResult) -> dict:
     """Reporting dict for one stock (used for Picks and runners-up)."""
-    row = {"ticker": ticker, "company": entry["company"]}
+    row = {"ticker": ticker, "company": entry["company"], "market": market_of(ticker), "currency": currency_of(ticker)}
     if analysis and analysis["risk"]:
         t, r = analysis["trend"], analysis["risk"]
         row.update(                                   # plain Python numbers, so the result is JSON-serialisable
@@ -276,11 +276,13 @@ def build_snapshot(
         row = {
             "week": week_label(signal_ts),
             "signal_ts": signal_ts.isoformat(),
-            "price_cutoff": prices.cutoff_date.isoformat(),
+            "price_cutoff": prices.cutoff_for(ticker).isoformat(),
             "backfilled": backfilled,
             "methodology_version": METHODOLOGY_VERSION,
             "prompt_version": prompt_version,
             "ticker": ticker,
+            "market": market_of(ticker),
+            "currency": currency_of(ticker),
             "company": entry["company"],
             "index": entry["index"],
             "primary_sector": entry["primary_sector"],

@@ -1,12 +1,14 @@
 """
 Universe price fetching and cleaning.
 
-One batched download of daily bars for every Universe stock, cut off at the
-last *completed* London trading day before a given timestamp, with two data
+One batched download of daily bars for every Universe stock (FTSE 350 and
+S&P 500), cut off for each market at its last *completed* trading day before a
+given timestamp (London for LSE stocks, New York for US stocks), with two data
 problems handled:
 
-* Yahoo sometimes switches a stock between pence and pounds part-way through
-  the window (BCG.L: 200.86 → 2.02 on 2026-08-24).  Those breaks are rescaled.
+* Yahoo sometimes switches an LSE stock between pence and pounds part-way
+  through the window (BCG.L: 200.86 → 2.02 on 2026-08-24).  Those breaks are
+  rescaled.  (US stocks are quoted in dollars only, so this never applies.)
 * A single-day move above 40% that remains (e.g. ROR.L +68% on 2026-07-16)
   makes the swing indicators untrustworthy, so the stock is flagged as a
   Price Anomaly.  It stays in the data but cannot be a Pick.
@@ -24,16 +26,19 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 
-from .universe import universe_tickers
+from .universe import MARKETS, market_of, universe_tickers
 
 logger = logging.getLogger(__name__)
 
 LONDON = ZoneInfo("Europe/London")
+NEW_YORK = ZoneInfo("America/New_York")
 
 # The LSE session ends at 16:30 with a closing auction to 16:35, and Yahoo's
 # daily bar is not reliably final straight after that, so a London day only
-# counts as completed from 17:00.
+# counts as completed from 17:00.  The NYSE/Nasdaq session ends at 16:00 New
+# York time; the same 17:00 rule applies there.
 SESSION_COMPLETE = time(17, 0)
+MARKET_TIMEZONES = {"LSE": LONDON, "US": NEW_YORK}
 
 LOOKBACK_DAYS = 180           # calendar days of history (~6 months of daily bars)
 MIN_BARS = 60                 # SMA(50) plus a margin for the other indicators
@@ -48,9 +53,10 @@ PRICE_COLUMNS = ["Open", "High", "Low", "Close"]
 # Cutoff
 # ---------------------------------------------------------------------------
 
-def cutoff_date(as_of: datetime) -> date:
+def cutoff_date(as_of: datetime, market: str = "LSE") -> date:
     """
-    The last calendar date whose London trading session is complete at `as_of`.
+    The last calendar date whose trading session in `market` ('LSE' by default,
+    or 'US') is complete at `as_of`.
 
     Weekends and bank holidays need no special handling: the data simply has
     no bar on those dates, so "bars up to this date" ends on the last real
@@ -63,7 +69,7 @@ def cutoff_date(as_of: datetime) -> date:
     """
     if as_of.tzinfo is None:
         as_of = as_of.replace(tzinfo=timezone.utc)
-    local = as_of.astimezone(LONDON)
+    local = as_of.astimezone(MARKET_TIMEZONES[market])
     return local.date() if local.time() >= SESSION_COMPLETE else local.date() - timedelta(days=1)
 
 
@@ -127,8 +133,9 @@ def max_abs_daily_move(df: pd.DataFrame) -> float:
 class PriceFetchResult:
     """Cleaned prices plus everything the weekly email and snapshot need to report."""
 
-    cutoff_date: date
+    cutoff_date: date                                                 # the LSE cutoff (the date shown in the email header)
     requested: list[str] = field(default_factory=list)
+    cutoffs: dict[str, date] = field(default_factory=dict)            # market → cutoff; empty means cutoff_date for all
     data: dict[str, pd.DataFrame] = field(default_factory=dict)       # usable OHLCV frames
     no_data: list[str] = field(default_factory=list)                  # nothing (or malformed) came back
     short_history: dict[str, int] = field(default_factory=dict)       # ticker → bars, below MIN_BARS
@@ -137,28 +144,37 @@ class PriceFetchResult:
     price_anomalies: dict[str, float] = field(default_factory=dict)   # ticker → max single-day move
     last_bar: dict[str, date] = field(default_factory=dict)           # ticker → date of the latest bar used
 
+    def cutoff_for(self, ticker: str) -> date:
+        """The cutoff that applies to a ticker's market."""
+        return self.cutoffs.get(market_of(ticker), self.cutoff_date)
+
     @property
     def coverage(self) -> float:
         """Share of requested tickers that came back with usable data."""
         return len(self.data) / len(self.requested) if self.requested else 0.0
 
 
-def clean_prices(raw: dict[str, pd.DataFrame], cutoff: date, requested: Optional[list[str]] = None) -> PriceFetchResult:
+def clean_prices(raw: dict[str, pd.DataFrame], cutoff, requested: Optional[list[str]] = None) -> PriceFetchResult:
     """
     Turn raw per-ticker download frames into a PriceFetchResult.
 
+    `cutoff` is one date for every stock, or a {market: date} dict.
+
     Drops rows with no close (the batch download shares one date index across
-    tickers), removes bars after `cutoff`, then applies the unit fix and the
-    Price Anomaly flag.  Tickers with no data, too little history or a stale
+    tickers), removes bars after the stock's cutoff, then applies the unit fix
+    (LSE stocks only) and the Price Anomaly flag.  Tickers with no data, too little history or a stale
     last bar are reported; short-history and no-data tickers are left out of
     `data`.  Stale and anomalous tickers stay in `data` so they still appear
     in the snapshot — the caller decides what to exclude.
     """
     requested = list(requested) if requested is not None else sorted(raw)
-    result = PriceFetchResult(cutoff_date=cutoff, requested=requested)
-    expected_last = _latest_weekday(cutoff)
+    cutoffs = dict(cutoff) if isinstance(cutoff, dict) else {m: cutoff for m in MARKETS}
+    result = PriceFetchResult(cutoff_date=cutoffs["LSE"], requested=requested, cutoffs=cutoffs)
 
     for ticker in requested:
+        market = market_of(ticker)
+        cutoff = cutoffs[market]
+        expected_last = _latest_weekday(cutoff)
         df = raw.get(ticker)
         if df is None or df.empty:
             result.no_data.append(ticker)
@@ -185,7 +201,7 @@ def clean_prices(raw: dict[str, pd.DataFrame], cutoff: date, requested: Optional
             result.short_history[ticker] = len(df)
             continue
 
-        df, n_breaks = fix_unit_breaks(df)
+        df, n_breaks = fix_unit_breaks(df) if market == "LSE" else (df, 0)
         if n_breaks:
             result.unit_fixed[ticker] = n_breaks
         move = max_abs_daily_move(df)
@@ -202,7 +218,7 @@ def clean_prices(raw: dict[str, pd.DataFrame], cutoff: date, requested: Optional
 
     logger.info(
         "Prices to %s: %d/%d usable | no data %d, short %d, stale %d, unit-fixed %d, anomalies %d",
-        cutoff, len(result.data), len(requested), len(result.no_data), len(result.short_history),
+        ", ".join(f"{m} {d}" for m, d in cutoffs.items()), len(result.data), len(requested), len(result.no_data), len(result.short_history),
         len(result.stale), len(result.unit_fixed), len(result.price_anomalies),
     )
     return result
@@ -264,10 +280,10 @@ def fetch_universe_prices(
         download_batch(); inject another to change data source or to test.
     """
     tickers = list(tickers) if tickers is not None else universe_tickers()
-    cutoff = cutoff_date(as_of)
-    start = cutoff - timedelta(days=lookback_days)
-    end = cutoff + timedelta(days=1)
+    cutoffs = {m: cutoff_date(as_of, m) for m in MARKETS}
+    start = min(cutoffs.values()) - timedelta(days=lookback_days)
+    end = max(cutoffs.values()) + timedelta(days=1)
 
-    logger.info("Downloading %d tickers, %s → %s (cutoff %s)", len(tickers), start, cutoff, cutoff)
+    logger.info("Downloading %d tickers, %s → %s (cutoffs %s)", len(tickers), start, end - timedelta(days=1), cutoffs)
     raw = (downloader or download_batch)(tickers, start, end)
-    return clean_prices(raw, cutoff, tickers)
+    return clean_prices(raw, cutoffs, tickers)
