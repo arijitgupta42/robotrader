@@ -24,8 +24,8 @@ Locking uses an S3 lock file (`use_lockfile`), so no DynamoDB table is needed.
 ## Deploy
 
 ```bash
-# 1. build the Lambda zip (Linux wheels, no Docker). On Windows with the Store Python, PIP_USER=0 is needed.
-PIP_USER=0 python stock_selection_lambda/build_zip.py        # writes dist/stock-selection.zip
+# 1. build the Lambda zip (Linux wheels, no Docker)
+python stock_selection_lambda/build_zip.py                   # writes dist/stock-selection.zip
 
 # 2. init once
 cd infra

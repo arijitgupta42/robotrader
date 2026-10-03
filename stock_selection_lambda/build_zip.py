@@ -17,6 +17,7 @@ locally.  The zip contains
 Lambda's limit is 250 MB unzipped; the build fails if it gets close.
 """
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -49,7 +50,8 @@ def install_dependencies(target: Path) -> None:
            "-r", str(HERE / "requirements.txt")]
     for platform in PLATFORMS:
         cmd += ["--platform", platform]
-    subprocess.run(cmd, check=True)
+    # the Microsoft Store Python defaults pip to --user, which pip refuses to combine with --target
+    subprocess.run(cmd, check=True, env={**os.environ, "PIP_USER": "0"})
 
 
 def prune(build: Path) -> None:
