@@ -3,7 +3,7 @@ Build the stock-selection Lambda deployment zip.
 
     python stock_selection_lambda/build_zip.py [--out dist/stock-selection.zip]
 
-Runs on any OS (no Docker): it downloads the *Linux* wheels for Python 3.11
+Runs on any OS (no Docker): it downloads the *Linux* wheels for Python 3.12
 straight from PyPI with pip's --platform option, so nothing native is built
 locally.  The zip contains
 
@@ -30,7 +30,7 @@ ROOT = HERE.parent
 PACKAGE = ROOT / "lse_stock_analysis"
 ROOT_FILES = [HERE / "handler.py", HERE / "email_report.py"]
 
-PYTHON_VERSION = "3.11"
+PYTHON_VERSION = "3.12"
 PLATFORMS = ("manylinux2014_x86_64", "manylinux_2_17_x86_64", "manylinux_2_28_x86_64")
 UNZIPPED_LIMIT_MB = 250
 SAFETY_MARGIN_MB = 10

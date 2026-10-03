@@ -71,7 +71,7 @@ resource "aws_cloudwatch_log_group" "stock_selection" {
 resource "aws_lambda_function" "stock_selection" {
   function_name = var.function_name
   role          = aws_iam_role.stock_selection.arn
-  runtime       = "python3.11"
+  runtime       = "python3.12"
   architectures = ["x86_64"]
   handler       = "handler.handler"
   memory_size   = 1024
