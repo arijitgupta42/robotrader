@@ -1,0 +1,155 @@
+{
+ "trades": [
+  {
+   "week": "2026-W44",
+   "side": "buy",
+   "ticker": "AEP",
+   "company": "American Electric Power",
+   "market": "US",
+   "currency": "USD",
+   "sector": "Electricity & Grid",
+   "reason": "pick",
+   "quantity": 1.459042,
+   "price": 130.21,
+   "fx": 1.3379,
+   "value_gbp": 142.0,
+   "cost_gbp": 0.43,
+   "pnl_gbp": null,
+   "signal": {
+    "sector": "Electricity & Grid",
+    "confidence": 0.71,
+    "convergence_type": "News-Led"
+   }
+  },
+  {
+   "week": "2026-W44",
+   "side": "buy",
+   "ticker": "SSE.L",
+   "company": "SSE",
+   "market": "LSE",
+   "currency": "GBp",
+   "sector": "Electricity & Grid",
+   "reason": "pick",
+   "quantity": 5.405405,
+   "price": 2627.0,
+   "fx": null,
+   "value_gbp": 142.0,
+   "cost_gbp": 0.71,
+   "pnl_gbp": null,
+   "signal": {
+    "sector": "Electricity & Grid",
+    "confidence": 0.71,
+    "convergence_type": "News-Led"
+   }
+  },
+  {
+   "week": "2026-W44",
+   "side": "buy",
+   "ticker": "ITH.L",
+   "company": "Ithaca Energy",
+   "market": "LSE",
+   "currency": "GBp",
+   "sector": "Integrated Oil & Gas",
+   "reason": "pick",
+   "quantity": 25.429326,
+   "price": 302.8,
+   "fx": null,
+   "value_gbp": 77.0,
+   "cost_gbp": 0.39,
+   "pnl_gbp": null,
+   "signal": {
+    "sector": "Integrated Oil & Gas",
+    "confidence": 0.55,
+    "convergence_type": "News-Led"
+   }
+  },
+  {
+   "week": "2026-W45",
+   "side": "sell",
+   "ticker": "ITH.L",
+   "company": "Ithaca Energy",
+   "market": "LSE",
+   "currency": "GBp",
+   "sector": "Integrated Oil & Gas",
+   "reason": "stop",
+   "quantity": 25.429326,
+   "price": 281.0,
+   "fx": null,
+   "value_gbp": 71.46,
+   "cost_gbp": 0.0,
+   "pnl_gbp": -5.93,
+   "signal": null
+  },
+  {
+   "week": "2026-W45",
+   "side": "buy",
+   "ticker": "BKG.L",
+   "company": "Berkeley Group",
+   "market": "LSE",
+   "currency": "GBp",
+   "sector": "Housebuilders",
+   "reason": "pick",
+   "quantity": 4.012196,
+   "price": 4088.0,
+   "fx": null,
+   "value_gbp": 164.02,
+   "cost_gbp": 0.82,
+   "pnl_gbp": null,
+   "signal": {
+    "sector": "Housebuilders",
+    "confidence": 0.82,
+    "convergence_type": "Convergent"
+   }
+  },
+  {
+   "week": "2026-W45",
+   "side": "buy",
+   "ticker": "PSN.L",
+   "company": "Persimmon",
+   "market": "LSE",
+   "currency": "GBp",
+   "sector": "Housebuilders",
+   "reason": "pick",
+   "quantity": 8.113994,
+   "price": 1415.0,
+   "fx": null,
+   "value_gbp": 114.81,
+   "cost_gbp": 0.57,
+   "pnl_gbp": null,
+   "signal": {
+    "sector": "Housebuilders",
+    "confidence": 0.82,
+    "convergence_type": "Convergent"
+   }
+  },
+  {
+   "week": "2026-W47",
+   "side": "buy",
+   "ticker": "BARC.L",
+   "company": "Barclays",
+   "market": "LSE",
+   "currency": "GBp",
+   "sector": "UK Retail Banks",
+   "reason": "pick",
+   "quantity": 41.351908,
+   "price": 290.5,
+   "fx": null,
+   "value_gbp": 120.13,
+   "cost_gbp": 0.6,
+   "pnl_gbp": null,
+   "signal": {
+    "sector": "UK Retail Banks",
+    "confidence": 0.6,
+    "convergence_type": "Divergent"
+   }
+  }
+ ],
+ "notes": [
+  {
+   "week": "2026-W46",
+   "kind": "no_trade_week",
+   "ticker": null,
+   "message": "No successful scout result this week (no Universe Snapshot for this week (the scout or stock selection did not complete)); no Trades."
+  }
+ ]
+}

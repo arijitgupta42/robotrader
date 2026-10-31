@@ -1,0 +1,105 @@
+{
+ "week": "2026-W47",
+ "generated_at": "2026-11-21T06:14:00+00:00",
+ "methodology_version": "2026-10-03.2",
+ "portfolio_version": "2026-10-31.1",
+ "scout": {
+  "timestamp": "20261121T061400Z",
+  "prompt_version": "2026-10-31.2",
+  "models": [
+   "openai/gpt-6-luna-pro",
+   "deepseek/deepseek-v4.1-flash"
+  ],
+  "macro": "Mixed: growth steady, rates drifting lower.",
+  "signals": [
+   {
+    "sector": "Housebuilders",
+    "confidence": 0.7,
+    "convergence_type": "News-Led",
+    "rationale": "Housing data stays firm.",
+    "propagation": "Volumes recover.",
+    "invalidation_risk": "Rate expectations reverse."
+   },
+   {
+    "sector": "UK Retail Banks",
+    "confidence": 0.6,
+    "convergence_type": "Divergent",
+    "rationale": "Net interest margins hold up.",
+    "propagation": "Earnings upgrades.",
+    "invalidation_risk": "Faster rate cuts."
+   }
+  ],
+  "trace": null
+ },
+ "prices": {
+  "requested": 16,
+  "returned": 16,
+  "no_data": 0,
+  "short_history": 0,
+  "stale": 0,
+  "anomalies": 0,
+  "unit_fixed": 0,
+  "cutoffs": {
+   "LSE": "2026-11-20",
+   "US": "2026-11-20"
+  }
+ },
+ "analysis": {
+  "analysed": 16,
+  "failed": 0,
+  "grades": {
+   "A": 4,
+   "B": 5,
+   "C": 7
+  },
+  "setups": {
+   "breakout": 4,
+   "pullback": 5,
+   "none": 7
+  },
+  "tradeable": 9
+ },
+ "selection": [
+  {
+   "sector": "Housebuilders",
+   "confidence": 0.7,
+   "convergence_type": "News-Led",
+   "candidates": 3,
+   "eligible_checked": 3,
+   "picks_allowed": 2,
+   "picks": [
+    {
+     "ticker": "BKG.L",
+     "company": "Berkeley Group",
+     "market": "LSE",
+     "setup_grade": "A",
+     "risk_score": 3.0,
+     "close": 4190.0
+    }
+   ],
+   "runners_up": []
+  },
+  {
+   "sector": "UK Retail Banks",
+   "confidence": 0.6,
+   "convergence_type": "Divergent",
+   "candidates": 2,
+   "eligible_checked": 2,
+   "picks_allowed": 1,
+   "picks": [
+    {
+     "ticker": "BARC.L",
+     "company": "Barclays",
+     "market": "LSE",
+     "setup_grade": "A",
+     "risk_score": 3.0,
+     "close": 290.5
+    }
+   ],
+   "runners_up": []
+  }
+ ],
+ "email": {
+  "sent": true
+ }
+}
