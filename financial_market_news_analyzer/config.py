@@ -339,18 +339,21 @@ DISRUPTION_CATEGORIES: Dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 RSS_FEEDS: List[Dict[str, str]] = [
-    # --- UK financial / markets ---
+    # --- Broad business desks and FTSE 350 stock news (UK-published, global coverage) ---
     {"name": "BBC Business",             "url": "https://feeds.bbci.co.uk/news/business/rss.xml"},
-    {"name": "BBC UK Politics",          "url": "https://feeds.bbci.co.uk/news/politics/rss.xml"},
-    {"name": "Guardian Business",        "url": "https://www.theguardian.com/uk/business/rss"},
+    {"name": "Guardian Business",        "url": "https://www.theguardian.com/business/rss"},
     {"name": "Guardian Economics",       "url": "https://www.theguardian.com/business/economics/rss"},
-    {"name": "City A.M.",                "url": "https://www.cityam.com/feed/"},
-    {"name": "Sky News Business",        "url": "https://feeds.skynews.com/feeds/rss/business.xml"},
-    {"name": "Telegraph Business",       "url": "https://www.telegraph.co.uk/business/rss.xml"},
-    {"name": "Proactive Investors UK",   "url": "https://www.proactiveinvestors.co.uk/feed"},
     {"name": "Investing.com UK Stock News", "url": "https://uk.investing.com/rss/news_25.rss"},
-    {"name": "Investing.com UK Economy",    "url": "https://uk.investing.com/rss/news_14.rss"},
-    {"name": "Investing.com UK Commodities","url": "https://uk.investing.com/rss/news_11.rss"},
+
+    # --- Europe, Asia and emerging markets (each returned current items from a plain GET on 2026-10-31) ---
+    {"name": "CNBC International",       "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100727362"},
+    {"name": "Bloomberg Markets",        "url": "https://feeds.bloomberg.com/markets/news.rss"},
+    {"name": "SCMP Business",            "url": "https://www.scmp.com/rss/92/feed"},
+    {"name": "Straits Times Business",   "url": "https://www.straitstimes.com/news/business/rss.xml"},
+    {"name": "ABC Australia Business",   "url": "https://www.abc.net.au/news/feed/51120/rss.xml"},
+    {"name": "Livemint Markets",         "url": "https://www.livemint.com/rss/markets"},
+    {"name": "DW Business",              "url": "https://rss.dw.com/rdf/rss-en-bus"},
+    {"name": "France24 Business",        "url": "https://www.france24.com/en/business/rss"},
 
     # --- US financial / markets ---
     {"name": "CNBC Top News",            "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114"},
@@ -382,6 +385,8 @@ RSS_FEEDS: List[Dict[str, str]] = [
     {"name": "Investing.com US Commodities",  "url": "https://www.investing.com/rss/news_11.rss"},
     {"name": "Federal Reserve Press",    "url": "https://www.federalreserve.gov/feeds/press_all.xml"},
     {"name": "Federal Reserve Speeches", "url": "https://www.federalreserve.gov/feeds/speeches.xml"},
+    {"name": "ECB Press",                "url": "https://www.ecb.europa.eu/rss/press.html"},
+    {"name": "BIS Central Bank Speeches","url": "https://www.bis.org/doclist/cbspeeches.rss"},
     {"name": "Thomson Reuters IR",       "url": "https://ir.thomsonreuters.com/rss/news-releases.xml"},
 ]
 
@@ -412,10 +417,15 @@ RSS_FEEDS: List[Dict[str, str]] = [
 #                                   — global but US-weighted, with the best DD;
 #                                     catch macro and sector moves before the UK
 #                                     press does and cover the S&P 500 directly
-#   UKInvesting / UKPersonalFinance — retail FTSE 350 discussion; the only source
-#                                     for the three UK-specific sectors
+#   CanadianInvestor / JapanFinance / UKInvesting
+#                                   — last and lowest priority: regional retail views
+#                                     outside the US.  The scout is region-neutral (the
+#                                     investor is UK-based but invests globally); r/UKInvesting
+#                                     is nearly dormant (median post age 164 days on 2026-10-31).
+#                                     EuropeanInvestors returned HTTP 403 and IndiaInvestments
+#                                     had 1 post in 7 days when checked, so neither is listed.
 #   SecurityAnalysis                — institutional-quality long-form DD
-#   Economics                       — macro regime commentary
+#   Economics / geopolitics         — macro regime commentary
 #   Commodities / energy            — commodity price thesis; maps to Mining,
 #                                     Oil & Gas, Renewables sectors directly
 #   Semiconductors / biotech        — sector subs for the two themes where the
@@ -427,14 +437,13 @@ RSS_FEEDS: List[Dict[str, str]] = [
 # ---------------------------------------------------------------------------
 
 REDDIT_REQUESTS: List[Dict] = [
-    {"subreddits": ["stocks", "investing", "StockMarket"],         "sort": "hot"},
-    {"subreddits": ["UKInvesting", "UKPersonalFinance"],           "sort": "hot"},
-    {"subreddits": ["stocks", "investing"],                        "sort": "top", "t": "week"},
-    {"subreddits": ["SecurityAnalysis", "ValueInvesting"],         "sort": "hot"},
-    {"subreddits": ["Economics", "Commodities", "energy"],         "sort": "hot"},
-    {"subreddits": ["Semiconductors", "biotech"],                  "sort": "hot"},
-    {"subreddits": ["UKInvesting"],                                "sort": "top", "t": "week"},
-    {"subreddits": ["wallstreetbets", "options", "thetagang"],     "sort": "hot"},
+    {"subreddits": ["stocks", "investing", "StockMarket"],                   "sort": "hot"},
+    {"subreddits": ["stocks", "investing"],                                  "sort": "top", "t": "week"},
+    {"subreddits": ["SecurityAnalysis", "ValueInvesting"],                   "sort": "hot"},
+    {"subreddits": ["Economics", "Commodities", "energy", "geopolitics"],    "sort": "hot"},
+    {"subreddits": ["Semiconductors", "biotech"],                            "sort": "hot"},
+    {"subreddits": ["wallstreetbets", "options", "thetagang"],               "sort": "hot"},
+    {"subreddits": ["CanadianInvestor", "JapanFinance", "UKInvesting"],      "sort": "hot"},
 ]
 
 
@@ -490,7 +499,7 @@ OPENROUTER_MODELS: List[str] = [
 # threshold in this file that shapes the signals) changes.  It is saved with every scout
 # result and copied into the Universe Snapshot, so the methodology review can compare
 # the weeks before and after a change.
-PROMPT_VERSION: str = "2026-10-31.1"
+PROMPT_VERSION: str = "2026-10-31.2"
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
 OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
