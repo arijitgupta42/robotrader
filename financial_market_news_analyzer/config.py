@@ -386,17 +386,26 @@ RSS_FEEDS: List[Dict[str, str]] = [
 ]
 
 # ---------------------------------------------------------------------------
-# Reddit Subreddit Configuration
+# Reddit Request Configuration
 #
-# Each entry configures one subreddit to scrape.
+# Reddit's public RSS allows about ONE request per minute per IP (measured
+# 2026-10-31; the x-ratelimit-reset header says when the next one is allowed),
+# so the pass is a short list of requests, not one request per subreddit.  Two
+# URL features make each request count:
+#   - ?limit=100 returns up to 100 posts (the default is 25)
+#   - r/a+b+c/hot.rss serves several subreddits in one request
+# reddit_fetcher.py waits out the rate limit between requests, so the list takes
+# about a minute per entry.  ORDER MATTERS: the time budget (RedditConfig) drops
+# the entries at the end first, so keep the highest-value requests first.
 #
 # Fields:
-#   subreddit  : subreddit name (no r/ prefix)
-#   sorts      : list of sort modes to fetch — "hot" captures current buzz,
-#                "top" with t=week catches the week's highest-conviction posts
-#   limit      : max posts per sort request (Reddit API hard cap = 100)
-#   min_score  : discard posts below this net-upvote count to filter noise.
-#                Lower for niche UK subs (less traffic), higher for WSB-scale.
+#   subreddits : subreddit names (no r/ prefix) served by this request.  A combined
+#                "hot" feed ranks posts across subreddits by Reddit's hot score, so
+#                group subreddits of similar traffic; a small one next to a big one
+#                would be crowded out.
+#   sort       : "hot" captures current buzz; "top" with t="week" catches the week's
+#                highest-conviction posts
+#   t          : time window for sort="top" (day | week | month)
 #
 # Subreddit selection rationale:
 #   stocks / investing / StockMarket / ValueInvesting
@@ -415,51 +424,40 @@ RSS_FEEDS: List[Dict[str, str]] = [
 #                                     crowded; also surfaces momentum names
 #   options / thetagang             — options flow can lead equity moves by
 #                                     days; surfaces near-term catalyst plays
-#
-# ORDER MATTERS.  Reddit's public RSS allows roughly one request per 20-30
-# seconds per IP, and the fetcher spaces requests 1.5 s apart, so most requests
-# in a cycle get HTTP 429 and return nothing (the first live run on AWS got posts
-# from 2 of 17 requests).  The first requests in the list are the ones that get
-# through, so keep the highest-value subreddits first.
 # ---------------------------------------------------------------------------
 
-REDDIT_SUBREDDITS: List[Dict] = [
-    # --- Global / high-quality DD (highest value first) ---
-    {"subreddit": "stocks",              "sorts": ["hot", "top"], "limit": 35, "min_score": 150},
-    {"subreddit": "investing",           "sorts": ["hot", "top"], "limit": 35, "min_score": 200},
-    {"subreddit": "StockMarket",         "sorts": ["hot"],        "limit": 25, "min_score": 150},
-    {"subreddit": "SecurityAnalysis",    "sorts": ["hot", "top"], "limit": 25, "min_score": 50},
-    {"subreddit": "ValueInvesting",      "sorts": ["hot"],        "limit": 25, "min_score": 50},
-
-    # --- UK-focused ---
-    # "hot"       -> current buzz and active discussions this week
-    # "top" t=week -> the week's highest-conviction posts by community vote
-    {"subreddit": "UKInvesting",         "sorts": ["hot", "top"], "limit": 30, "min_score": 20},
-    {"subreddit": "UKPersonalFinance",   "sorts": ["hot"],        "limit": 20, "min_score": 50},
-
-    # --- Macro / commodities ---
-    {"subreddit": "Economics",           "sorts": ["hot"],        "limit": 20, "min_score": 100},
-    {"subreddit": "Commodities",         "sorts": ["hot", "top"], "limit": 20, "min_score": 30},
-    {"subreddit": "energy",              "sorts": ["hot"],        "limit": 15, "min_score": 30},
-
-    # --- Sector subreddits ---
-    {"subreddit": "Semiconductors",      "sorts": ["hot"],        "limit": 20, "min_score": 20},
-    {"subreddit": "biotech",             "sorts": ["hot"],        "limit": 20, "min_score": 20},
-
-    # --- Sentiment / momentum (contrarian + momentum signals) ---
-    {"subreddit": "wallstreetbets",      "sorts": ["hot"],        "limit": 25, "min_score": 500},
-    {"subreddit": "options",             "sorts": ["hot"],        "limit": 20, "min_score": 100},
-    {"subreddit": "thetagang",           "sorts": ["hot"],        "limit": 15, "min_score": 50},
+REDDIT_REQUESTS: List[Dict] = [
+    {"subreddits": ["stocks", "investing", "StockMarket"],         "sort": "hot"},
+    {"subreddits": ["UKInvesting", "UKPersonalFinance"],           "sort": "hot"},
+    {"subreddits": ["stocks", "investing"],                        "sort": "top", "t": "week"},
+    {"subreddits": ["SecurityAnalysis", "ValueInvesting"],         "sort": "hot"},
+    {"subreddits": ["Economics", "Commodities", "energy"],         "sort": "hot"},
+    {"subreddits": ["Semiconductors", "biotech"],                  "sort": "hot"},
+    {"subreddits": ["UKInvesting"],                                "sort": "top", "t": "week"},
+    {"subreddits": ["wallstreetbets", "options", "thetagang"],     "sort": "hot"},
 ]
 
 
 @dataclass
 class RedditConfig:
     max_posts_per_cycle: int = 200
-    # Fallback min_score if not specified per-subreddit.
-    # RSS feeds do not expose scores so this is not actively used —
-    # quality filtering is delegated entirely to the LLM pass.
-    default_min_score:     int = 50
+    # Posts asked for per request (Reddit's RSS accepts up to 100).
+    posts_per_request: int = 100
+    # Stop starting new requests after this many seconds.  The pass runs alongside
+    # the news pass (see sector_scout.py) and must leave room for the Reddit and
+    # consolidation LLM passes inside the Lambda timeout (840 s, infra/scout.tf).
+    time_budget_s: float = 540.0
+    # Drop posts older than this.  A quiet subreddit's "hot" feed is mostly stale (r/UKInvesting's
+    # 100 hottest posts had a median age of 164 days on 2026-10-31); news uses the same 7 days.
+    max_age_days: int = 7
+    # Seconds added to Reddit's x-ratelimit-reset before the next request.
+    reset_margin_s: float = 1.5
+    # Wait used when the response carries no rate-limit headers (the measured limit is 1/min).
+    fallback_gap_s: float = 60.0
+    # Wait when Reddit says requests remain in the window.
+    min_gap_s: float = 2.0
+    # Never wait longer than this for one reset (guards against a bad header).
+    max_wait_s: float = 75.0
     # Minimum bullish_conviction from reddit_analyzer to include in consolidation
     min_reddit_conviction: float = 0.40
 
@@ -492,7 +490,7 @@ OPENROUTER_MODELS: List[str] = [
 # threshold in this file that shapes the signals) changes.  It is saved with every scout
 # result and copied into the Universe Snapshot, so the methodology review can compare
 # the weeks before and after a change.
-PROMPT_VERSION: str = "2026-10-03.3"
+PROMPT_VERSION: str = "2026-10-31.1"
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
 OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]

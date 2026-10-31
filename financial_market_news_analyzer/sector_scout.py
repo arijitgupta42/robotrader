@@ -67,6 +67,8 @@ from __future__ import annotations
 
 import logging
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Callable, List, Optional
@@ -199,28 +201,32 @@ class SectorScout:
         logger.info("=== Cycle %d started ===", cycle)
 
         # ------------------------------------------------------------------
+        # Step 2 (started first): Collect Reddit posts in the background.
+        # Reddit's public RSS allows about one request a minute, so this takes
+        # minutes of mostly waiting; it runs alongside the news fetch and the
+        # news LLM pass and is collected just before the Reddit LLM pass.
+        # ------------------------------------------------------------------
+        reddit_stop = threading.Event()
+        reddit_future = None
+        if not self._skip_reddit:
+            logger.info("--- Step 2/4: Collecting Reddit posts (background) ---")
+            executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="reddit")
+            reddit_future = executor.submit(
+                collect_reddit_posts, REDDIT_CFG.max_posts_per_cycle, reddit_stop
+            )
+            executor.shutdown(wait=False)
+        else:
+            logger.info("--- Step 2/4: Reddit collection skipped (skip_reddit=True) ---")
+
+        # ------------------------------------------------------------------
         # Step 1: Collect news headlines
         # ------------------------------------------------------------------
         logger.info("--- Step 1/4: Collecting news headlines ---")
         headlines = collect_headlines(max_total=SCHEDULER_CFG.max_headlines_per_cycle)
         if not headlines:
+            reddit_stop.set()
             logger.warning("Cycle %d: no headlines — skipping all LLM passes.", cycle)
             return [], False
-
-        # ------------------------------------------------------------------
-        # Step 2: Collect Reddit posts
-        # ------------------------------------------------------------------
-        reddit_posts: List[RedditPost] = []
-        if not self._skip_reddit:
-            logger.info("--- Step 2/4: Collecting Reddit posts ---")
-            try:
-                reddit_posts = collect_reddit_posts(max_total=REDDIT_CFG.max_posts_per_cycle)
-            except Exception as exc:
-                logger.warning(
-                    "Cycle %d: Reddit collection failed (%s) — continuing without Reddit.", cycle, exc
-                )
-        else:
-            logger.info("--- Step 2/4: Reddit collection skipped (skip_reddit=True) ---")
 
         # ------------------------------------------------------------------
         # Step 3a: News LLM pass
@@ -282,6 +288,17 @@ class SectorScout:
         # ------------------------------------------------------------------
         # Step 3b: Reddit LLM pass
         # ------------------------------------------------------------------
+        reddit_posts: List[RedditPost] = []
+        if reddit_future is not None:
+            logger.info("--- Step 2/4: Waiting for the Reddit posts ---")
+            try:
+                reddit_posts = reddit_future.result(timeout=REDDIT_CFG.time_budget_s + 60)
+            except Exception as exc:
+                reddit_stop.set()
+                logger.warning(
+                    "Cycle %d: Reddit collection failed (%r) — continuing without Reddit.", cycle, exc
+                )
+
         reddit_signals: List[RedditSentimentSignal] = []
         reddit_llm_ok = False
 
