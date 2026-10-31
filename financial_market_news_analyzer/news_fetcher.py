@@ -24,6 +24,7 @@ import feedparser
 import requests
 from bs4 import BeautifulSoup
 
+import run_trace
 from config import RSS_FEEDS, SCHEDULER_CFG
 
 logger = logging.getLogger(__name__)
@@ -144,6 +145,7 @@ def fetch_rss(feed_cfg: dict, timeout: int = 10) -> List[Headline]:
         level = _health.log_level(url)
         logger.log(level, "DNS lookup failed for %s (%s) — skipping.", name, url)
         _health.record_failure(url)
+        run_trace.feed(name, 0, ok=False, error="DNS lookup failed")
         return []
 
     headlines: List[Headline] = []
@@ -166,6 +168,7 @@ def fetch_rss(feed_cfg: dict, timeout: int = 10) -> List[Headline]:
                 level = _health.log_level(url)
                 logger.log(level, "Network error fetching %s: %s", name, exc_msg)
                 _health.record_failure(url)
+                run_trace.feed(name, 0, ok=False, error="network error")
                 return []
             else:
                 # Malformed XML — log at DEBUG, continue parsing
@@ -198,11 +201,13 @@ def fetch_rss(feed_cfg: dict, timeout: int = 10) -> List[Headline]:
             logger.info("SUCCESS %-30s  %d headlines", name, entries_parsed)
         else:
             logger.debug("%-30s  0 headlines (empty feed)", name)
+        run_trace.feed(name, entries_parsed, ok=True)
 
     except Exception as exc:
         level = _health.log_level(url)
         logger.log(level, "Unexpected error fetching %s: %s", name, exc)
         _health.record_failure(url)
+        run_trace.feed(name, len(headlines), ok=False, error=type(exc).__name__)
 
     return headlines
 
@@ -409,9 +414,13 @@ def collect_headlines(max_total: Optional[int] = None, max_age_days: int = 7) ->
 
     logger.info("--- Fetching RSS feeds (cutoff: last %d days) ---", max_age_days)
     stale_count = 0
+    duplicates = 0
+    fetched = 0
     for feed_cfg in RSS_FEEDS:
         for h in fetch_rss(feed_cfg):
+            fetched += 1
             if h.uid in seen_uids:
+                duplicates += 1
                 continue
             seen_uids.add(h.uid)
             if h.published < cutoff:
@@ -440,9 +449,19 @@ def collect_headlines(max_total: Optional[int] = None, max_age_days: int = 7) ->
 
     # HL Weekly Outlook is always current (scraped with datetime.now()) — no age filter needed
     logger.info("--- Fetching HL weekly outlook ---")
-    for h in fetch_hl_weekly_outlook():
+    hl = fetch_hl_weekly_outlook()
+    run_trace.feed("HL Weekly Outlook", len(hl), ok=bool(hl), error=None if hl else "no page found")
+    for h in hl:
+        fetched += 1
         if h.uid not in seen_uids:
             seen_uids.add(h.uid)
             all_headlines.append(h)
+        else:
+            duplicates += 1
 
-    return _cap_balanced(all_headlines, max_total)
+    kept = _cap_balanced(all_headlines, max_total)
+    count = lambda items: {s: sum(1 for h in items if h.source == s) for s in {h.source for h in items}}  # noqa: E731
+    run_trace.feed_counts(fresh=count(all_headlines), kept=count(kept))
+    run_trace.headlines(fetched=fetched, duplicates=duplicates, stale=stale_count, fresh=len(all_headlines),
+                        cap=max_total, kept=len(kept), max_age_days=max_age_days)
+    return kept

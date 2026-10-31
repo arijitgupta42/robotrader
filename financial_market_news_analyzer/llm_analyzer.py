@@ -36,6 +36,7 @@ from config import (
     SCHEDULER_CFG,
     OPENROUTER_MODELS,
 )
+import run_trace
 from news_fetcher import Headline
 
 logger = logging.getLogger(__name__)
@@ -601,7 +602,9 @@ def analyse_headlines(headlines: List[Headline]) -> tuple[List[Dict], bool]:
     messages = _build_messages(headlines)
     logger.info("Invoking OpenRouter on %d headlines ...", len(headlines))
 
+    started = time.monotonic()
     decoded, model_used = _invoke_with_fallback(messages)
+    run_trace.llm_pass("news", OPENROUTER_MODELS, model_used, decoded is not None, time.monotonic() - started)
 
     if decoded is None:
         logger.error("All OpenRouter models failed — using keyword fallback.")
