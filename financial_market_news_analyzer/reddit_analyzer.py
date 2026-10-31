@@ -30,6 +30,7 @@ from config import (
     SECTORS,
     OPENROUTER_RETRY_DELAYS,
     OPENROUTER_MODELS,
+    REDDIT_CFG,
 )
 from reddit_fetcher import RedditPost, cap_balanced
 from llm_analyzer import _load_api_key, _extract_and_decode   # reuse helpers
@@ -298,8 +299,8 @@ def analyse_reddit_posts(posts: List[RedditPost]) -> tuple[List[RedditSentimentS
         return [], False
 
     # Cap to avoid context window issues.  RSS has no scores, so the cap gives every
-    # subreddit a fair share (newest first within each) instead of keeping the newest 60.
-    capped_posts = cap_balanced(posts, 60)
+    # subreddit a fair share (newest first within each) instead of keeping the newest ones.
+    capped_posts = cap_balanced(posts, REDDIT_CFG.max_posts_for_llm)
     logger.info("Reddit LLM: analysing %d posts (from %d total) ...", len(capped_posts), len(posts))
 
     messages = _build_reddit_messages(capped_posts)

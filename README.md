@@ -128,7 +128,7 @@ signals, llm_succeeded = SectorScout().run_cycle()     # llm_succeeded is False 
 result = SectorScout().run_cycle_verbose()             # signals, llm_succeeded, news_signals, reddit_signals, macro_regime
 ```
 
-Thresholds are in `config.py`: `SCHEDULER_CFG.min_confidence` 0.55, `min_disruption_strength` 0.50, `REDDIT_CFG.min_reddit_conviction` 0.40, at most 500 headlines and 200 posts per cycle.
+Thresholds are in `config.py`: `SCHEDULER_CFG.min_confidence` 0.55, `min_disruption_strength` 0.50, `REDDIT_CFG.min_reddit_conviction` 0.40, at most 500 headlines and 200 posts per cycle (`REDDIT_CFG.max_posts_for_llm` = 120 of those go to the Reddit LLM pass).
 
 ---
 
