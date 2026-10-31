@@ -59,8 +59,9 @@ _REDDIT_SCHEMA = """\
 }"""
 
 _SYSTEM_PROMPT = f"""\
-You are a global equity analyst specialising in retail sentiment, covering
-the FTSE 350 (London) and the S&P 500 (New York).
+You are a global equity analyst specialising in retail sentiment. Your view is
+region-neutral: posts can come from any country and no region is preferred.
+Stocks are picked from the FTSE 350 (London) and the S&P 500 (New York).
 
 Your job: read a batch of Reddit posts from finance/trading communities and
 identify sectors where retail traders are BULLISH right now.

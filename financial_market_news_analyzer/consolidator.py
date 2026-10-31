@@ -54,7 +54,7 @@ _DISRUPTION_NAMES = list(DISRUPTION_CATEGORIES.keys())
 # ---------------------------------------------------------------------------
 
 _CONSOLIDATED_SCHEMA = """\
-{"macro": {"regime": "<1 sentence: BoE stance + dominant global factor>"},
+{"macro": {"regime": "<1 sentence: major central banks' stance (Fed, ECB, BoE, BoJ) + dominant global factor>"},
  "signals": [
   {"sector": "<exact from SECTORS>",
    "confidence": 0.0,
@@ -78,7 +78,8 @@ _CONSOLIDATED_SCHEMA = """\
 }"""
 
 _SYSTEM_PROMPT = f"""\
-You are a senior global equity portfolio manager (FTSE 350 and S&P 500)
+You are a senior global equity portfolio manager (stocks picked from the FTSE 350
+and the S&P 500; your view is region-neutral, no region is preferred)
 reviewing two independently scored intelligence feeds: (A) a structured news analysis and (B) retail trader
 sentiment from Reddit.
 

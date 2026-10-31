@@ -56,4 +56,5 @@ def test_every_feed_in_the_config_is_unique_and_well_formed(news_fetcher):
     assert len(config.REDDIT_REQUESTS) <= 10      # about a minute each: must fit the time budget
     assert len(config.REDDIT_REQUESTS) * 60 <= config.REDDIT_CFG.time_budget_s + 60
     covered = {sub for request in config.REDDIT_REQUESTS for sub in request["subreddits"]}
-    assert len(covered) == 15
+    assert {"stocks", "investing", "wallstreetbets", "geopolitics"} <= covered
+    assert "UKPersonalFinance" not in covered
