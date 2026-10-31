@@ -20,6 +20,7 @@ Every three months the `backtest-report` Lambda emails a Backtest Report (see `C
 | Indicator and risk numbers | `lse_stock_analysis/selection.py` (`TREND_PARAMS`, `RISK_PARAMS`) and the two agents in `lse_stock_analysis/agents/` | Yes, by re-running the analysis on the stored prices (`stock_selection_lambda/backfill.py`) |
 | Which stocks belong to which Sector (the Sector Map; for the S&P 500 the GICS mapping and overrides) | `lse_stock_analysis/sector_map.json`, `lse_stock_analysis/sp500_map.py` | Yes: re-select past snapshots with the changed map |
 | Data-quality thresholds | `lse_stock_analysis/prices.py` (`PRICE_ANOMALY_MOVE`, `MIN_BARS`, `STALE_DAYS`) | Yes |
+| Paper Portfolio rules: sizing, cash floor, Position limit, minimum trade, costs, exits | `lse_stock_analysis/portfolio.py` (see ADR 0003) | Yes: the allocator is deterministic, so the weeks since W44 2026 can be replayed from their stored snapshots |
 
 ## Rules for proposing a change
 
@@ -36,9 +37,10 @@ The data is thin (about 20 weeks at first, a handful of Picks), so the risk is f
 ## What a review produces
 
 1. A short written summary: the headline comparison (Picks vs Candidates vs Universe at 2/4/6 weeks, overall and for each market), the breakdowns that clear the bar, the ones that do not, with sample sizes.
+   Include the Paper Portfolio against its Benchmark over the quarter. Treat it as context, not evidence: it is one path through a few dozen Trades, and it mixes stock selection with sizing, costs and currency.
 2. For each proposed change: the evidence table, the out-of-sample check, the mechanism, and what the next review should see if it worked.
 3. A pull request with the changes, which also:
-   - bumps `METHODOLOGY_VERSION` in `lse_stock_analysis/selection.py` and/or `PROMPT_VERSION` in `financial_market_news_analyzer/config.py`;
+   - bumps `METHODOLOGY_VERSION` in `lse_stock_analysis/selection.py`, `PROMPT_VERSION` in `financial_market_news_analyzer/config.py` and/or `PORTFOLIO_VERSION` in `lse_stock_analysis/portfolio.py`;
    - updates or adds tests for changed rules;
    - adds an entry to `docs/methodology-changelog.md` (date, versions, change, evidence, what to look for next time, watch items).
 4. The deploy steps (rebuild and update the scout and/or stock-selection Lambda), left to the owner as with any production change.
