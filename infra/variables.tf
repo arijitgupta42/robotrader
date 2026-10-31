@@ -82,3 +82,9 @@ variable "site_url" {
   type        = string
   default     = "https://arijitgupta42.github.io/robotrader/"
 }
+
+variable "github_repo" {
+  description = "owner/name of the GitHub repository whose Pages workflow may read the website's data."
+  type        = string
+  default     = "arijitgupta42/robotrader"
+}

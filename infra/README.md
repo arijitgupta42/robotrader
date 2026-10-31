@@ -7,7 +7,8 @@ Everything the pipeline needs in AWS (account `544611252144`, region `eu-west-1`
 | `scout.tf` | The sector scout: Lambda, role, log group, the attempt-window SSM parameter, and its two schedules (weekly trigger, retry) |
 | `main.tf` | The stock-selection Lambda, its role and log group, and the S3 trigger on `successful/` |
 | `backtest.tf` | The quarterly `backtest-report` Lambda, its role, and its schedule |
-| `data_bucket.tf` | The results bucket (`successful/`, `failed/`, `snapshots/`, `reports/`) with its lifecycle rules |
+| `data_bucket.tf` | The results bucket (`successful/`, `failed/`, `snapshots/`, `reports/`, `portfolio/`, `site/`) with its lifecycle rules |
+| `github_pages.tf` | GitHub's OIDC provider and the role the website's GitHub Actions workflow assumes to read `site/` (no AWS keys in GitHub) |
 | `account.tf` | The verified SES sender, the cost alert (budget), and the Terraform state bucket |
 | `imports.tf` | One-time `import` blocks that adopted the resources created by hand |
 
@@ -34,6 +35,16 @@ terraform apply
 ```
 
 `terraform apply` redeploys any Lambda whose zip changed. The plan is the review step: read it for `destroy` and for changes you did not expect.
+
+## The website's data role
+
+The GitHub Pages workflow (`.github/workflows/pages.yml`) reads the website's data from `site/` with the role in `github_pages.tf`. Its ARN is a Terraform output and goes into the workflow as a plain value (an ARN is not a secret):
+
+```bash
+terraform output github_pages_role_arn
+```
+
+The role trusts only jobs on `arijitgupta42/robotrader`'s `main` branch, whose OIDC subject is `repo:arijitgupta42/robotrader:ref:refs/heads/main`. A job that declares a GitHub `environment:` gets a different subject and is refused. So the workflow's **build** job, which has no environment, reads S3, and only the deploy job uses the `github-pages` environment. It can list and read `site/` and nothing else.
 
 ## State bucket
 
