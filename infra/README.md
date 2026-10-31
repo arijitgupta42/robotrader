@@ -44,12 +44,20 @@ The workflow reads `site/` with the role in `github_pages.tf`, assumed through G
 
 ### Runbook: deploy and start the Paper Portfolio at W44
 
-1. Build both zips and apply (the plan adds the OIDC provider, role and policy, and updates the two stock Lambdas' code, env vars and role policies and the scout's code):
+Run every command from the repository root. Each step has a bash version (Linux, macOS, Git Bash) and a Windows PowerShell version. Windows PowerShell 5.1 has no `&&`, and it strips the inner double quotes from JSON passed inline to native programs like `aws`. So the PowerShell versions put one command per line and pass the Lambda payload in a file.
+
+1. Build both zips and apply. The plan adds the OIDC provider, role and policy. It also updates the stock-selection and backtest Lambdas' code, env vars and role policies, and the scout's code. Read the plan before you confirm.
 
    ```bash
    python stock_selection_lambda/build_zip.py
    python financial_market_news_analyzer/build_zip.py
-   cd infra && terraform plan && terraform apply
+   terraform -chdir=infra apply
+   ```
+
+   ```powershell
+   python stock_selection_lambda/build_zip.py
+   python financial_market_news_analyzer/build_zip.py
+   terraform -chdir=infra apply
    ```
 
 2. Start the portfolio from the stored W44 week. This doesn't download prices or send an email. It fills at the same closes the W44 snapshot holds and publishes `site/`:
@@ -60,17 +68,41 @@ The workflow reads `site/` with the role in `github_pages.tf`, assumed through G
    aws s3 ls s3://sector-scout-results-544611252144/site/ --recursive --region eu-west-1
    ```
 
-   `out.json` should say `"status": "ok"` with the number of Trades and the total. The same can be run locally with `python stock_selection_lambda/portfolio_step.py --bucket sector-scout-results-544611252144 --week 2026-W44`.
+   ```powershell
+   Set-Content -Path payload.json -Value '{"portfolio_week":"2026-W44"}' -Encoding ascii
+   aws lambda invoke --function-name stock-selection --region eu-west-1 --payload fileb://payload.json out.json
+   Get-Content out.json
+   aws s3 ls s3://sector-scout-results-544611252144/portfolio/weeks/ --region eu-west-1
+   aws s3 ls s3://sector-scout-results-544611252144/site/ --recursive --region eu-west-1
+   Remove-Item payload.json, out.json
+   ```
 
-3. Turn on GitHub Pages and point the workflow at the role (both are one-time repository settings):
+   `out.json` should say `"status": "ok"` with the number of Trades and the total. The same can be run locally with `python stock_selection_lambda/portfolio_step.py --bucket sector-scout-results-544611252144 --week 2026-W44`. That command is the same in both shells.
+
+3. Turn on GitHub Pages and point the workflow at the role. Both are one-time repository settings:
 
    - Settings → Pages → Build and deployment → Source: **GitHub Actions**.
-   - `gh variable set SITE_DATA_ROLE_ARN --body "$(terraform -chdir=infra output -raw github_pages_role_arn)"`
-
-4. Publish and check:
+   - Set the repository variable to the role's ARN:
 
    ```bash
-   gh workflow run pages.yml && gh run watch
+   gh variable set SITE_DATA_ROLE_ARN --body "$(terraform -chdir=infra output -raw github_pages_role_arn)"
+   ```
+
+   ```powershell
+   $arn = terraform -chdir=infra output -raw github_pages_role_arn
+   gh variable set SITE_DATA_ROLE_ARN --body $arn
+   ```
+
+4. Publish and check. The run takes a few seconds to appear before it can be watched:
+
+   ```bash
+   gh workflow run pages.yml && sleep 5 && gh run watch
+   ```
+
+   ```powershell
+   gh workflow run pages.yml
+   Start-Sleep -Seconds 5
+   gh run watch
    ```
 
    Open the site at desktop and phone widths. W44's run should replay in the 3D machine. The scout's stages show "No detail recorded" for W44, because that run predates the Run Trace; from W45 every stage has its numbers.
