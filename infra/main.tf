@@ -1,7 +1,8 @@
 data "aws_caller_identity" "current" {}
 
 # ---------------------------------------------------------------------------
-# IAM: read successful/, write snapshots/ and failed/, send mail, write logs
+# IAM: read successful/, write snapshots/ and failed/, keep the Paper Portfolio in portfolio/, publish the
+# website's data to site/, send mail, write logs
 # ---------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "assume" {
@@ -20,16 +21,41 @@ resource "aws_iam_role" "stock_selection" {
 }
 
 data "aws_iam_policy_document" "permissions" {
+  # Listing lets a missing object come back as NoSuchKey (not AccessDenied), and lets the portfolio step find
+  # its weekly records, a stored week's scout result and the website's week index.
   statement {
-    sid       = "ReadScoutResults"
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.data.arn}/successful/*"]
+    sid       = "ListOwnPrefixes"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.data.arn]
+    condition {
+      test     = "StringLike"
+      variable = "s3:prefix"
+      values = [
+        "successful/*", "snapshots/*", "portfolio/*", "portfolio/", "site/*", "site/",
+      ]
+    }
   }
 
   statement {
-    sid       = "WriteSnapshotsAndFailures"
-    actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.data.arn}/snapshots/*", "${aws_s3_bucket.data.arn}/failed/*"]
+    sid     = "ReadScoutResultsSnapshotsPortfolioAndSite"
+    actions = ["s3:GetObject"]
+    resources = [
+      "${aws_s3_bucket.data.arn}/successful/*",
+      "${aws_s3_bucket.data.arn}/snapshots/*",
+      "${aws_s3_bucket.data.arn}/portfolio/*",
+      "${aws_s3_bucket.data.arn}/site/*",
+    ]
+  }
+
+  statement {
+    sid     = "WriteSnapshotsFailuresPortfolioAndSite"
+    actions = ["s3:PutObject"]
+    resources = [
+      "${aws_s3_bucket.data.arn}/snapshots/*",
+      "${aws_s3_bucket.data.arn}/failed/*",
+      "${aws_s3_bucket.data.arn}/portfolio/*",
+      "${aws_s3_bucket.data.arn}/site/*",
+    ]
   }
 
   statement {
@@ -76,6 +102,8 @@ resource "aws_lambda_function" "stock_selection" {
     variables = {
       SES_SENDER    = var.ses_sender
       SES_RECIPIENT = var.ses_recipient
+      BUCKET_NAME   = var.data_bucket
+      SITE_URL      = var.site_url
     }
   }
 

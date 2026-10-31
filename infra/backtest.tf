@@ -13,20 +13,20 @@ resource "aws_cloudwatch_log_group" "backtest" {
 
 data "aws_iam_policy_document" "backtest_permissions" {
   statement {
-    sid       = "ListSnapshots"
+    sid       = "ListSnapshotsAndPortfolio"
     actions   = ["s3:ListBucket"]
     resources = [aws_s3_bucket.data.arn]
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
-      values   = ["snapshots/*", "snapshots/"]
+      values   = ["snapshots/*", "snapshots/", "portfolio/*", "portfolio/"]
     }
   }
 
   statement {
-    sid       = "ReadSnapshots"
+    sid       = "ReadSnapshotsAndPortfolio"
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.data.arn}/snapshots/*"]
+    resources = ["${aws_s3_bucket.data.arn}/snapshots/*", "${aws_s3_bucket.data.arn}/portfolio/*"]
   }
 
   statement {

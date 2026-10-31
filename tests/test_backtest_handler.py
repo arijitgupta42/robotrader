@@ -109,3 +109,28 @@ def test_failures_in_saving_or_emailing_never_raise():
     assert out["status"] == "failed" and out["failed_key"] is None
     out = backtest_handler.run({}, None, FakeS3(history()), FakeSES(fail=True), now=lambda: NOW)
     assert out["status"] == "failed"
+
+
+def test_report_includes_the_paper_portfolio():
+    import portfolio_step
+    s3 = FakeS3(history())
+    store = portfolio_step.Store(s3, "bkt")
+    w44 = pd.DataFrame([{"ticker": "A", "market": "LSE", "close": 200.0, "primary_sector": "Housebuilders", "status": "ok",
+                         "is_candidate": True, "is_pick": True, "signal_confidence": 0.8, "signal_convergence_type": "News-Led",
+                         "setup_grade": "A", "risk_score": 3, "max_position_size_pct": 10.0, "atr_stop_pct": 6.0,
+                         "price_cutoff": "2026-10-30"}])
+    portfolio_step.run_week(store, "2026-W44", w44, 1.3, now=lambda: NOW)
+    ses = FakeSES()
+    out = backtest_handler.run({}, None, s3, ses, now=lambda: NOW)
+    assert out["status"] == "ok"
+    saved = json.loads(s3.objects["reports/2026-Q4/backtest.json"])
+    assert saved["paper_portfolio"]["since_start"]["buys"] == 1
+    assert "PAPER PORTFOLIO" in ses.sent[0]["Message"]["Body"]["Text"]["Data"]
+    assert "PAPER PORTFOLIO" in ses.sent[0]["Message"]["Body"]["Html"]["Data"]
+
+
+def test_report_without_portfolio_records_still_works():
+    ses = FakeSES()
+    out = backtest_handler.run({}, None, FakeS3(history()), ses, now=lambda: NOW)
+    assert out["status"] == "ok"
+    assert "No weeks recorded yet" in ses.sent[0]["Message"]["Body"]["Text"]["Data"]

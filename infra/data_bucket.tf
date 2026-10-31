@@ -1,5 +1,6 @@
-# The scout's results bucket: successful/ (scout results), failed/, snapshots/ (Universe Snapshots) and reports/
-# (quarterly backtest reports).  It was created by hand and is adopted here with import blocks (imports.tf).
+# The scout's results bucket: successful/ (scout results), failed/, snapshots/ (Universe Snapshots), reports/
+# (quarterly backtest reports), portfolio/ (the Paper Portfolio's weekly records) and site/ (the website's data;
+# both kept for ever, like snapshots/).  It was created by hand and is adopted here with import blocks (imports.tf).
 
 resource "aws_s3_bucket" "data" {
   bucket = var.data_bucket

@@ -2,7 +2,8 @@
 backtest_handler.py — AWS Lambda entry point for the quarterly methodology review.
 
 Started by an EventBridge schedule on the 1st of January, April, July and October.  It reads every
-Universe Snapshot, builds the backtest report (lse_stock_analysis/backtest.py), saves it to
+Universe Snapshot, builds the backtest report (lse_stock_analysis/backtest.py), adds the Paper Portfolio's
+performance (portfolio_step.quarter_summary, from portfolio/weeks/), saves it to
 reports/YYYY-Qn/backtest.html and backtest.json in the bucket, and emails it.  The email is the prompt to
 run the review: ask Claude to review the methodology against the report (docs/methodology-review.md).
 Nothing here changes the prompts or thresholds; improvements go through a reviewed pull request.
@@ -12,7 +13,7 @@ normally (the schedule has no retries, so a failure would otherwise be silent af
 
 Environment variables
 ---------------------
-  BUCKET_NAME     the scout's results bucket (snapshots/ is read, reports/ is written)
+  BUCKET_NAME     the scout's results bucket (snapshots/ and portfolio/ are read, reports/ is written)
   SES_SENDER      verified SES sender address
   SES_RECIPIENT   address that receives the report
   AWS_REGION      set by the Lambda runtime (SES region defaults to eu-west-1)
@@ -25,6 +26,7 @@ import traceback
 from datetime import datetime, timezone
 from typing import Callable
 
+import portfolio_step
 from backtest_report import load_snapshots
 from lse_stock_analysis.backtest import build_report, render_html, render_text
 
@@ -66,6 +68,15 @@ def run(event: dict, context, s3, ses, now: Callable = lambda: datetime.now(time
             raise RuntimeError(f"only {len(snapshots)} snapshot(s) in s3://{bucket}/snapshots/, nothing to measure yet")
         report = build_report(snapshots)
         body_text, body_html = render_text(report), render_html(report)
+        try:                                                         # the portfolio section is extra: never fail the report for it
+            report["paper_portfolio"] = portfolio_step.quarter_summary(portfolio_step.load_records(s3, bucket))
+            section = portfolio_step.render_quarter_text(report["paper_portfolio"])
+        except Exception as exc:
+            logger.exception("Paper Portfolio section failed")
+            section = f"PAPER PORTFOLIO\n  Not available: {type(exc).__name__}: {exc}\n"
+        body_text += "\n" + section
+        pre = f"<pre style='font-size:12px;white-space:pre-wrap;'>{html.escape(section)}</pre>"
+        body_html = body_html.replace("</body>", pre + "</body>", 1) if "</body>" in body_html else body_html + pre
         prefix = f"reports/{period}"
         s3.put_object(Bucket=bucket, Key=f"{prefix}/backtest.html", Body=body_html.encode("utf-8"), ContentType="text/html")
         s3.put_object(Bucket=bucket, Key=f"{prefix}/backtest.json", Body=json.dumps(_jsonable(report), indent=2).encode("utf-8"),

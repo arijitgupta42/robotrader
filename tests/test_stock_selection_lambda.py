@@ -138,7 +138,8 @@ def test_success_writes_snapshot_and_sends_one_email(monkeypatch):
     monkeypatch.setattr(handler, "analyse_universe", good_analysis)
     results, s3, ses = run()
     assert results == [{"status": "ok", "week": "2026-W40", "source_key": KEY,
-                        "snapshot_key": "snapshots/2026-W40/universe.csv", "picks": results[0]["picks"]}]
+                        "snapshot_key": "snapshots/2026-W40/universe.csv", "picks": results[0]["picks"],
+                        "portfolio": None}]                      # W40 is before the Paper Portfolio started
     assert results[0]["picks"] == 2 + 1                          # Housebuilders 0.70 -> 2; Water Divergent -> 1; AI none
     snap = pd.read_csv(io.BytesIO(s3.objects["snapshots/2026-W40/universe.csv"]))
     assert len(snap) == len(universe_tickers()) and snap["is_pick"].sum() == 3 and set(snap["week"]) == {"2026-W40"}
@@ -491,7 +492,8 @@ def test_a_slow_but_successful_download_is_not_cut_off():
 def test_assemble_lays_out_the_zip_root(tmp_path):
     build_zip.assemble(tmp_path)
     files = {p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*") if p.is_file()}
-    assert {"handler.py", "email_report.py", "backtest_handler.py", "backtest_report.py", "lse_stock_analysis/backtest.py",
+    assert {"handler.py", "email_report.py", "portfolio_step.py", "backtest_handler.py", "backtest_report.py",
+            "lse_stock_analysis/backtest.py", "lse_stock_analysis/portfolio.py",
             "lse_stock_analysis/__init__.py", "lse_stock_analysis/sector_map.json",
             "lse_stock_analysis/prices.py", "lse_stock_analysis/selection.py", "lse_stock_analysis/universe.py",
             "lse_stock_analysis/agents/trend_analysis_agent.py", "lse_stock_analysis/agents/risk_scoring_agent.py"} <= files

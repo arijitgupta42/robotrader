@@ -240,6 +240,69 @@ def _signal_text(sig: dict, sel: Optional[SectorSelection], failure_note: Option
 
 
 # ---------------------------------------------------------------------------
+# Paper Portfolio
+# ---------------------------------------------------------------------------
+
+_REASON_TEXT = {"pick": "Pick", "stop": "hit its stop", "max_hold": "held 6 weeks", "sector_absent": "sector no longer signalled"}
+
+
+def _gbp(value, signed=False) -> str:
+    if value is None:
+        return "—"
+    return f"{'+' if signed and value >= 0 else '-' if value < 0 else ''}£{abs(value):,.2f}"
+
+
+def _trade_rows(portfolio: dict) -> list[tuple]:
+    return [(t["side"].upper(), t["ticker"], t["company"], _REASON_TEXT.get(t["reason"], t["reason"]), _gbp(t["value_gbp"]),
+             _gbp(t["cost_gbp"]), _gbp(t["pnl_gbp"], signed=True) if t.get("pnl_gbp") is not None else "")
+            for t in portfolio["trades"]]
+
+
+def _portfolio_headline(portfolio: dict) -> str:
+    v = portfolio["valuation"]
+    return (f"Value {_gbp(v['total'])} (cash {_gbp(v['cash'])}, {portfolio['positions']} position(s) {_gbp(v['holdings'])}) "
+            f"· Benchmark {_gbp(v['benchmark'])} · started with £1,000.00")
+
+
+def _portfolio_html(portfolio: Optional[dict]) -> str:
+    if portfolio is None:
+        return ""
+    head = ("<div style='background:#f4f6f7;border-left:4px solid #1a5276;padding:10px 14px;border-radius:4px;margin:8px 0 18px;'>"
+            "<p style='margin:0 0 4px;font-size:12px;font-weight:700;color:#1a5276;'>PAPER PORTFOLIO</p>")
+    link = (f"<p style='margin:6px 0 0;font-size:11px;'><a href='{esc(portfolio['site_url'])}'>See the portfolio and the "
+            f"week's pipeline on the website</a></p>") if portfolio.get("site_url") else ""
+    if "error" in portfolio:
+        return (head + f"<p style='margin:0;font-size:12px;color:#922b21;'>Not updated this week: {esc(portfolio['error'])}. "
+                       f"The picks above are unaffected.</p>" + link + "</div>")
+    body = f"<p style='margin:0 0 6px;font-size:12px;color:#333;'>{esc(_portfolio_headline(portfolio))}</p>"
+    body += (_table(("Side", "Ticker", "Company", "Why", "Value", "Cost", "P&L"), _trade_rows(portfolio))
+             if portfolio["trades"] else "<p style='margin:4px 0;font-size:12px;color:#777;'>No Trades this week.</p>")
+    notes = [n["message"] for n in portfolio["notes"]] + [n["message"] for n in portfolio["skipped"]]
+    if notes:
+        body += "<ul style='margin:4px 0;padding-left:18px;'>" + "".join(
+            f"<li style='font-size:11px;color:#555;margin:2px 0;'>{esc(m)}</li>" for m in notes) + "</ul>"
+    return head + body + link + "</div>"
+
+
+def _portfolio_text(portfolio: Optional[dict]) -> list[str]:
+    if portfolio is None:
+        return []
+    lines = ["PAPER PORTFOLIO"]
+    if "error" in portfolio:
+        lines.append(f"  Not updated this week: {portfolio['error']}. The picks above are unaffected.")
+    else:
+        lines.append("  " + _portfolio_headline(portfolio))
+        for row in _trade_rows(portfolio):
+            lines.append("  " + " ".join(str(c) for c in row if c))
+        if not portfolio["trades"]:
+            lines.append("  No Trades this week.")
+        lines += [f"  - {n['message']}" for n in portfolio["notes"] + portfolio["skipped"]]
+    if portfolio.get("site_url"):
+        lines.append(f"  Website: {portfolio['site_url']}")
+    return lines + [""]
+
+
+# ---------------------------------------------------------------------------
 # The email
 # ---------------------------------------------------------------------------
 
@@ -254,6 +317,7 @@ def build_report_email(
         map_age_days: Optional[int] = None,
         error:        Optional[str] = None,
         failed_key:   Optional[str] = None,
+        portfolio:    Optional[dict] = None,
         ) -> tuple[str, str, str]:
     """
     Returns (subject, html_body, text_body): the whole week in one email.
@@ -262,6 +326,8 @@ def build_report_email(
     each with its Picks and the best runners-up.  Data warnings go at the foot.
     When `selections` is None (the picks step failed, `error` says why) every
     card carries a failure notice instead of picks and a banner sits at the top.
+    `portfolio` is the Paper Portfolio's week (portfolio_step.email_summary, or
+    {"error": ...}); None leaves the section out.
     """
     signals = sorted(payload.get("signals") or [], key=lambda s: -float(s.get("confidence", 0)))
     by_sector = {s.sector: s for s in selections or []}
@@ -305,10 +371,12 @@ def build_report_email(
     {banner_html}
     {macro_html}
     {cards}
+    {_portfolio_html(portfolio)}
     {warn_html}
     <hr style="border:none;border-top:1px solid #eee;margin:18px 0;">
     <p style="font-size:11px;color:#aaa;margin:0;">Sector signals from the Sector Scout (OpenRouter LLM pipeline); stock picks are rule-based
       from daily-bar trend and risk analysis within the signalled sectors. Position sizes follow a 2% risk rule.
+      The Paper Portfolio is imaginary: rule-based Trades filled at the snapshot's closing prices.
       Not investment advice. Always validate independently.</p>
   </div>
 </body></html>"""
@@ -325,6 +393,7 @@ def build_report_email(
     lines.append("")
     for s in signals:
         lines += _signal_text(s, by_sector.get(s.get("sector")), failure_note)
+    lines += _portfolio_text(portfolio)
     if warnings:
         lines += ["DATA WARNINGS"] + [f"  - {w}" for w in warnings] + [""]
     lines.append("Not investment advice. Always validate independently.")
