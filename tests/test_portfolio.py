@@ -240,7 +240,8 @@ def test_scout_failure_week_trades_nothing_and_does_not_count_as_absence():
     r = apply_week(state, wk("2026-W45", quotes=[], signals=[], scout_ok=False))
     assert r.trades == []
     assert r.state.positions[0].sector_absent_weeks == 0
-    assert any(n["kind"] == "no_trade_week" and "zero_signals" in n["message"] for n in r.notes)
+    assert [n["kind"] for n in r.notes] == ["no_trade_week"]     # no per-position stale or FX notes on top
+    assert "zero_signals" in r.notes[0]["message"]
     assert r.valuation["total"] == pytest.approx(999.75)
 
 

@@ -1,0 +1,645 @@
+{
+ "week": "2026-W44",
+ "generated_at": "2026-10-31T06:11:00+00:00",
+ "methodology_version": "2026-10-03.2",
+ "portfolio_version": "2026-10-31.1",
+ "scout": {
+  "timestamp": "20261031T061100Z",
+  "prompt_version": "2026-10-31.2",
+  "models": [
+   "openai/gpt-6-luna-pro",
+   "deepseek/deepseek-v4.1-flash"
+  ],
+  "macro": "Risk-on: easing inflation and firm earnings; energy and grid spending lead.",
+  "signals": [
+   {
+    "sector": "Electricity & Grid",
+    "confidence": 0.71,
+    "convergence_type": "News-Led",
+    "bear_case_probability": 0.25,
+    "disruption_type": "Policy / Regulation",
+    "disruption_strength": 0.62,
+    "time_to_impact_weeks": 3,
+    "source_diversity": 0.72,
+    "rationale": "Grid investment plans on both sides of the Atlantic are being brought forward as data-centre power demand outruns supply.",
+    "propagation": "Regulated asset bases grow, lifting allowed returns for network owners.",
+    "invalidation_risk": "A delay to the regulator's final determinations.",
+    "convergence_note": "Strong news flow; Reddit is quiet on utilities.",
+    "key_catalysts": [
+     "Regulator final determinations",
+     "Capacity auction results"
+    ],
+    "correlated_sectors": [
+     "Renewables & Clean Energy",
+     "Data Centres & Digital Infrastructure"
+    ]
+   },
+   {
+    "sector": "AI Infrastructure",
+    "confidence": 0.62,
+    "convergence_type": "News-Led",
+    "bear_case_probability": 0.4,
+    "disruption_type": "Technology Shift",
+    "disruption_strength": 0.55,
+    "time_to_impact_weeks": 4,
+    "source_diversity": 0.51,
+    "rationale": "Hyperscaler capital spending guidance was raised again.",
+    "propagation": "Orders flow to power and cooling suppliers.",
+    "invalidation_risk": "Capex guidance cut at the next earnings round.",
+    "key_catalysts": [
+     "Hyperscaler earnings"
+    ],
+    "correlated_sectors": [
+     "Semiconductors & EDA"
+    ]
+   },
+   {
+    "sector": "Integrated Oil & Gas",
+    "confidence": 0.55,
+    "convergence_type": "News-Led",
+    "bear_case_probability": 0.45,
+    "disruption_type": "Supply Shock",
+    "disruption_strength": 0.48,
+    "time_to_impact_weeks": 2,
+    "source_diversity": 0.44,
+    "rationale": "Supply discipline from producers keeps crude prices firm.",
+    "propagation": "Upstream margins widen.",
+    "invalidation_risk": "A surprise output increase.",
+    "key_catalysts": [
+     "Producer group meeting"
+    ],
+    "correlated_sectors": [
+     "Oil Field Services"
+    ]
+   }
+  ],
+  "trace": {
+   "trigger": "WeeklyTrigger",
+   "feeds": [
+    {
+     "name": "BBC Business",
+     "fetched": 34,
+     "ok": true,
+     "error": null,
+     "fresh": 26,
+     "kept": 13
+    },
+    {
+     "name": "Guardian Business",
+     "fetched": 41,
+     "ok": true,
+     "error": null,
+     "fresh": 31,
+     "kept": 16
+    },
+    {
+     "name": "Guardian Economics",
+     "fetched": 42,
+     "ok": true,
+     "error": null,
+     "fresh": 32,
+     "kept": 16
+    },
+    {
+     "name": "Investing.com UK Stock News",
+     "fetched": 52,
+     "ok": true,
+     "error": null,
+     "fresh": 40,
+     "kept": 20
+    },
+    {
+     "name": "CNBC International",
+     "fetched": 15,
+     "ok": true,
+     "error": null,
+     "fresh": 11,
+     "kept": 6
+    },
+    {
+     "name": "Bloomberg Markets",
+     "fetched": 19,
+     "ok": true,
+     "error": null,
+     "fresh": 14,
+     "kept": 7
+    },
+    {
+     "name": "SCMP Business",
+     "fetched": 32,
+     "ok": true,
+     "error": null,
+     "fresh": 24,
+     "kept": 12
+    },
+    {
+     "name": "Straits Times Business",
+     "fetched": 22,
+     "ok": true,
+     "error": null,
+     "fresh": 17,
+     "kept": 9
+    },
+    {
+     "name": "ABC Australia Business",
+     "fetched": 26,
+     "ok": true,
+     "error": null,
+     "fresh": 20,
+     "kept": 10
+    },
+    {
+     "name": "Livemint Markets",
+     "fetched": 9,
+     "ok": true,
+     "error": null,
+     "fresh": 7,
+     "kept": 4
+    },
+    {
+     "name": "DW Business",
+     "fetched": 22,
+     "ok": true,
+     "error": null,
+     "fresh": 17,
+     "kept": 9
+    },
+    {
+     "name": "France24 Business",
+     "fetched": 15,
+     "ok": true,
+     "error": null,
+     "fresh": 11,
+     "kept": 6
+    },
+    {
+     "name": "CNBC Top News",
+     "fetched": 44,
+     "ok": true,
+     "error": null,
+     "fresh": 34,
+     "kept": 17
+    },
+    {
+     "name": "CNBC Finance",
+     "fetched": 8,
+     "ok": true,
+     "error": null,
+     "fresh": 6,
+     "kept": 3
+    },
+    {
+     "name": "CNBC Earnings",
+     "fetched": 14,
+     "ok": true,
+     "error": null,
+     "fresh": 11,
+     "kept": 6
+    },
+    {
+     "name": "MarketWatch Top Stories",
+     "fetched": 18,
+     "ok": true,
+     "error": null,
+     "fresh": 14,
+     "kept": 7
+    },
+    {
+     "name": "WSJ Markets",
+     "fetched": 57,
+     "ok": true,
+     "error": null,
+     "fresh": 43,
+     "kept": 22
+    },
+    {
+     "name": "WSJ US Business",
+     "fetched": 40,
+     "ok": true,
+     "error": null,
+     "fresh": 30,
+     "kept": 15
+    },
+    {
+     "name": "NYT Business",
+     "fetched": 52,
+     "ok": true,
+     "error": null,
+     "fresh": 40,
+     "kept": 20
+    },
+    {
+     "name": "Benzinga",
+     "fetched": 27,
+     "ok": true,
+     "error": null,
+     "fresh": 21,
+     "kept": 11
+    },
+    {
+     "name": "Seeking Alpha Market Currents",
+     "fetched": 52,
+     "ok": true,
+     "error": null,
+     "fresh": 40,
+     "kept": 20
+    },
+    {
+     "name": "Investing.com US Stock News",
+     "fetched": 48,
+     "ok": true,
+     "error": null,
+     "fresh": 37,
+     "kept": 19
+    },
+    {
+     "name": "CNBC Technology",
+     "fetched": 32,
+     "ok": true,
+     "error": null,
+     "fresh": 24,
+     "kept": 12
+    },
+    {
+     "name": "CNBC Energy",
+     "fetched": 45,
+     "ok": true,
+     "error": null,
+     "fresh": 34,
+     "kept": 17
+    },
+    {
+     "name": "CNBC Health",
+     "fetched": 33,
+     "ok": true,
+     "error": null,
+     "fresh": 25,
+     "kept": 13
+    },
+    {
+     "name": "OilPrice.com",
+     "fetched": 57,
+     "ok": true,
+     "error": null,
+     "fresh": 43,
+     "kept": 22
+    },
+    {
+     "name": "EIA Today in Energy",
+     "fetched": 52,
+     "ok": true,
+     "error": null,
+     "fresh": 40,
+     "kept": 20
+    },
+    {
+     "name": "Utility Dive",
+     "fetched": 50,
+     "ok": true,
+     "error": null,
+     "fresh": 38,
+     "kept": 19
+    },
+    {
+     "name": "FDA Press Releases",
+     "fetched": 28,
+     "ok": true,
+     "error": null,
+     "fresh": 21,
+     "kept": 11
+    },
+    {
+     "name": "Defense News",
+     "fetched": 30,
+     "ok": true,
+     "error": null,
+     "fresh": 23,
+     "kept": 12
+    },
+    {
+     "name": "BleepingComputer",
+     "fetched": 12,
+     "ok": true,
+     "error": null,
+     "fresh": 9,
+     "kept": 5
+    },
+    {
+     "name": "Financial Times",
+     "fetched": 29,
+     "ok": true,
+     "error": null,
+     "fresh": 22,
+     "kept": 11
+    },
+    {
+     "name": "NYT Economy",
+     "fetched": 26,
+     "ok": true,
+     "error": null,
+     "fresh": 20,
+     "kept": 10
+    },
+    {
+     "name": "Investing.com US Economy",
+     "fetched": 47,
+     "ok": true,
+     "error": null,
+     "fresh": 36,
+     "kept": 18
+    },
+    {
+     "name": "Investing.com US Commodities",
+     "fetched": 18,
+     "ok": true,
+     "error": null,
+     "fresh": 14,
+     "kept": 7
+    },
+    {
+     "name": "Federal Reserve Press",
+     "fetched": 15,
+     "ok": true,
+     "error": null,
+     "fresh": 11,
+     "kept": 6
+    },
+    {
+     "name": "Federal Reserve Speeches",
+     "fetched": 40,
+     "ok": true,
+     "error": null,
+     "fresh": 30,
+     "kept": 15
+    },
+    {
+     "name": "ECB Press",
+     "fetched": 12,
+     "ok": true,
+     "error": null,
+     "fresh": 9,
+     "kept": 5
+    },
+    {
+     "name": "BIS Central Bank Speeches",
+     "fetched": 45,
+     "ok": true,
+     "error": null,
+     "fresh": 34,
+     "kept": 17
+    },
+    {
+     "name": "Thomson Reuters IR",
+     "fetched": 14,
+     "ok": true,
+     "error": null,
+     "fresh": 11,
+     "kept": 6
+    },
+    {
+     "name": "HL Weekly Outlook",
+     "fetched": 6,
+     "ok": true,
+     "error": null,
+     "fresh": 5,
+     "kept": 3
+    }
+   ],
+   "headlines": {
+    "fetched": 1280,
+    "duplicates": 91,
+    "stale": 213,
+    "fresh": 976,
+    "cap": 500,
+    "kept": 500,
+    "max_age_days": 7
+   },
+   "reddit": {
+    "planned": 7,
+    "succeeded": 7,
+    "unique_posts": 595,
+    "fresh": 490,
+    "kept": 120,
+    "cap": 120,
+    "subreddits": 14,
+    "seconds": 402.5,
+    "requests": [
+     {
+      "label": "stocks+investing+StockMarket/hot",
+      "status": "ok",
+      "posts": 100,
+      "retried": false
+     },
+     {
+      "label": "stocks+investing/top",
+      "status": "ok",
+      "posts": 100,
+      "retried": false
+     },
+     {
+      "label": "SecurityAnalysis+ValueInvesting/hot",
+      "status": "ok",
+      "posts": 100,
+      "retried": false
+     },
+     {
+      "label": "Economics+Commodities+energy+geopolitics/hot",
+      "status": "ok",
+      "posts": 100,
+      "retried": false
+     },
+     {
+      "label": "Semiconductors+biotech/hot",
+      "status": "ok",
+      "posts": 100,
+      "retried": false
+     },
+     {
+      "label": "wallstreetbets+options+thetagang/hot",
+      "status": "ok",
+      "posts": 100,
+      "retried": false
+     },
+     {
+      "label": "CanadianInvestor+JapanFinance+UKInvesting/hot",
+      "status": "ok",
+      "posts": 100,
+      "retried": false
+     }
+    ]
+   },
+   "llm": {
+    "news": {
+     "models": [
+      "openai/gpt-6-luna-pro",
+      "deepseek/deepseek-v4.1-flash"
+     ],
+     "model_used": "openai/gpt-6-luna-pro",
+     "ok": true,
+     "seconds": 38.4,
+     "fallback": false
+    },
+    "reddit": {
+     "models": [
+      "openai/gpt-6-luna-pro",
+      "deepseek/deepseek-v4.1-flash"
+     ],
+     "model_used": "openai/gpt-6-luna-pro",
+     "ok": true,
+     "seconds": 21.7,
+     "fallback": false
+    },
+    "consolidation": {
+     "models": [
+      "openai/gpt-6-luna-pro",
+      "deepseek/deepseek-v4.1-flash"
+     ],
+     "model_used": "openai/gpt-6-luna-pro",
+     "ok": true,
+     "seconds": 17.9,
+     "fallback": false
+    }
+   },
+   "signals": {
+    "news_raw": 6,
+    "news_passed": 4,
+    "news_llm_ok": true,
+    "min_confidence": 0.5,
+    "min_disruption": 0.4,
+    "reddit_posts": 120,
+    "reddit_signals": 2,
+    "reddit_llm_ok": true,
+    "consolidated": 3,
+    "consolidator_ok": true,
+    "reddit_skipped": false
+   },
+   "timings": {
+    "news_fetch": 64.2,
+    "reddit_wait": 341.0,
+    "total": 470.8
+   }
+  }
+ },
+ "prices": {
+  "requested": 16,
+  "returned": 16,
+  "no_data": 0,
+  "short_history": 0,
+  "stale": 0,
+  "anomalies": 0,
+  "unit_fixed": 0,
+  "cutoffs": {
+   "LSE": "2026-10-30",
+   "US": "2026-10-30"
+  }
+ },
+ "analysis": {
+  "analysed": 16,
+  "failed": 0,
+  "grades": {
+   "A": 4,
+   "B": 5,
+   "C": 7
+  },
+  "setups": {
+   "breakout": 4,
+   "pullback": 5,
+   "none": 7
+  },
+  "tradeable": 9
+ },
+ "selection": [
+  {
+   "sector": "Electricity & Grid",
+   "confidence": 0.71,
+   "convergence_type": "News-Led",
+   "candidates": 4,
+   "eligible_checked": 4,
+   "picks_allowed": 2,
+   "picks": [
+    {
+     "ticker": "SSE.L",
+     "company": "SSE",
+     "market": "LSE",
+     "setup_grade": "A",
+     "risk_score": 3.0,
+     "close": 2627.0
+    },
+    {
+     "ticker": "AEP",
+     "company": "American Electric Power",
+     "market": "US",
+     "setup_grade": "A",
+     "risk_score": 3.0,
+     "close": 130.21
+    }
+   ],
+   "runners_up": [
+    {
+     "ticker": "NG.L",
+     "company": "National Grid",
+     "reason": "ranked below the pick limit"
+    },
+    {
+     "ticker": "DUK",
+     "company": "Duke Energy",
+     "reason": "setup grade C (below B)"
+    }
+   ]
+  },
+  {
+   "sector": "AI Infrastructure",
+   "confidence": 0.62,
+   "convergence_type": "News-Led",
+   "candidates": 2,
+   "eligible_checked": 2,
+   "picks_allowed": 1,
+   "picks": [],
+   "runners_up": [
+    {
+     "ticker": "NVDA",
+     "company": "NVIDIA",
+     "reason": "RSI 74 is overbought"
+    },
+    {
+     "ticker": "VRT",
+     "company": "Vertiv",
+     "reason": "trend is sideways"
+    }
+   ]
+  },
+  {
+   "sector": "Integrated Oil & Gas",
+   "confidence": 0.55,
+   "convergence_type": "News-Led",
+   "candidates": 3,
+   "eligible_checked": 3,
+   "picks_allowed": 1,
+   "picks": [
+    {
+     "ticker": "ITH.L",
+     "company": "Ithaca Energy",
+     "market": "LSE",
+     "setup_grade": "B",
+     "risk_score": 4.0,
+     "close": 302.8
+    }
+   ],
+   "runners_up": [
+    {
+     "ticker": "SHEL.L",
+     "company": "Shell",
+     "reason": "setup grade C (below B)"
+    },
+    {
+     "ticker": "XOM",
+     "company": "Exxon Mobil",
+     "reason": "no swing setup"
+    }
+   ]
+  }
+ ],
+ "email": {
+  "sent": true
+ }
+}

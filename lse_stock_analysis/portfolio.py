@@ -252,7 +252,7 @@ def apply_week(previous: Optional[PortfolioState], inputs: WeekInputs) -> WeekRe
     if not inputs.scout_ok:
         notes.append({"kind": "no_trade_week", "ticker": None,
                       "message": f"No successful scout result this week ({inputs.scout_error or 'unknown reason'}); no Trades."})
-    if fx is None:
+    if fx is None and inputs.scout_ok:                     # a no-trade week's own note already explains it
         notes.append({"kind": "missing_fx", "ticker": None,
                       "message": "No GBP/USD rate this week: no US Trades; US Positions keep their last rate."})
 
@@ -267,7 +267,7 @@ def apply_week(previous: Optional[PortfolioState], inputs: WeekInputs) -> WeekRe
         if p.market == "US" and fx:
             p.last_fx = fx
         p.value_gbp = p.quantity * to_gbp(p.last_price, p.market, p.last_fx)
-        if p.stale:
+        if p.stale and inputs.scout_ok:
             notes.append({"kind": "stale_price", "ticker": p.ticker,
                           "message": f"{p.ticker} has no usable price this week; kept at its last value and not sold."})
         elif not p.fx_stale:
