@@ -11,8 +11,17 @@ docs/adr/0001-stock-selection-runs-as-separate-lambda.md).  For that result:
      fail or return partial data);
   3. analyses every stock, picks stocks in each Signalled Sector by rule;
   4. writes the Universe Snapshot to  snapshots/YYYY-Www/universe.csv;
-  5. sends ONE email through SES: the scout's sector report with each sector's
-     picks inside its card (the scout itself no longer sends an email).
+  5. applies the week to the Paper Portfolio (portfolio_step.py, docs/adr/0003);
+  6. sends ONE email through SES: the scout's sector report with each sector's
+     picks inside its card, and the Paper Portfolio's week (the scout itself no
+     longer sends an email);
+  7. publishes the website's data under  site/  (the portfolio, the Ledger and
+     the week's Run Trace).
+
+A failure in steps 5 or 7 never stops the email: the portfolio section carries a
+notice instead.  Invoked with  {"portfolio_week": "YYYY-Www"}  it instead applies
+that stored week to the Paper Portfolio (no price download, no email); this is how
+the portfolio's first week is started after a deploy.
 
 Failure handling
 ----------------
@@ -29,6 +38,8 @@ Environment variables
 ---------------------
   SES_SENDER      verified SES sender address
   SES_RECIPIENT   address that receives the report
+  BUCKET_NAME     the scout's results bucket (only for {"portfolio_week": ...} invocations)
+  SITE_URL        the website, linked from the email (defaults to the GitHub Pages address)
   AWS_REGION      set by the Lambda runtime (SES region defaults to eu-west-1)
 """
 import json
@@ -47,6 +58,7 @@ from lse_stock_analysis.selection import (
     analyse_universe, build_snapshot, select_stocks, snapshot_to_csv, week_label,
 )
 
+import portfolio_step
 from email_report import build_failure_email, build_report_email, sector_map_age_days
 
 logger = logging.getLogger()
@@ -60,6 +72,7 @@ MIN_TIME_FOR_RETRY_MS = 120_000     # don't start another download with less tha
 RESERVE_SECONDS = 90                # kept back after a download for the analysis, the snapshot and the email
 MAX_ATTEMPT_SECONDS = 240           # one download attempt (normally 1-2 minutes for ~850 stocks) is abandoned after this long
 MIN_ATTEMPT_SECONDS = 20            # ...but is always given at least this long
+FX_SECONDS = 45                     # the GBP/USD download is abandoned after this long (the week then has no US Trades)
 
 
 class StockSelectionError(Exception):
@@ -153,7 +166,37 @@ def _send(ses, sender: str, recipient: str, subject: str, html_body: str, text_b
     )
 
 
-def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sleep: Callable, now: Callable) -> dict:
+def _portfolio_week(bucket: str, key: str, week: str, snapshot, s3, fetch_fx: Callable, now: Callable) -> Optional[dict]:
+    """Apply the week to the Paper Portfolio.  Returns the email's portfolio section; never raises."""
+    if not portfolio_step.started(week):
+        return None
+    try:
+        try:
+            gbpusd = _call_with_deadline(fetch_fx, portfolio_step.fx_date(snapshot), FX_SECONDS)
+        except Exception as exc:                                    # a hang or error means no rate, not no portfolio
+            logger.warning("GBP/USD download failed: %s", exc)
+            gbpusd = None
+        record = portfolio_step.run_week(portfolio_step.Store(s3, bucket), week, snapshot, gbpusd, fetch_fx=fetch_fx,
+                                         source_key=key, now=now)
+        return portfolio_step.email_summary(record)
+    except Exception as exc:
+        logger.error("Paper Portfolio step failed for %s: %s\n%s", week, exc, traceback.format_exc())
+        return {"error": f"{type(exc).__name__}: {exc}", "site_url": portfolio_step.site_url()}
+
+
+def _publish_site(bucket: str, week: str, payload: dict, snapshot, selections, prices, s3, now: Callable) -> None:
+    """Publish the website's data; a failure is logged only (the site keeps last week's data)."""
+    if not portfolio_step.started(week):
+        return
+    try:
+        trace = portfolio_step.build_trace(week, payload, snapshot, selections, prices, email_sent=True, now=now)
+        portfolio_step.publish_site(portfolio_step.Store(s3, bucket), week, trace, now=now)
+    except Exception:
+        logger.exception("Could not publish the website's data for %s", week)
+
+
+def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sleep: Callable, now: Callable,
+                   fetch_fx: Optional[Callable] = None) -> dict:
     """Handle one successful scout result.  Never raises: failures are recorded and emailed once."""
     sender, recipient = os.environ["SES_SENDER"], os.environ["SES_RECIPIENT"]
     week = week_label(now())
@@ -176,12 +219,16 @@ def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sle
         s3.put_object(Bucket=bucket, Key=snapshot_key, Body=snapshot_to_csv(snapshot).encode("utf-8"), ContentType="text/csv")
         logger.info("Snapshot saved → s3://%s/%s (%d rows)", bucket, snapshot_key, len(snapshot))
 
+        portfolio = _portfolio_week(bucket, key, week, snapshot, s3, fetch_fx or portfolio_step.fetch_gbpusd, now)
+
         _send(ses, sender, recipient, *build_report_email(
             week, signal_ts, payload, selections, prices, source_uri=f"s3://{bucket}/{key}", snapshot_key=snapshot_key,
-            map_age_days=sector_map_age_days(date.today())))
+            map_age_days=sector_map_age_days(date.today()), portfolio=portfolio))
         picks = sum(len(s.picks) for s in selections)
         logger.info("Report email sent: %d picks across %d sectors", picks, len(selections))
-        return {"status": "ok", "week": week, "source_key": key, "snapshot_key": snapshot_key, "picks": picks}
+        _publish_site(bucket, week, payload, snapshot, selections, prices, s3, now)
+        return {"status": "ok", "week": week, "source_key": key, "snapshot_key": snapshot_key, "picks": picks,
+                "portfolio": None if portfolio is None else ("failed" if "error" in portfolio else "ok")}
 
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}" if not isinstance(exc, StockSelectionError) else str(exc)
@@ -210,9 +257,19 @@ def process_record(bucket: str, key: str, context, s3, ses, fetch: Callable, sle
 
 
 def run(event: dict, context, s3, ses, fetch: Optional[Callable] = None,
-        sleep: Callable = time.sleep, now: Callable = lambda: datetime.now(timezone.utc)) -> dict:
+        sleep: Callable = time.sleep, now: Callable = lambda: datetime.now(timezone.utc),
+        fetch_fx: Optional[Callable] = None) -> dict:
     """The handler with its dependencies passed in (so it can be tested without AWS or Yahoo)."""
     fetch = fetch or fetch_universe_prices
+    fetch_fx = fetch_fx or portfolio_step.fetch_gbpusd
+    if event.get("portfolio_week"):
+        bucket = event.get("bucket") or os.environ["BUCKET_NAME"]
+        try:
+            return portfolio_step.run_stored_week(portfolio_step.Store(s3, bucket), event["portfolio_week"],
+                                                  fetch_fx=fetch_fx, now=now)
+        except Exception as exc:
+            logger.error("Stored portfolio week failed: %s\n%s", exc, traceback.format_exc())
+            return {"status": "failed", "week": event["portfolio_week"], "error": f"{type(exc).__name__}: {exc}"}
     results = []
     for record in event.get("Records", []):
         bucket = record["s3"]["bucket"]["name"]
@@ -220,7 +277,7 @@ def run(event: dict, context, s3, ses, fetch: Optional[Callable] = None,
         if not SUCCESS_KEY.match(key):
             logger.info("Ignoring s3://%s/%s (not a successful scout result)", bucket, key)
             continue
-        results.append(process_record(bucket, key, context, s3, ses, fetch, sleep, now))
+        results.append(process_record(bucket, key, context, s3, ses, fetch, sleep, now, fetch_fx))
     return {"processed": results}
 
 

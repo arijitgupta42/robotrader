@@ -20,7 +20,11 @@ Saturday 06:00 UTC (EventBridge Scheduler)
                                                                                      │
                                           s3://…/snapshots/<week>/universe.csv ◄─────┤
                                                                                      ▼
-                                                                  ONE email: sector report with the picks inside each sector
+                                                   Paper Portfolio: weekly Trades ─► s3://…/portfolio/weeks/<week>.json
+                                                                                     │
+                                                                                     ▼
+                                                  ONE email: sector report with the picks inside each sector + the portfolio's week
+                                                  website data ─► s3://…/site/ (portfolio, Ledger, Run Trace)
 
 1 Jan / Apr / Jul / Oct: backtest-report Lambda ─► reads all snapshots ─► reports/<quarter>/ + email ─► methodology review (a pull request)
 ```
@@ -29,6 +33,7 @@ Saturday 06:00 UTC (EventBridge Scheduler)
 |---|---|---|
 | Sector scout | `financial_market_news_analyzer/` | News and Reddit in, Sector Signals out (saved to S3; sends no email) |
 | Stock selection | `lse_stock_analysis/` (named from when the Universe was the FTSE 350 only; it now covers both markets), `stock_selection_lambda/` | Prices, analysis, rule-based Picks, the weekly Universe Snapshot, and the one email |
+| Paper Portfolio | `lse_stock_analysis/portfolio.py`, `stock_selection_lambda/portfolio_step.py` | An imaginary £1,000 traded weekly by fixed rules from the Picks ([ADR 0003](docs/adr/0003-paper-portfolio.md)) |
 | Backtest and review | `lse_stock_analysis/backtest.py`, `stock_selection_lambda/backtest_*.py`, `docs/methodology-review.md` | Compares Picks and Candidates with the market, quarterly |
 | Infrastructure | `infra/` | Terraform for everything in AWS (see [`infra/README.md`](infra/README.md)) |
 
@@ -39,6 +44,8 @@ The two Lambdas are deliberately separate: the scout's weekly-window and retry l
 ## The weekly email
 
 One email per week, sent by the stock-selection Lambda: the scout's macro regime and one card per Sector Signal (strongest first) with bull/bear bars, mechanism, kill switch, catalysts and evidence, and **the stock Picks inside each card** (ticker, market, setup, grade, risk, stop-loss, maximum position, close in its own currency), the close runners-up and why they missed, and any data warnings.
+
+Below the cards, a **Paper Portfolio** section lists that week's Trades, the portfolio's value against its Benchmark, and anything skipped (not enough cash, a stale price, no exchange rate).
 
 It still goes out when the stock side has problems. If Yahoo is down, hangs, or returns too little data, you get the full sector report with a "stock picks failed" banner instead of picks (a download attempt is abandoned after 240 s so a hang cannot use up the Lambda's time). Only if the stock-selection Lambda itself does not run is there no email.
 
@@ -173,6 +180,20 @@ python stock_selection_lambda/backtest_report.py --bucket sector-scout-results-5
 **Every quarter** the `backtest-report` Lambda builds the same report from S3, saves it under `reports/<quarter>/` and emails it. You then ask Claude to "run the methodology review" ([`docs/methodology-review.md`](docs/methodology-review.md)): it checks which prompts and thresholds the evidence supports changing, with an evidence bar, an out-of-sample check and a limit on how many changes per review, and ends in a **pull request for you to review** or a written "no change". Nothing is changed automatically (about 20 weeks of data would mostly fit noise). Each review is recorded in [`docs/methodology-changelog.md`](docs/methodology-changelog.md).
 
 **Methodology versions:** `METHODOLOGY_VERSION` (`lse_stock_analysis/selection.py`) and `PROMPT_VERSION` (`financial_market_news_analyzer/config.py`) are bumped whenever a rule, threshold or prompt changes, and are stored with every week's results so the weeks before and after a change can be compared.
+
+---
+
+## Part 4: the Paper Portfolio
+
+From W44 2026 the system manages an imaginary **£1,000**, traded once a week by fixed rules applied to the scout's signals and the Picks, with no money ever added ([ADR 0003](docs/adr/0003-paper-portfolio.md)). Each Pick is bought at the snapshot's close, sized by the risk agent's maximum position times the signal's confidence (at most 20% of the portfolio, at most 8 positions, 5% always kept as cash), and sold when it hits its ATR stop, has been held 6 weeks, or its sector has been missing from the signals for 2 weeks running. US stocks are converted at Yahoo's GBP/USD rate, with a 0.3% currency fee; UK buys pay 0.5% stamp duty. The portfolio is compared with a **Benchmark**: £1,000 earning the equal-weight Universe average.
+
+The rules are a pure function (`lse_stock_analysis/portfolio.py`), so a week always replays the same way. The stock-selection Lambda keeps one record per week in `portfolio/weeks/` and publishes the website's data under `site/` ([`docs/site-data.md`](docs/site-data.md)). A stored week can be applied without downloading prices, which is how the first week is started after a deploy:
+
+```bash
+python stock_selection_lambda/portfolio_step.py --bucket sector-scout-results-544611252144 --week 2026-W44
+```
+
+The rules carry a `PORTFOLIO_VERSION` and change only through the methodology review; the quarterly report includes the portfolio's performance.
 
 ---
 

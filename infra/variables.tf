@@ -5,7 +5,7 @@ variable "region" {
 }
 
 variable "data_bucket" {
-  description = "The scout's existing S3 bucket. Read from successful/, written to snapshots/ and failed/."
+  description = "The scout's existing S3 bucket: successful/, failed/, snapshots/, reports/, portfolio/ and site/."
   type        = string
   default     = "sector-scout-results-544611252144"
 }
@@ -75,4 +75,10 @@ variable "budget_usd" {
 variable "budget_alert_email" {
   type    = string
   default = "arijitgupta2000@gmail.com"
+}
+
+variable "site_url" {
+  description = "The project website (GitHub Pages), linked from the weekly email."
+  type        = string
+  default     = "https://arijitgupta42.github.io/robotrader/"
 }
