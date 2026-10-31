@@ -1,0 +1,87 @@
+# Builds the project website (web/) with the latest data and publishes it to GitHub Pages:
+#   https://arijitgupta42.github.io/robotrader/
+#
+# The data is the JSON the stock-selection Lambda publishes under site/ in the results bucket. The build job reads
+# it with a short-lived AWS role assumed through GitHub's OIDC provider (infra/github_pages.tf), so no AWS keys are
+# stored in GitHub. That role trusts only jobs on main that use no GitHub environment, so the AWS step must stay in
+# the build job; only the deploy job uses the github-pages environment.
+#
+# Nothing runs until the repository variable SITE_DATA_ROLE_ARN is set (the output github_pages_role_arn of
+# `terraform output`); see the runbook in infra/README.md.
+
+name: Website
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 */3 * * 6,0"        # every 3 hours on Saturday and Sunday, to catch the weekly run and its retries
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  DATA_BUCKET: sector-scout-results-544611252144
+  AWS_REGION: eu-west-1
+
+jobs:
+  build:
+    if: vars.SITE_DATA_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write                # to assume the AWS role
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502  # v4.0.2
+        with:
+          role-to-assume: ${{ vars.SITE_DATA_ROLE_ARN }}
+          role-session-name: robotrader-pages-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # A failed download fails the run, so the last good deployment stays live; the site is never published
+      # without its data.
+      - name: Download the website's data
+        run: |
+          aws s3 sync "s3://${DATA_BUCKET}/site/" web/public/data/ --delete --no-progress
+          if [ ! -f web/public/data/portfolio.json ]; then
+            echo "::error::s3://${DATA_BUCKET}/site/portfolio.json is missing. Start the Paper Portfolio first (infra/README.md, 'The website')."
+            exit 1
+          fi
+          echo "Data for $(jq -r .week web/public/data/portfolio.json), updated $(jq -r .updated_at web/public/data/portfolio.json)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test and build
+        working-directory: web
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3.0.1
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write                # required by deploy-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e  # v4.0.5
