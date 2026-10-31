@@ -36,15 +36,50 @@ terraform apply
 
 `terraform apply` redeploys any Lambda whose zip changed. The plan is the review step: read it for `destroy` and for changes you did not expect.
 
-## The website's data role
+## The website and the Paper Portfolio
 
-The GitHub Pages workflow (`.github/workflows/pages.yml`) reads the website's data from `site/` with the role in `github_pages.tf`. Its ARN is a Terraform output and goes into the workflow as a plain value (an ARN is not a secret):
+The website (`web/`) is published to GitHub Pages at <https://arijitgupta42.github.io/robotrader/> by the workflow `.github/workflows/pages.yml`. It runs every 3 hours on Saturday and Sunday, on every push to `main`, and on demand. It downloads the website's data from `site/` in the results bucket, builds the site and deploys it. If the download fails, the run fails and the last deployment stays live.
 
-```bash
-terraform output github_pages_role_arn
-```
+The workflow reads `site/` with the role in `github_pages.tf`, assumed through GitHub's OIDC provider, so no AWS keys are stored in GitHub. The role trusts only jobs on `arijitgupta42/robotrader`'s `main` branch, whose OIDC subject is `repo:arijitgupta42/robotrader:ref:refs/heads/main`. A job that declares a GitHub `environment:` gets a different subject and is refused. So the workflow's **build** job, which has no environment, reads S3, and only the deploy job uses the `github-pages` environment. The role can list and read `site/` and nothing else. Its ARN is a plain repository variable, not a secret, and the workflow does nothing until that variable is set.
 
-The role trusts only jobs on `arijitgupta42/robotrader`'s `main` branch, whose OIDC subject is `repo:arijitgupta42/robotrader:ref:refs/heads/main`. A job that declares a GitHub `environment:` gets a different subject and is refused. So the workflow's **build** job, which has no environment, reads S3, and only the deploy job uses the `github-pages` environment. It can list and read `site/` and nothing else.
+### Runbook: deploy and start the Paper Portfolio at W44
+
+1. Build both zips and apply (the plan adds the OIDC provider, role and policy, and updates the two stock Lambdas' code, env vars and role policies and the scout's code):
+
+   ```bash
+   python stock_selection_lambda/build_zip.py
+   python financial_market_news_analyzer/build_zip.py
+   cd infra && terraform plan && terraform apply
+   ```
+
+2. Start the portfolio from the stored W44 week. This doesn't download prices or send an email. It fills at the same closes the W44 snapshot holds and publishes `site/`:
+
+   ```bash
+   aws lambda invoke --function-name stock-selection --region eu-west-1 --cli-binary-format raw-in-base64-out --payload '{"portfolio_week":"2026-W44"}' out.json && cat out.json
+   aws s3 ls s3://sector-scout-results-544611252144/portfolio/weeks/ --region eu-west-1
+   aws s3 ls s3://sector-scout-results-544611252144/site/ --recursive --region eu-west-1
+   ```
+
+   `out.json` should say `"status": "ok"` with the number of Trades and the total. The same can be run locally with `python stock_selection_lambda/portfolio_step.py --bucket sector-scout-results-544611252144 --week 2026-W44`.
+
+3. Turn on GitHub Pages and point the workflow at the role (both are one-time repository settings):
+
+   - Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+   - `gh variable set SITE_DATA_ROLE_ARN --body "$(terraform -chdir=infra output -raw github_pages_role_arn)"`
+
+4. Publish and check:
+
+   ```bash
+   gh workflow run pages.yml && gh run watch
+   ```
+
+   Open the site at desktop and phone widths. W44's run should replay in the 3D machine. The scout's stages show "No detail recorded" for W44, because that run predates the Run Trace; from W45 every stage has its numbers.
+
+5. After the next scheduled scout run (Saturday 06:00 UTC), check:
+   - the email has a Paper Portfolio section;
+   - `portfolio/weeks/<week>.json` exists;
+   - the site has updated within about 3 hours;
+   - the machine shows that week's full trace.
 
 ## State bucket
 

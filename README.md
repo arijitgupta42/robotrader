@@ -34,6 +34,7 @@ Saturday 06:00 UTC (EventBridge Scheduler)
 | Sector scout | `financial_market_news_analyzer/` | News and Reddit in, Sector Signals out (saved to S3; sends no email) |
 | Stock selection | `lse_stock_analysis/` (named from when the Universe was the FTSE 350 only; it now covers both markets), `stock_selection_lambda/` | Prices, analysis, rule-based Picks, the weekly Universe Snapshot, and the one email |
 | Paper Portfolio | `lse_stock_analysis/portfolio.py`, `stock_selection_lambda/portfolio_step.py` | An imaginary £1,000 traded weekly by fixed rules from the Picks ([ADR 0003](docs/adr/0003-paper-portfolio.md)) |
+| Website | `web/`, `.github/workflows/pages.yml` | The Paper Portfolio and an interactive 3D replay of each week's run, on GitHub Pages |
 | Backtest and review | `lse_stock_analysis/backtest.py`, `stock_selection_lambda/backtest_*.py`, `docs/methodology-review.md` | Compares Picks and Candidates with the market, quarterly |
 | Infrastructure | `infra/` | Terraform for everything in AWS (see [`infra/README.md`](infra/README.md)) |
 
@@ -194,6 +195,10 @@ python stock_selection_lambda/portfolio_step.py --bucket sector-scout-results-54
 ```
 
 The rules carry a `PORTFOLIO_VERSION` and change only through the methodology review; the quarterly report includes the portfolio's performance.
+
+### The website
+
+**<https://arijitgupta42.github.io/robotrader/>** shows the Paper Portfolio and replays each week's run as an animated 3D machine. News pours into hoppers, a sieve and a three-cylinder LLM engine stamp the Sector Signals, a pneumatic tube hands over to stock selection, and a vault with balance scales holds the portfolio. Every part is a real component: hover or tap it to see which, and open it for the code and that week's numbers. A plain list shows the same thing without 3D. It is a static site (`web/`, see [`web/README.md`](web/README.md)). A GitHub Actions workflow rebuilds it a few hours after each weekly run from the JSON the stock-selection Lambda publishes under `site/`, reading it through an AWS role assumed with GitHub's OIDC, so no keys are stored in GitHub. The setup is in [`infra/README.md`](infra/README.md).
 
 ---
 
