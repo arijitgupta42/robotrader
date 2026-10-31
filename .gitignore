@@ -19,3 +19,4 @@ backend.hcl
 web/node_modules/
 web/dist/
 web/public/data/
+web/.vite/

@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 
 import { httpFetcher, loadSite, loadWeek, weekTitle } from "./data/load";
-import { readStages, stageContext } from "./data/stages";
+import { readStages, stageContext, type StageId } from "./data/stages";
 import type { SiteData, WeekTrace } from "./data/types";
 import { PlainView } from "./components/PlainView";
 import { Holdings, HowItWorks, Ledger, PortfolioSummary } from "./components/Portfolio";
 import { ValueChart } from "./components/ValueChart";
 import { WeekPicker } from "./components/WeekPicker";
+import { webglAvailable } from "./machine/webgl";
+
+const MachineView = lazy(() => import("./machine/MachineView"));
 
 const fetcher = httpFetcher(import.meta.env.BASE_URL);
 
@@ -22,6 +25,19 @@ export default function App() {
   const [trace, setTrace] = useState<WeekTrace | null>(null);
   const [traceFor, setTraceFor] = useState<string | null>(null);
   const [openStage, setOpenStage] = useState<string | null>(null);
+  const canWebGL = useMemo(() => webglAvailable(), []);
+  const [view, setView] = useState<"machine" | "plain">(() => {
+    try {
+      const saved = localStorage.getItem("robotrader-view");
+      if (saved === "plain" || saved === "machine") return saved;
+    } catch { /* storage blocked: use the default */ }
+    return "machine";
+  });
+  const shownView = canWebGL ? view : "plain";
+  const chooseView = (v: "machine" | "plain") => {
+    setView(v);
+    try { localStorage.setItem("robotrader-view", v); } catch { /* not essential */ }
+  };
 
   useEffect(() => {
     loadSite(fetcher).then((s) => {
@@ -31,9 +47,18 @@ export default function App() {
     }).catch((e: Error) => setError(e.message));
   }, []);
 
+  useEffect(() => {                         // back/forward and edited links change the week
+    const onHash = () => {
+      const w = weekFromHash();
+      if (w && site?.weeks.includes(w)) setWeek(w);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [site]);
+
   useEffect(() => {
     if (!week || !site) return;
-    if (window.location.hash !== `#${week}`) history.replaceState(null, "", `#${week}`);
+    if (window.location.hash !== `#${week}`) window.history.replaceState(null, "", `#${week}`);
     let live = true;
     const load = site.traceWeeks.includes(week) ? loadWeek(fetcher, week) : Promise.resolve(null);
     load.then((t) => { if (live) { setTrace(t); setTraceFor(week); } })
@@ -41,10 +66,11 @@ export default function App() {
     return () => { live = false; };
   }, [week, site]);
 
-  const readings = useMemo(() => {
+  const ctx = useMemo(() => {
     if (!site || !week || traceFor !== week) return null;
-    return readStages(stageContext(week, trace, site.portfolio, site.ledger.trades, site.ledger.notes));
+    return stageContext(week, trace, site.portfolio, site.ledger.trades, site.ledger.notes);
   }, [site, week, trace, traceFor]);
+  const readings = useMemo(() => (ctx ? readStages(ctx) : null), [ctx]);
 
   if (error) return <main className="page"><div className="card empty">Could not load the data: {error}</div></main>;
   if (!site) return <main className="page"><div className="empty" aria-busy="true">Loading…</div></main>;
@@ -78,12 +104,26 @@ export default function App() {
       {week && (
         <section className="section" aria-labelledby="run">
           <h2 id="run">The weekly run</h2>
-          <p className="lede">What each part of the pipeline did in {weekTitle(week)}, in the order the code runs it. Open a stage to see the code behind it and that week's numbers.</p>
+          <p className="lede">
+            The whole pipeline as one machine, replaying what really happened in {weekTitle(week)}: news pours in on the left,
+            and Sector Signals, stock Picks and the Paper Portfolio's Trades come out on the right. Hover or tap a part to see what it
+            stands for; open it for the code behind it and that week's numbers. Parts with nothing recorded stay still.
+          </p>
           <div className="toolbar">
             <WeekPicker weeks={site.weeks} value={week} onChange={setWeek} />
+            {canWebGL ? (
+              <div className="seg" role="group" aria-label="View">
+                <button type="button" aria-pressed={shownView === "machine"} onClick={() => chooseView("machine")}>3D machine</button>
+                <button type="button" aria-pressed={shownView === "plain"} onClick={() => chooseView("plain")}>Plain list</button>
+              </div>
+            ) : <span className="muted small">3D view unavailable on this device (no WebGL); showing the plain list.</span>}
           </div>
-          {readings ? <PlainView readings={readings} openStage={openStage} onOpen={setOpenStage} />
-            : <div className="empty" aria-busy="true">Loading {week}…</div>}
+          {!readings || !ctx ? <div className="empty" aria-busy="true">Loading {week}…</div>
+            : shownView === "machine" ? (
+              <Suspense fallback={<div className="empty" aria-busy="true">Building the machine…</div>}>
+                <MachineView ctx={ctx} readings={readings} selected={openStage as StageId | null} onSelect={setOpenStage} />
+              </Suspense>
+            ) : <PlainView readings={readings} openStage={openStage} onOpen={setOpenStage} />}
         </section>
       )}
 

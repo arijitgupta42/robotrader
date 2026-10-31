@@ -175,3 +175,39 @@ ul.items li .v { color: var(--ink-2); text-align: right; }
 .notice { border-left: 3px solid var(--warning); background: var(--surface-2); padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 14px; color: var(--ink-2); }
 .footer { margin-top: 40px; color: var(--ink-muted); font-size: 12px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 3D machine */
+.machine { display: grid; gap: 10px; }
+.machine-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.machine-controls { display: flex; gap: 6px; align-items: center; }
+.machine-controls .play { min-width: 76px; font-weight: 600; }
+.machine-now { font-size: 14px; }
+.machine-stage { position: relative; height: clamp(360px, 62vh, 620px); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border);
+  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--accent) 10%, var(--surface)) 0%, var(--surface) 70%); }
+.machine-canvas { touch-action: none; }
+.m-label { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 4px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border); font: 600 11px/1.4 var(--font); color: var(--ink); white-space: nowrap; user-select: none; }
+.m-label.selected { outline: 2px solid var(--accent); }
+.m-label .m-icon { width: 15px; height: 15px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9px; color: #fff; }
+.m-label.ok .m-icon { background: var(--good); } .m-label.warn .m-icon { background: var(--warning); color: #3a2a00; }
+.m-label.fail .m-icon { background: var(--critical); } .m-label.idle .m-icon { border: 1.5px dashed var(--idle); color: var(--idle); }
+.m-label .m-num { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.m-zone { font: 600 11px/1 var(--font); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; user-select: none; }
+.m-tip { position: absolute; left: 12px; top: 12px; max-width: min(360px, calc(100% - 24px)); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); padding: 10px 12px; font-size: 13px; pointer-events: none; z-index: 30; }
+.m-panel { position: absolute; top: 10px; right: 10px; bottom: 10px; width: min(420px, calc(100% - 20px)); overflow: auto; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 34px rgba(0, 0, 0, 0.25); padding: 14px; z-index: 30; }   /* above the station labels (z 0-20) */
+.m-panel .body { padding: 0; }
+.m-panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.m-panel-head h3 { margin: 2px 0 8px; font-size: 18px; }
+.m-headline { margin: 8px 0; color: var(--ink-2); }
+@media (max-width: 640px) { .m-panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 62%; } }
+.m-strip { position: relative; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }   /* contains the chips' sr-only text */
+.m-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--axis); background: var(--surface); border-radius: 999px;
+  padding: 4px 10px; font-size: 12px; cursor: pointer; color: var(--ink-2); }
+.m-chip.reached { color: var(--ink); }
+.m-chip[aria-current="step"] { border-color: var(--accent); }
+.m-chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.m-chip .dot { margin: 0; }
+.m-chip-num { font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+.m-chip[aria-pressed="true"] .m-chip-num { color: inherit; }
