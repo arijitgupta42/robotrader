@@ -48,6 +48,7 @@ import feedparser
 import requests
 from bs4 import BeautifulSoup
 
+import run_trace
 from config import REDDIT_REQUESTS, REDDIT_CFG
 
 logger = logging.getLogger(__name__)
@@ -341,6 +342,9 @@ def collect_reddit_posts(
     cutoff = datetime.now(timezone.utc) - timedelta(days=REDDIT_CFG.max_age_days)
     fresh = [p for p in all_posts if p.created_utc >= cutoff]
     kept = cap_balanced(fresh, max_total)
+    run_trace.reddit(planned=len(REDDIT_REQUESTS), succeeded=succeeded, unique_posts=len(all_posts), fresh=len(fresh),
+                     kept=len(kept), cap=max_total, subreddits=len({p.subreddit for p in fresh}),
+                     seconds=round(_clock() - started, 1))
     logger.info(
         "Reddit: %d of %d requests returned posts — %d unique posts, %d from the last %d days, "
         "from %d subreddits (kept %d, cap %d) in %.0f s.",
@@ -359,19 +363,24 @@ def _fetch_request(request: Dict, label: str, started: float, stop: Optional[thr
     logger.info("  Fetching r/%s ...", label)
     resp = _http_get(url)
 
+    retried = False
     if resp.status == 429:
         wait = _gap_after(resp)
         if _clock() - started + wait > REDDIT_CFG.time_budget_s:
             logger.warning("Reddit: r/%s throttled (HTTP 429) and no time left to retry — skipped.", label)
+            run_trace.reddit_request(label, "throttled")
             return None, 0.0
         logger.warning("Reddit: r/%s throttled (HTTP 429) — retrying once in %.0f s.", label, wait)
         if _pause(wait, stop):
+            run_trace.reddit_request(label, "throttled")
             return None, 0.0
         resp = _http_get(url)
+        retried = True
 
     if resp.status != 200:
         why = resp.error or f"HTTP {resp.status}"
         logger.warning("Reddit: r/%s failed (%s) — skipped.", label, why)
+        run_trace.reddit_request(label, "throttled" if resp.status == 429 else "failed", retried=retried)
         return None, _gap_after(resp) if resp.status else 0.0
 
     posts = _parse_posts(resp.body, request["subreddits"])
@@ -379,4 +388,5 @@ def _fetch_request(request: Dict, label: str, started: float, stop: Optional[thr
         logger.info("  SUCCESS r/%-40s %d posts", label, len(posts))
     else:
         logger.debug("r/%s: empty RSS feed.", label)
+    run_trace.reddit_request(label, "ok" if posts else "empty", len(posts), retried=retried)
     return posts, _gap_after(resp)

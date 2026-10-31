@@ -68,6 +68,7 @@ from __future__ import annotations
 import logging
 import sys
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -79,6 +80,7 @@ from news_fetcher import Headline, collect_headlines
 from reddit_fetcher import RedditPost, collect_reddit_posts
 from reddit_analyzer import RedditSentimentSignal, analyse_reddit_posts
 from consolidator import ConsolidatedSignal, consolidate_signals
+import run_trace
 
 logging.basicConfig(
     level   = logging.INFO,
@@ -222,7 +224,9 @@ class SectorScout:
         # Step 1: Collect news headlines
         # ------------------------------------------------------------------
         logger.info("--- Step 1/4: Collecting news headlines ---")
+        stage = time.monotonic()
         headlines = collect_headlines(max_total=SCHEDULER_CFG.max_headlines_per_cycle)
+        run_trace.timing("news_fetch", time.monotonic() - stage)
         if not headlines:
             reddit_stop.set()
             logger.warning("Cycle %d: no headlines — skipping all LLM passes.", cycle)
@@ -250,6 +254,8 @@ class SectorScout:
             cycle, len(filtered_news), len(raw_news_signals),
             self._min_confidence * 100, self._min_disruption * 100,
         )
+        run_trace.signals(news_raw=len(raw_news_signals), news_passed=len(filtered_news), news_llm_ok=news_llm_ok,
+                          min_confidence=self._min_confidence, min_disruption=self._min_disruption)
 
         # Attach headline objects to news signals (for audit / S3 storage)
         news_signal_objects: List[SectorSignal] = []
@@ -291,8 +297,10 @@ class SectorScout:
         reddit_posts: List[RedditPost] = []
         if reddit_future is not None:
             logger.info("--- Step 2/4: Waiting for the Reddit posts ---")
+            stage = time.monotonic()
             try:
                 reddit_posts = reddit_future.result(timeout=REDDIT_CFG.time_budget_s + 60)
+                run_trace.timing("reddit_wait", time.monotonic() - stage)
             except Exception as exc:
                 reddit_stop.set()
                 logger.warning(
@@ -348,6 +356,8 @@ class SectorScout:
         # Even if the news or Reddit passes were heuristic/empty, as long as the
         # consolidator ran properly we consider the cycle valid.
         llm_succeeded = consolidator_ok and news_llm_ok
+        run_trace.signals(reddit_posts=len(reddit_posts), reddit_signals=len(reddit_signals), reddit_llm_ok=reddit_llm_ok,
+                          consolidated=len(consolidated), consolidator_ok=consolidator_ok, reddit_skipped=self._skip_reddit)
 
         logger.info(
             "Cycle %d complete — %d consolidated signals. "

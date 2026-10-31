@@ -83,7 +83,23 @@ What each stage of the pipeline did that week. A section is `null` when it was n
       "rationale": "...", "propagation": "...", "invalidation_risk": "...", "convergence_note": "...",
       "key_catalysts": ["..."], "correlated_sectors": ["..."]
     }],
-    "trace": null                       // the scout's own trace block when present (see the scout's lambda_handler.py)
+    "trace": {                          // the scout's own Run Trace (financial_market_news_analyzer/run_trace.py); null for older results
+      "trigger": "WeeklyTrigger",       // "WeeklyTrigger" | "HourlyRetry" | "manual"
+      "feeds": [{"name": "Reuters Business", "fetched": 40, "ok": true, "error": null,   // error e.g. "DNS lookup failed"
+                 "fresh": 31, "kept": 14}],     // after deduplication and the 7-day filter; after the per-source cap
+      "headlines": {"fetched": 1025, "duplicates": 79, "stale": 181, "fresh": 765, "cap": 500, "kept": 500, "max_age_days": 7},
+      "reddit": {"planned": 7, "succeeded": 5, "unique_posts": 410, "fresh": 380, "kept": 120, "cap": 120,
+                 "subreddits": 9, "seconds": 400.2,
+                 "requests": [{"label": "stocks+investing/hot", "status": "ok", "posts": 100, "retried": false}]},
+                                        // status: "ok" | "empty" | "throttled" | "failed"; null when Reddit was skipped
+      "llm": {                          // one entry per pass that ran: "news", "reddit", "consolidation"
+        "news": {"models": ["primary", "fallback"], "model_used": "primary", "ok": true, "seconds": 41.0, "fallback": false}
+      },
+      "signals": {"news_raw": 6, "news_passed": 4, "news_llm_ok": true, "min_confidence": 0.5, "min_disruption": 0.4,
+                  "reddit_posts": 120, "reddit_signals": 2, "reddit_llm_ok": true, "consolidated": 3,
+                  "consolidator_ok": true, "reddit_skipped": false},
+      "timings": {"news_fetch": 60.2, "reddit_wait": 330.0, "total": 520.4}   // seconds
+    }
   },
   "prices": {
     "requested": 853, "returned": 850, "no_data": 3, "short_history": 0, "stale": 2, "anomalies": 1, "unit_fixed": 4,

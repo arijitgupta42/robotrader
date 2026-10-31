@@ -32,6 +32,7 @@ from config import (
     OPENROUTER_MODELS,
     REDDIT_CFG,
 )
+import run_trace
 from reddit_fetcher import RedditPost, cap_balanced
 from llm_analyzer import _load_api_key, _extract_and_decode   # reuse helpers
 
@@ -304,7 +305,9 @@ def analyse_reddit_posts(posts: List[RedditPost]) -> tuple[List[RedditSentimentS
     logger.info("Reddit LLM: analysing %d posts (from %d total) ...", len(capped_posts), len(posts))
 
     messages = _build_reddit_messages(capped_posts)
+    started = time.monotonic()
     decoded, model_used = _invoke_with_fallback(messages)
+    run_trace.llm_pass("reddit", OPENROUTER_MODELS, model_used, decoded is not None, time.monotonic() - started)
 
     if decoded is None:
         logger.error("Reddit LLM: all models failed — no Reddit sentiment signals.")

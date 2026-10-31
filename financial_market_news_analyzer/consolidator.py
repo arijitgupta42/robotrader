@@ -41,6 +41,7 @@ from config import (
     OPENROUTER_RETRY_DELAYS,
     OPENROUTER_MODELS,
 )
+import run_trace
 from llm_analyzer import _load_api_key, _extract_and_decode
 from reddit_analyzer import RedditSentimentSignal
 
@@ -435,7 +436,9 @@ def consolidate_signals(
         len(news_signals), len(reddit_signals),
     )
 
+    started = time.monotonic()
     decoded, model_used = _invoke_with_fallback(messages)
+    run_trace.llm_pass("consolidation", OPENROUTER_MODELS, model_used, decoded is not None, time.monotonic() - started)
 
     if decoded is None:
         logger.error(

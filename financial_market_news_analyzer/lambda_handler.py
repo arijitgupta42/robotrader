@@ -44,6 +44,8 @@ from typing import Any, Dict, Optional
 
 import boto3
 
+import run_trace
+
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
@@ -230,7 +232,9 @@ def handler(event: dict, context) -> dict:
         logger.info("Manual invocation — running pipeline unconditionally.")
 
     # ---- Run the pipeline ----
+    run_trace.reset(detail_type or "manual")
     result = _run_pipeline()
+    result.setdefault("trace", run_trace.to_dict())     # counts only, no headline text (published on the website)
 
     if result["success"]:
         s3_key = _save_success(result)
