@@ -450,6 +450,10 @@ REDDIT_REQUESTS: List[Dict] = [
 @dataclass
 class RedditConfig:
     max_posts_per_cycle: int = 200
+    # Posts sent to the Reddit LLM pass (a fair share per subreddit).  The pass only surfaces a
+    # sector when several posts agree, so 60 posts spread over 17 subreddits gave 0 signals on
+    # 2026-10-31 and 120 gave 1; 120 posts is about 17k input tokens, roughly $0.002 on Luna.
+    max_posts_for_llm: int = 120
     # Posts asked for per request (Reddit's RSS accepts up to 100).
     posts_per_request: int = 100
     # Stop starting new requests after this many seconds.  The pass runs alongside
@@ -499,7 +503,7 @@ OPENROUTER_MODELS: List[str] = [
 # threshold in this file that shapes the signals) changes.  It is saved with every scout
 # result and copied into the Universe Snapshot, so the methodology review can compare
 # the weeks before and after a change.
-PROMPT_VERSION: str = "2026-10-31.2"
+PROMPT_VERSION: str = "2026-10-31.3"
 
 # Retry delays in seconds for transient HTTP errors (429 / 5xx / timeout).
 OPENROUTER_RETRY_DELAYS: List[int] = [15, 30, 60]
