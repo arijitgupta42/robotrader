@@ -6,6 +6,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   base: "/robotrader/",
   plugins: [react()],
-  build: { outDir: "dist", sourcemap: false },
+  // The 3D machine (three.js) is one lazily loaded chunk of about 240 kB gzipped; the page itself does not wait for it.
+  build: { outDir: "dist", sourcemap: false, chunkSizeWarningLimit: 1000 },
   test: { environment: "node", include: ["src/**/*.test.ts"] },
 });
